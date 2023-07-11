@@ -57,7 +57,7 @@ export default function Home() {
         <div className='text-[20px] text-gray-600 font-bold'>Home</div>
 
         <div className='mt-5'>
-          <p className='text-lg text-gray-600 font-bold mb-2'>Quick Access</p>
+          <p className='text-md text-gray-600 font-bold mb-2'>Quick Access</p>
           <div className='grid lg:grid-cols-4 gap-4 md:grid-cols-3'>
             {folders?.data.map((folder) => {
               return (
@@ -73,7 +73,7 @@ export default function Home() {
         </div>
 
         <div className='mt-5'>
-          <p className='text-lg text-gray-600 font-bold mb-2'>Recent Files</p>
+          <p className='text-md text-gray-600 font-bold mb-2'>Recent Files</p>
           <div className='mt-4'>
             <div className='flex items-center mb-4'>
               <p className='text-sm text-gray-500 font-semibold mr-2'>
