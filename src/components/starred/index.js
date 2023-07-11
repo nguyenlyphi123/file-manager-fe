@@ -1,61 +1,201 @@
-import React from 'react';
-import FileIconHelper from '../../utils/FileIconHelper';
+import { Checkbox } from '@mui/material';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
 import { AiFillStar } from 'react-icons/ai';
-import { TbSquareRoundedCheckFilled } from 'react-icons/tb';
+import { BsTrash } from 'react-icons/bs';
+import { ImSpinner } from 'react-icons/im';
+import { Link } from 'react-router-dom';
+import Loading from '../../parts/Loading';
+import {
+  getStarredFolder,
+  unstarFolder,
+  unstarListOfFolder,
+} from '../../services/folderController';
+import FileIconHelper from '../../utils/helpers/FileIconHelper';
+import ErrorToast from '../toasts/ErrorToast';
+import SuccessToast from '../toasts/SuccessToast';
 
 export default function Starred() {
+  // fetch data
+  const {
+    data: folders,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['starred'],
+    queryFn: async () => await getStarredFolder(),
+    retry: 3,
+  });
+
+  const handleUnStar = useMutation({
+    mutationFn: async (id) => await unstarFolder({ id }),
+    onSuccess: () => {
+      SuccessToast({ message: 'Folder has been unstarred successfully' });
+      refetch();
+    },
+    onError: () => {
+      ErrorToast({
+        message: 'Opps! Something went wrong. Please try again later',
+      });
+    },
+  });
+
+  const handleUnStarListOfFolder = useMutation({
+    mutationFn: async (folderList) => await unstarListOfFolder(folderList),
+    onSuccess: () => {
+      SuccessToast({ message: 'Folders have been unstarred successfully' });
+      setCheckedListItem([]);
+      refetch();
+    },
+    onError: () => {
+      ErrorToast({
+        message: 'Opps! Something went wrong. Please try again later',
+      });
+    },
+  });
+
+  // checked list item
+  const [checkedListItem, setCheckedListItem] = useState([]);
+
+  const handleCheckedListItem = (data) => {
+    if (checkedListItem?.includes(data)) {
+      setCheckedListItem(checkedListItem.filter((item) => item !== data));
+      return;
+    }
+    setCheckedListItem([...checkedListItem, data]);
+  };
+
+  const handleSelectAll = () => {
+    if (checkedListItem.length === folders?.data.length) {
+      setCheckedListItem([]);
+      return;
+    }
+    setCheckedListItem(folders?.data.map((folder) => folder._id));
+  };
+
+  // to located button
+  const [currentItem, setCurrentItem] = useState();
+
+  if (isLoading) return <Loading />;
+
   return (
     <div className='h-[200vh] py-5 px-7 tracking-wide'>
-      <div className='text-2xl text-gray-600 font-bold'>Starred</div>
+      <div className='text-[20px] text-gray-600 font-bold'>Starred</div>
 
       <div className='mt-5'>
         <table className='w-full'>
           <thead>
-            <tr className='text-[0.9em] text-gray-500'>
-              <th className='text-left w-[50%] font-semibold pb-3'>Name</th>
-              <th className='text-left font-semibold pb-3'>Last Opened</th>
-              <th className='text-left font-semibold pb-3'>Size</th>
-              <th></th>
+            <tr className='text-[0.9em] text-gray-500 h-[40px]'>
+              <th>
+                <Checkbox
+                  checked={
+                    checkedListItem.length === folders?.data?.length
+                      ? true
+                      : false
+                  }
+                  onChange={handleSelectAll}
+                />
+              </th>
+              <th className='text-left w-[50%] font-semibold'>Name</th>
+              <th className='text-left font-semibold'>Last Opened</th>
+              <th className='text-left font-semibold  '>Size</th>
+              <th className='flex justify-center'>
+                {checkedListItem.length > 0 && (
+                  <button
+                    onClick={() =>
+                      handleUnStarListOfFolder.mutate(checkedListItem)
+                    }
+                    className={`text-center flex justify-center items-center text-white h-[30px] px-2 bg-red-400  rounded-md cursor-pointer ${'hover:bg-red-500'}`}
+                  >
+                    {handleUnStarListOfFolder.isLoading ? (
+                      <ImSpinner className='animate-spin' />
+                    ) : (
+                      <BsTrash />
+                    )}
+                  </button>
+                )}
+              </th>
             </tr>
           </thead>
 
-          <tbody className='bg-white border rounded-md'>
-            <tr>
-              <td className='p-4'>
-                <div className='flex items-center'>
-                  <input
-                    type='checkbox'
-                    name=''
-                    value=''
-                    className='h-4 w-4 mr-4'
-                  />
-                  <FileIconHelper className='text-3xl mr-3' type={'folder'} />
-                  <p className='text-[0.9em] text-gray-700 font-semibold mr-3'>
-                    My Folder
-                  </p>
-                  <AiFillStar className='text-[#8AA3FF] text-xl' />
-                </div>
-              </td>
+          {folders?.data.map((folder) => {
+            return (
+              <tbody key={folder._id} className='bg-white border rounded-md'>
+                <tr
+                  className='mt-5 cursor-pointer'
+                  onClick={() => {
+                    handleCheckedListItem(folder._id);
+                  }}
+                >
+                  <td className='p-4 w-[65px] text-center'>
+                    <Checkbox
+                      checked={
+                        checkedListItem.find((item) => item === folder._id)
+                          ? true
+                          : false
+                      }
+                      onChange={(_, checked) =>
+                        checked
+                          ? handleCheckedListItem(folder._id)
+                          : handleCheckedListItem(folder._id)
+                      }
+                    />
+                  </td>
+                  <td className='p-4 pl-0'>
+                    <Link
+                      className='flex items-center w-fit'
+                      to={`../folders/${folder._id}`}
+                      state={{ folder: folder }}
+                    >
+                      <FileIconHelper
+                        className='text-3xl mr-3'
+                        type={'folder'}
+                      />
+                      <p className='text-[0.9em] text-gray-700 font-semibold mr-3'>
+                        {folder.name}
+                      </p>
+                    </Link>
+                  </td>
 
-              <td>
-                <p className='text-[0.9em] text-gray-500 font-medium'>
-                  Today, 08:09 AM
-                </p>
-              </td>
+                  <td>
+                    <p className='text-[0.9em] text-gray-500 font-medium'>
+                      {folder.lastOpened}
+                    </p>
+                  </td>
 
-              <td>
-                <p className='text-[0.9em] text-gray-500 font-semibold'>
-                  4.5 KB
-                </p>
-              </td>
+                  <td>
+                    <p className='text-[0.9em] text-gray-500 font-semibold'>
+                      4.5 KB
+                    </p>
+                  </td>
 
-              <td className='w-[100px]'>
-                <div className='text-center text-white py-1 px-4 bg-red-400 w-fit rounded-md cursor-pointer hover:bg-red-500'>
-                  Unstar
-                </div>
-              </td>
-            </tr>
-          </tbody>
+                  <td className='flex justify-center items-center h-[65px]'>
+                    <button
+                      onClick={() => {
+                        handleUnStar.mutate(folder._id);
+                        setCurrentItem(folder._id);
+                      }}
+                      className={`text-center flex justify-center items-center text-white w-[100px] h-[35px] py-1 bg-red-400  rounded-md cursor-pointer ${
+                        checkedListItem.find((item) => item === folder._id) &&
+                        'hover:bg-red-500'
+                      }`}
+                      disabled={
+                        checkedListItem.find((item) => item === folder._id)
+                          ? false
+                          : true
+                      }
+                    >
+                      {handleUnStar.isLoading && folder._id === currentItem ? (
+                        <ImSpinner className='animate-spin' />
+                      ) : (
+                        'Unstar'
+                      )}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            );
+          })}
         </table>
       </div>
     </div>

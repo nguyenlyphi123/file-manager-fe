@@ -1,41 +1,102 @@
-import { Route, Routes } from 'react-router-dom';
-import ScrollToTop from './utils/ScrollToTop';
+import React, { Suspense, useEffect } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
 
-import LoginPage from './pages/auth/LoginPage';
+import ErrorBoundary from './pages/ErrorBoundary';
+import LoginPage from './pages/LoginPage';
+import RestrictedRoute from './utils/RestrictedRoute';
 
-import WelcomePage from './pages';
-import PupilPage from './pages/pupil';
-import LecturersPage from './pages/lecturers';
-import ManagerPage from './pages/manager';
+import HomePage from './pages';
 import BlankPage from './pages/BlankPage';
+import PageLoading from './parts/PageLoading';
+import TokenExpired from './pages/tokenExpired';
 
-import Files from './components/files';
-import Folders from './components/folders';
-import Home from './components/home';
-import Recovery from './components/recovery';
-import Settings from './components/settings';
-import Starred from './components/starred';
-import AuthContextProvider from './contexts/authContext';
+const Files = React.lazy(() => import('./components/files'));
+const Folders = React.lazy(() => import('./components/folders'));
+const Home = React.lazy(() => import('./components/home'));
+const Recovery = React.lazy(() => import('./components/recovery'));
+const Settings = React.lazy(() => import('./components/settings'));
+const Starred = React.lazy(() => import('./components/starred'));
+
+const MyFolder = React.lazy(() => import('./components/folders/my-folder'));
+const DetailFolder = React.lazy(() =>
+  import('./components/folders/detail-folder'),
+);
 
 function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth',
+    });
+  }, [location.pathname]);
+
   return (
-    <ScrollToTop>
+    <ErrorBoundary>
       <Routes>
-        <Route path='/' element={<WelcomePage />} />
-        <Route path='/pupil' element={<PupilPage />} />
-        <Route path='/lecturers' element={<LecturersPage />}>
-          <Route index element={<Home />} />
-          <Route path='files' element={<Files />} />
-          <Route path='folders' element={<Folders />} />
-          <Route path='recovery' element={<Recovery />} />
-          <Route path='settings' element={<Settings />} />
-          <Route path='starred' element={<Starred />} />
+        <Route element={<RestrictedRoute />}>
+          <Route path='/' element={<HomePage />}>
+            <Route
+              index
+              element={
+                <Suspense fallback={<PageLoading />}>
+                  <Home />
+                </Suspense>
+              }
+            />
+            <Route
+              path='files'
+              element={
+                <Suspense fallback={<PageLoading />}>
+                  <Files />
+                </Suspense>
+              }
+            />
+            <Route
+              path='folders'
+              element={
+                <Suspense fallback={<PageLoading />}>
+                  <Folders />
+                </Suspense>
+              }
+            >
+              <Route index element={<MyFolder />} />
+              <Route path=':folderId' element={<DetailFolder />} />
+            </Route>
+            <Route
+              path='recovery'
+              element={
+                <Suspense fallback={<PageLoading />}>
+                  <Recovery />
+                </Suspense>
+              }
+            />
+            <Route
+              path='settings'
+              element={
+                <Suspense fallback={<PageLoading />}>
+                  <Settings />
+                </Suspense>
+              }
+            />
+            <Route
+              path='starred'
+              element={
+                <Suspense fallback={<PageLoading />}>
+                  <Starred />
+                </Suspense>
+              }
+            />
+          </Route>
         </Route>
-        <Route path='/manager' element={<ManagerPage />} />
+
+        <Route path='/expired' element={<TokenExpired />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='*' element={<BlankPage />} />
       </Routes>
-    </ScrollToTop>
+    </ErrorBoundary>
   );
 }
 

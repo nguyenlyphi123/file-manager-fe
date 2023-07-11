@@ -1,9 +1,19 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiFolder } from 'react-icons/fi';
 import { IoMdNotificationsOutline } from 'react-icons/io';
+import { useDispatch } from 'react-redux';
+import { Logout } from '../redux/slices/user';
 
 export default function Header() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(Logout());
+    navigate('/login');
+  };
+
   return (
     <div className='bg-white flex justify-between items-center border-b border-gray-300 border-solid p-5 pl-6 pr-6 h-[80px] sticky top-0 z-10'>
       <Link to='' className='flex items-center cursor-pointer'>
@@ -22,13 +32,13 @@ export default function Header() {
           </div>
         </div>
 
-        <Link to='/login' className='cursor-pointer'>
+        <div onClick={handleLogout} className='cursor-pointer'>
           <img
             src='https://firebasestorage.googleapis.com/v0/b/banahub.appspot.com/o/images%2Fuser.png?alt=media&token=3f002655-c97b-4022-b601-b24c6e5b901b'
             alt=''
             className='w-9 h-9 rounded-full'
           />
-        </Link>
+        </div>
       </div>
     </div>
   );

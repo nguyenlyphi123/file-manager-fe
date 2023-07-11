@@ -1,39 +1,75 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../../contexts/authContext';
-import { useNavigate } from 'react-router-dom';
-import { LECTURERS_URL, PUPIL_URL } from '../../constants/constants';
-import Cookies from 'js-cookie';
+import React, { useEffect, useState } from 'react';
+import { ImSpinner } from 'react-icons/im';
+import { useDispatch, useSelector } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { DangerAlert } from '../parts/AlertPopup';
+import { loadUser, logIn } from '../redux/slices/user';
 
 export default function LoginPage() {
-  // context
-  const { state, userLogin } = useContext(AuthContext);
-
   // redirect if user logged in
+  const location = useLocation();
+  const from = location.state?.from?.pathname;
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const user = useSelector((state) => state.user);
 
   useEffect(() => {
-    console.log('my cookie', Cookies.get('accessToken'));
-    if (state.isAuthenticated) {
-      state.isLecturers ? navigate(LECTURERS_URL) : navigate(PUPIL_URL);
+    console.log(from);
+    if (user.isAuthenticated) {
+      if (from) {
+        navigate(from, { replace: true });
+      }
+      // user.isLecturers ? navigate(LECTURERS_URL) : navigate(PUPIL_URL);
+      navigate('/');
     }
-  }, [state.isAuthenticated]);
+  }, [user.isAuthenticated]);
+
+  useEffect(() => {
+    if (!user.isAuthenticated) {
+      dispatch(loadUser());
+    }
+  }, []);
 
   // login data
-  const [loginData, setLoginData] = useState({});
+  const [loginData, setLoginData] = useState({ username: '', password: '' });
   const handleSetLoginData = (e) => {
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
   };
 
   const handleLoginSubmit = async () => {
-    try {
-      const response = await userLogin(loginData);
+    if (loginData.username === '' || loginData.password === '') {
+      AlertFail('Username or password is missing !!!');
+      return;
+    }
 
-      if (response.success) {
-        console.log('Logged in');
+    setIsLoading(true);
+
+    try {
+      const response = await dispatch(logIn(loginData));
+
+      if (!response.payload.success) {
+        setIsLoading(false);
+        AlertFail('Username or password is incorrect !!!');
       }
     } catch (error) {
+      setIsLoading(false);
       console.log(error);
     }
+  };
+
+  // loading
+  const [isLoading, setIsLoading] = useState(false);
+
+  // alert
+  const [isAlert, setIsAlert] = useState(false);
+  const [message, setMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const AlertFail = (message) => {
+    setIsAlert(true);
+    setMessage(message);
+    setIsSuccess(false);
   };
 
   return (
@@ -49,6 +85,15 @@ export default function LoginPage() {
             </div>
 
             <div className='px-6 mt-10'>
+              {isAlert ? (
+                isSuccess ? (
+                  ''
+                ) : (
+                  <DangerAlert className='mb-4' message={message} />
+                )
+              ) : (
+                ''
+              )}
               <form onSubmit={handleLoginSubmit}>
                 <div className='border rounded-md'>
                   <input
@@ -85,8 +130,13 @@ export default function LoginPage() {
           <div className='flex justify-center w-full mt-[150px]'>
             <div
               onClick={handleLoginSubmit}
-              className='bg-blue-600 text-white py-2 px-10 rounded-md cursor-pointer hover:bg-blue-700 duration-300'
+              className={`bg-blue-600 text-white py-2 px-10 rounded-md cursor-pointer hover:bg-blue-700 duration-300 relative`}
             >
+              {isLoading ? (
+                <ImSpinner className='absolute top-3 left-3 animate-spin' />
+              ) : (
+                ''
+              )}
               Login
             </div>
           </div>

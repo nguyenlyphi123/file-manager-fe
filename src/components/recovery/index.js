@@ -1,16 +1,15 @@
 import React from 'react';
 
-import { DatePicker } from 'rsuite';
-import FileIconHelper from '../../utils/FileIconHelper';
-import { AiFillStar } from 'react-icons/ai';
 import { BsThreeDots } from 'react-icons/bs';
+import { DatePicker } from 'rsuite';
+import FileIconHelper from '../../utils/helpers/FileIconHelper';
 
 import 'rsuite/dist/rsuite-no-reset.min.css';
 
 export default function Recovery() {
   return (
     <div className='h-[200vh] py-5 px-7 tracking-wide'>
-      <div className='text-2xl text-gray-600 font-bold'>Recovery</div>
+      <div className='text-[20px] text-gray-600 font-bold'>Recovery</div>
 
       <div className='mt-5 flex'>
         <div className='w-3/12'>

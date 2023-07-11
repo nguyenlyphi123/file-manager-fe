@@ -9,6 +9,14 @@ export const authReducer = (state, action) => {
         isLecturers: action.payload.isLecturers,
       };
 
+    case 'REMOVE_AUTH':
+      return {
+        ...state,
+        authLoading: true,
+        isAuthenticated: false,
+        infomation: null,
+        isLecturers: false,
+      };
     default:
       break;
   }

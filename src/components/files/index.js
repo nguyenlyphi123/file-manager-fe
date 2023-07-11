@@ -9,7 +9,7 @@ import LargeFileCard from '../cards/LargeFileCard';
 export default function Files() {
   return (
     <div className='h-[200vh] py-5 px-7 tracking-wide'>
-      <div className='text-2xl text-gray-600 font-bold'>Files</div>
+      <div className='text-[20px] text-gray-600 font-bold'>Files</div>
 
       <div className='mt-5'>
         <div className='flex items-center mb-4'>

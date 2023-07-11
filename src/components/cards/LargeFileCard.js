@@ -1,27 +1,113 @@
-import React from 'react';
-import FileIconHelper from '../../utils/FileIconHelper';
-
-import { BsDot, BsThreeDots } from 'react-icons/bs';
+import { useMutation } from '@tanstack/react-query';
+import React, { useState } from 'react';
 import { AiFillStar } from 'react-icons/ai';
+import { BsDot } from 'react-icons/bs';
+import { useNavigate } from 'react-router-dom';
+import { starFolder } from '../../services/folderController';
+import FileIconHelper from '../../utils/helpers/FileIconHelper';
+import OptionHelper from '../../utils/helpers/OptionHelper';
+import { ThreeDotsDropDown } from '../popups/ModelPopups';
+import ErrorToast from '../toasts/ErrorToast';
+import SuccessToast from '../toasts/SuccessToast';
 
-export default function LargeFileCard({ name, type }) {
+export default function LargeFileCard({ data, onClick, refetch }) {
+  const navigate = useNavigate();
+
+  const [isModal, setIsModal] = useState(false);
+
+  // handle select option
+  const [option, setOption] = useState('');
+
+  const handleSelectOption = (option) => {
+    setOption(option);
+    setIsModal(true);
+  };
+
+  const handleClose = () => {
+    setOption('');
+    setIsModal(false);
+  };
+
+  // delete confirm
+  const [isDeleteShow, setIsDeleteShow] = useState(false);
+
+  const handleCancelDelete = () => {
+    setIsDeleteShow(false);
+  };
+
+  const handleShowDelete = () => {
+    setIsDeleteShow(true);
+  };
+
+  // star folder
+  const handleStarFolder = useMutation({
+    mutationFn: (folderId) => starFolder({ id: folderId }),
+    onSuccess: () => {
+      SuccessToast({ message: 'Folder has been starred successfully' });
+      refetch();
+    },
+    onError: () => {
+      ErrorToast({
+        message: 'Opps! Something went wrong. Please try again later',
+      });
+    },
+  });
+
   return (
-    <div className='group/card flex items-center justify-center flex-col bg-white h-[180px] border rounded-md relative cursor-pointer'>
-      <div className='absolute top-2 right-2 p-2 flex group/threedots'>
-        <div className='bg-[#E5E9F2] h-[20px] w-[20px] rounded-full opacity-0 translate-x-[20px] group-hover/threedots:scale-150 group-hover/threedots:opacity-100 duration-300'></div>
-        <BsThreeDots className='text-gray-600 text-xl z-10' />
+    <>
+      <OptionHelper
+        type={option}
+        handleClose={handleClose}
+        data={data}
+        open={isModal}
+        refetch={refetch}
+        deleteShow={isDeleteShow}
+        handleCancelDelete={handleCancelDelete}
+      />
+
+      <div className='group/card flex-col bg-white h-[180px] border rounded-md relative cursor-pointer'>
+        <div className='absolute top-2 right-2 p-2 flex justify-center items-center group/threedots'>
+          <ThreeDotsDropDown
+            handleSelectOption={handleSelectOption}
+            handleShowDelete={handleShowDelete}
+            className='rounded-[50%] h-[18px] text-gray-600'
+          />
+        </div>
+
+        <div
+          onClick={() => {
+            onClick({ ...data, href: `/folders/${data._id}` });
+            navigate(`/folders/${data._id}`, { state: { folder: data } });
+          }}
+          className='w-full h-full flex items-center justify-center flex-col'
+        >
+          <FileIconHelper className='text-6xl mb-4' type={data.type} />
+
+          <div className='relative'>
+            <p className='text-[0.9em] text-gray-600 font-semibold'>
+              {data.name}
+            </p>
+            {data.isStar ? (
+              <AiFillStar
+                className='text-[#8AA3FF] text-xl font-semibold absolute top-0 right-0 translate-x-[35px]'
+                onClick={() => handleStarFolder.mutate(data._id)}
+              />
+            ) : (
+              <AiFillStar
+                className='text-gray-400 text-xl font-semibold absolute top-0 right-0 translate-x-[35px] hidden group-hover/card:block hover/card:text-[#8AA3FF] duration-200'
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleStarFolder.mutate(data._id);
+                }}
+              />
+            )}
+          </div>
+
+          <p className='flex items-center text-[0.8em] text-gray-400 mt-2'>
+            Today <BsDot className='text-xl' /> 4.5 MB
+          </p>
+        </div>
       </div>
-
-      <FileIconHelper className='text-6xl mb-4' type={type} />
-
-      <div className='relative'>
-        <p className='text-[0.9em] text-gray-600 font-semibold'>{name}</p>
-        <AiFillStar className='text-gray-400 text-xl font-semibold absolute top-0 right-0 translate-x-[35px] hidden group-hover/card:block hover/card:text-[#8AA3FF] duration-200' />
-      </div>
-
-      <p className='flex items-center text-[0.8em] text-gray-400 mt-2'>
-        Today <BsDot className='text-xl' /> 4.5 MB
-      </p>
-    </div>
+    </>
   );
 }
