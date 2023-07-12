@@ -84,3 +84,33 @@ export const getStarredFolder = async () => {
     throw error;
   }
 };
+
+export const removeFolderToTrash = async ({ id }) => {
+  try {
+    const res = await axiosPrivate.put(`${apiURL}/folder/${id}/trash`);
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getRemovedFolder = async () => {
+  try {
+    const res = await axiosPrivate.get(`${apiURL}/folder/trash`);
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const restoreFolder = async ({ id }) => {
+  try {
+    const res = await axiosPrivate.put(`${apiURL}/folder/${id}/restore`);
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};

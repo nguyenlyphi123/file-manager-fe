@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import moment from 'moment';
-import React, { useContext, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import {
   AiOutlineClose,
   AiOutlineCopy,
@@ -27,6 +27,7 @@ import {
   BsThreeDots,
   BsTrash,
 } from 'react-icons/bs';
+import { TfiReload } from 'react-icons/tfi';
 import { ImSpinner } from 'react-icons/im';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -43,7 +44,12 @@ import {
 import { AuthContext } from '../../contexts/authContext';
 import useGetData from '../../hooks/useGetData';
 import { pushLocation } from '../../redux/slices/location';
-import { deleteFolder, renameFolder } from '../../services/folderController';
+import {
+  deleteFolder,
+  removeFolderToTrash,
+  renameFolder,
+  restoreFolder,
+} from '../../services/folderController';
 import FileIconHelper from '../../utils/helpers/FileIconHelper';
 import ErrorToast from '../toasts/ErrorToast';
 import SuccessToast from '../toasts/SuccessToast';
@@ -643,10 +649,10 @@ export const Rename = ({ handleClose, data, open, refetch }) => {
 export const FolderDeleteConfirm = ({ open, handleClose, data, refetch }) => {
   const [loading, setLoading] = useState(false);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     setLoading(true);
     try {
-      await deleteFolder({ id: data._id });
+      await removeFolderToTrash({ id: data._id });
       handleClose();
       refetch();
       setLoading(false);
@@ -658,7 +664,7 @@ export const FolderDeleteConfirm = ({ open, handleClose, data, refetch }) => {
         message: 'Opps! Something went wrong. Please try again later',
       });
     }
-  };
+  }, [data._id, handleClose, refetch]);
 
   return (
     <Dialog
@@ -690,5 +696,113 @@ export const FolderDeleteConfirm = ({ open, handleClose, data, refetch }) => {
         </div>
       </DialogActions>
     </Dialog>
+  );
+};
+
+export const RemovedThreeDotsDropDown = ({ className, data, refetch }) => {
+  // dropdown menu
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  // handle restore
+  const handleRestore = useCallback(async () => {
+    try {
+      await restoreFolder({ id: data?._id });
+      refetch();
+      SuccessToast({ message: 'Folder has been restored successfully' });
+    } catch (error) {
+      ErrorToast({
+        message: 'Opps! Something went wrong. Please try again later',
+      });
+    }
+  }, [data?._id, refetch]);
+
+  // handle delete
+  const handleDelete = useCallback(async () => {
+    try {
+      await deleteFolder({ id: data?._id });
+      refetch();
+      SuccessToast({ message: 'Folder has been deleted successfully' });
+    } catch (error) {
+      ErrorToast({
+        message: 'Opps! Something went wrong. Please try again later',
+      });
+    }
+  }, [data?._id, refetch]);
+
+  return (
+    <>
+      <div className={className}>
+        <IconButton
+          id='threedots-btn'
+          aria-haspopup='true'
+          aria-controls={open ? 'threedots-menu' : undefined}
+          aria-expanded={open ? 'true' : undefined}
+          onClick={handleClick}
+        >
+          <BsThreeDots className='text-lg' />
+        </IconButton>
+        <Menu
+          anchorEl={anchorEl}
+          id='threedots-menu'
+          open={open}
+          onClose={handleClose}
+          onClick={handleClose}
+          PaperProps={{
+            elevation: 0,
+            sx: {
+              overflow: 'visible',
+              filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+              mt: 1.5,
+              '& .MuiAvatar-root': {
+                width: 32,
+                height: 32,
+                ml: -0.5,
+                mr: 1,
+              },
+              '&:before': {
+                content: '""',
+                display: 'block',
+                position: 'absolute',
+                top: 0,
+                right: 14,
+                width: 10,
+                height: 10,
+                bgcolor: 'background.paper',
+                transform: 'translateY(-50%) rotate(45deg)',
+                zIndex: 0,
+              },
+            },
+          }}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        >
+          <MenuItem
+            onClick={handleRestore}
+            className='group/drop-items flex items-center px-4 py-3 hover:bg-blue-100/30 '
+          >
+            <TfiReload className='mr-4 text-lg text-blue-300 group-hover/drop-items:text-blue-400' />
+            <p className='text-gray-500 text-[0.9em] font-medium group-hover/drop-items:text-gray-600'>
+              Restore
+            </p>
+          </MenuItem>
+          <MenuItem
+            onClick={handleDelete}
+            className='group/drop-items flex items-center px-4 py-3 hover:bg-blue-100/30'
+          >
+            <BsTrash className='mr-4 text-lg text-blue-300 group-hover/drop-items:text-blue-400' />
+            <p className='text-gray-500 text-[0.9em] font-medium group-hover/drop-items:text-gray-600'>
+              Permanently Delete
+            </p>
+          </MenuItem>
+        </Menu>
+      </div>
+    </>
   );
 };
