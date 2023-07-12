@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { pushLocation } from '../redux/slices/location';
+import { resetCurrentFolder } from '../redux/slices/curentFolder';
 
 export const CustomedBreadcrumbs = ({ location }) => {
   const dispatch = useDispatch();
@@ -17,6 +18,7 @@ export const CustomedBreadcrumbs = ({ location }) => {
             color='inherit'
             fontSize={20}
             fontWeight='bold'
+            onClick={() => dispatch(resetCurrentFolder())}
           >
             {location.tab}
           </StyledLink>
