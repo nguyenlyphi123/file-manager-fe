@@ -1,7 +1,17 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export default function TokenExpired() {
+  const user = useSelector((state) => state.user);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const from = location.state?.from;
+    user.isAuthenticated && navigate(from ? from : '/', { replace: true });
+  }, []);
+
   return (
     <div className='w-screen h-screen relative'>
       <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-[50%] w-[50%] flex items-center justify-center flex-col'>

@@ -8,7 +8,7 @@ const RestrictedRoute = ({ ...rest }) => {
   return isAuthenticated ? (
     <Outlet {...rest} />
   ) : (
-    <Navigate to='/login' state={{ from: location }} replace />
+    <Navigate to='/login' state={{ from: { pathname: location } }} replace />
   );
 };
 

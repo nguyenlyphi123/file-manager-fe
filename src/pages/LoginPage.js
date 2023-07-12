@@ -15,12 +15,10 @@ export default function LoginPage() {
   const user = useSelector((state) => state.user);
 
   useEffect(() => {
-    console.log(from);
     if (user.isAuthenticated) {
       if (from) {
         navigate(from, { replace: true });
       }
-      // user.isLecturers ? navigate(LECTURERS_URL) : navigate(PUPIL_URL);
       navigate('/');
     }
   }, [user.isAuthenticated]);
