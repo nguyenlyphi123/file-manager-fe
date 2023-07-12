@@ -9,6 +9,7 @@ import OptionHelper from '../../utils/helpers/OptionHelper';
 import { ThreeDotsDropDown } from '../popups/ModelPopups';
 import ErrorToast from '../toasts/ErrorToast';
 import SuccessToast from '../toasts/SuccessToast';
+import { Truncate } from '../../utils/helpers/TypographyHelper';
 
 export default function LargeFileCard({ data, onClick, refetch }) {
   const navigate = useNavigate();
@@ -85,13 +86,10 @@ export default function LargeFileCard({ data, onClick, refetch }) {
 
           <div className='relative'>
             <p className='text-[0.9em] text-gray-600 font-semibold'>
-              {data.name}
+              {Truncate(data.name, 13)}
             </p>
             {data.isStar ? (
-              <AiFillStar
-                className='text-[#8AA3FF] text-xl font-semibold absolute top-0 right-0 translate-x-[35px]'
-                onClick={() => handleStarFolder.mutate(data._id)}
-              />
+              <AiFillStar className='text-[#8AA3FF] text-xl font-semibold absolute top-0 right-0 translate-x-[35px]' />
             ) : (
               <AiFillStar
                 className='text-gray-400 text-xl font-semibold absolute top-0 right-0 translate-x-[35px] hidden group-hover/card:block hover/card:text-[#8AA3FF] duration-200'

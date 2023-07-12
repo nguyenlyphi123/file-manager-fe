@@ -1,7 +1,6 @@
 import { Checkbox } from '@mui/material';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
-import { AiFillStar } from 'react-icons/ai';
 import { BsTrash } from 'react-icons/bs';
 import { ImSpinner } from 'react-icons/im';
 import { Link } from 'react-router-dom';
@@ -12,6 +11,8 @@ import {
   unstarListOfFolder,
 } from '../../services/folderController';
 import FileIconHelper from '../../utils/helpers/FileIconHelper';
+import { FormattedDateTime } from '../../utils/helpers/TypographyHelper';
+import EmptyData from '../EmptyData';
 import ErrorToast from '../toasts/ErrorToast';
 import SuccessToast from '../toasts/SuccessToast';
 
@@ -82,122 +83,117 @@ export default function Starred() {
     <div className='h-[200vh] py-5 px-7 tracking-wide'>
       <div className='text-[20px] text-gray-600 font-bold'>Starred</div>
 
-      <div className='mt-5'>
-        <table className='w-full'>
-          <thead>
-            <tr className='text-[0.9em] text-gray-500 h-[40px]'>
-              <th>
-                <Checkbox
-                  checked={
-                    checkedListItem.length === folders?.data?.length
-                      ? true
-                      : false
-                  }
-                  onChange={handleSelectAll}
-                />
-              </th>
-              <th className='text-left w-[50%] font-semibold'>Name</th>
-              <th className='text-left font-semibold'>Last Opened</th>
-              <th className='text-left font-semibold  '>Size</th>
-              <th className='flex justify-center'>
-                {checkedListItem.length > 0 && (
-                  <button
-                    onClick={() =>
-                      handleUnStarListOfFolder.mutate(checkedListItem)
+      {folders?.data?.length > 0 ? (
+        <div className='mt-5'>
+          <table className='w-full'>
+            <thead>
+              <tr className='text-[0.9em] text-gray-500 h-[40px]'>
+                <th>
+                  <Checkbox
+                    checked={
+                      checkedListItem.length === folders?.data?.length
+                        ? true
+                        : false
                     }
-                    className={`text-center flex justify-center items-center text-white h-[30px] px-2 bg-red-400  rounded-md cursor-pointer ${'hover:bg-red-500'}`}
-                  >
-                    {handleUnStarListOfFolder.isLoading ? (
-                      <ImSpinner className='animate-spin' />
-                    ) : (
-                      <BsTrash />
-                    )}
-                  </button>
-                )}
-              </th>
-            </tr>
-          </thead>
-
-          {folders?.data.map((folder) => {
-            return (
-              <tbody key={folder._id} className='bg-white border rounded-md'>
-                <tr
-                  className='mt-5 cursor-pointer'
-                  onClick={() => {
-                    handleCheckedListItem(folder._id);
-                  }}
-                >
-                  <td className='p-4 w-[65px] text-center'>
-                    <Checkbox
-                      checked={
-                        checkedListItem.find((item) => item === folder._id)
-                          ? true
-                          : false
-                      }
-                      onChange={(_, checked) =>
-                        checked
-                          ? handleCheckedListItem(folder._id)
-                          : handleCheckedListItem(folder._id)
-                      }
-                    />
-                  </td>
-                  <td className='p-4 pl-0'>
-                    <Link
-                      className='flex items-center w-fit'
-                      to={`../folders/${folder._id}`}
-                      state={{ folder: folder }}
-                    >
-                      <FileIconHelper
-                        className='text-3xl mr-3'
-                        type={'folder'}
-                      />
-                      <p className='text-[0.9em] text-gray-700 font-semibold mr-3'>
-                        {folder.name}
-                      </p>
-                    </Link>
-                  </td>
-
-                  <td>
-                    <p className='text-[0.9em] text-gray-500 font-medium'>
-                      {folder.lastOpened}
-                    </p>
-                  </td>
-
-                  <td>
-                    <p className='text-[0.9em] text-gray-500 font-semibold'>
-                      4.5 KB
-                    </p>
-                  </td>
-
-                  <td className='flex justify-center items-center h-[65px]'>
+                    onChange={handleSelectAll}
+                  />
+                </th>
+                <th className='text-left w-[50%] font-semibold'>Name</th>
+                <th className='text-left font-semibold'>Last Opened</th>
+                <th className='text-left font-semibold  '>Size</th>
+                <th className='flex justify-center w-[70px]'>
+                  {checkedListItem.length > 0 && (
                     <button
-                      onClick={() => {
-                        handleUnStar.mutate(folder._id);
-                        setCurrentItem(folder._id);
-                      }}
-                      className={`text-center flex justify-center items-center text-white w-[100px] h-[35px] py-1 bg-red-400  rounded-md cursor-pointer ${
-                        checkedListItem.find((item) => item === folder._id) &&
-                        'hover:bg-red-500'
-                      }`}
-                      disabled={
-                        checkedListItem.find((item) => item === folder._id)
-                          ? false
-                          : true
+                      onClick={() =>
+                        handleUnStarListOfFolder.mutate(checkedListItem)
                       }
+                      className={`text-center flex justify-center items-center text-white h-[30px] px-2 bg-red-400  rounded-md cursor-pointer ${'hover:bg-red-500'}`}
                     >
-                      {handleUnStar.isLoading && folder._id === currentItem ? (
+                      {handleUnStarListOfFolder.isLoading ? (
                         <ImSpinner className='animate-spin' />
                       ) : (
-                        'Unstar'
+                        <BsTrash />
                       )}
                     </button>
-                  </td>
-                </tr>
-              </tbody>
-            );
-          })}
-        </table>
-      </div>
+                  )}
+                </th>
+              </tr>
+            </thead>
+
+            {folders?.data.map((folder) => {
+              return (
+                <tbody key={folder._id} className='bg-white border rounded-md'>
+                  <tr
+                    className='mt-5 cursor-pointer'
+                    onClick={() => {
+                      handleCheckedListItem(folder._id);
+                    }}
+                  >
+                    <td className='p-4 w-[65px] text-center'>
+                      <Checkbox
+                        checked={
+                          checkedListItem.find((item) => item === folder._id)
+                            ? true
+                            : false
+                        }
+                        onChange={(_, checked) =>
+                          checked
+                            ? handleCheckedListItem(folder._id)
+                            : handleCheckedListItem(folder._id)
+                        }
+                      />
+                    </td>
+                    <td className='p-4 pl-0'>
+                      <Link
+                        className='flex items-center w-fit'
+                        to={`../folders/${folder._id}`}
+                        state={{ folder: folder }}
+                      >
+                        <FileIconHelper
+                          className='text-3xl mr-3'
+                          type={'folder'}
+                        />
+                        <p className='text-[0.9em] text-gray-700 font-semibold mr-3'>
+                          {folder.name}
+                        </p>
+                      </Link>
+                    </td>
+
+                    <td>
+                      <p className='text-[0.9em] text-gray-500'>
+                        {FormattedDateTime(folder.lastOpened)}
+                      </p>
+                    </td>
+
+                    <td>
+                      <p className='text-[0.9em] text-gray-500'>4.5 KB</p>
+                    </td>
+
+                    <td className='flex justify-center items-center h-[75px] w-[70px]'>
+                      {checkedListItem.find((item) => item === folder._id) && (
+                        <button
+                          onClick={() =>
+                            handleUnStarListOfFolder.mutate(checkedListItem)
+                          }
+                          className={`text-center flex justify-center items-center text-white h-[30px] px-2 bg-red-400  rounded-md cursor-pointer ${'hover:bg-red-500'}`}
+                        >
+                          {handleUnStarListOfFolder.isLoading ? (
+                            <ImSpinner className='animate-spin' />
+                          ) : (
+                            <BsTrash />
+                          )}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              );
+            })}
+          </table>
+        </div>
+      ) : (
+        <EmptyData message='No folders have been starred' />
+      )}
     </div>
   );
 }

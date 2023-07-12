@@ -8,6 +8,7 @@ import FileIconHelper from '../../utils/helpers/FileIconHelper';
 import OptionHelper from '../../utils/helpers/OptionHelper';
 import { ThreeDotsDropDown } from '../popups/ModelPopups';
 import ErrorToast from '../toasts/SuccessToast';
+import { Truncate } from '../../utils/helpers/TypographyHelper';
 
 export default function MediumFileCard({ data, onClick, refetch }) {
   const navigate = useNavigate();
@@ -89,7 +90,7 @@ export default function MediumFileCard({ data, onClick, refetch }) {
 
               <div className='relative'>
                 <p className='text-[0.9em] text-gray-600 font-semibold'>
-                  {data.name}
+                  {Truncate(data.name, 16)}
                 </p>
 
                 {data.isStar ? (
