@@ -22,7 +22,6 @@ export default function OptionHelper({
   data,
   handleClose,
   open,
-  refetch,
   deleteShow,
   handleCancelDelete,
 }) {
@@ -40,14 +39,7 @@ export default function OptionHelper({
       return <Move handleClose={handleClose} data={data} open={open} />;
 
     case RENAME:
-      return (
-        <Rename
-          handleClose={handleClose}
-          data={data}
-          open={open}
-          refetch={refetch}
-        />
-      );
+      return <Rename handleClose={handleClose} data={data} open={open} />;
 
     case DELETE:
       return (
@@ -55,7 +47,6 @@ export default function OptionHelper({
           open={deleteShow}
           data={data}
           handleClose={handleCancelDelete}
-          refetch={refetch}
         />
       );
 

@@ -114,3 +114,29 @@ export const restoreFolder = async ({ id }) => {
     throw error;
   }
 };
+
+export const copyFolder = async ({ folderData, newParentFolderId }) => {
+  try {
+    const res = await axiosPrivate.post(`${apiURL}/folder/copy`, {
+      folderData,
+      newParentFolderId,
+    });
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const moveFolder = async ({ folderData, newParentFolderId }) => {
+  try {
+    const res = await axiosPrivate.post(`${apiURL}/folder//move`, {
+      folderData,
+      newParentFolderId,
+    });
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};

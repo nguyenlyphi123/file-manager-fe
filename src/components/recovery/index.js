@@ -12,13 +12,9 @@ import EmptyData from '../EmptyData';
 import { RemovedThreeDotsDropDown } from '../popups/ModelPopups';
 
 export default function Recovery() {
-  const {
-    data: folders,
-    isLoading,
-    refetch,
-  } = useQuery({
+  const { data: folders, isLoading } = useQuery({
     queryKey: ['recovery'],
-    queryFn: async () => await getRemovedFolder(),
+    queryFn: () => getRemovedFolder(),
     retry: 3,
   });
 
@@ -106,10 +102,7 @@ export default function Recovery() {
 
                       <td>
                         <div className='p-2 flex group/threedots'>
-                          <RemovedThreeDotsDropDown
-                            refetch={refetch}
-                            data={folder}
-                          />
+                          <RemovedThreeDotsDropDown data={folder} />
                         </div>
                       </td>
                     </tr>

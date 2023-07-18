@@ -13,12 +13,8 @@ import { NewFolder } from '../popups/ModelPopups';
 
 export default function Home() {
   // fetch folder data
-  const {
-    data: folders,
-    isLoading: folderLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ['folderHome'],
+  const { data: folders, isLoading: folderLoading } = useQuery({
+    queryKey: ['folders'],
     queryFn: async () => await getFolderList(),
   });
 
@@ -65,7 +61,6 @@ export default function Home() {
                   onClick={handleCardSelect}
                   key={folder._id}
                   data={folder}
-                  refetch={refetch}
                 />
               );
             })}
@@ -93,7 +88,6 @@ export default function Home() {
                       onClick={handleCardSelect}
                       key={folder._id}
                       data={folder}
-                      refetch={refetch}
                     />
                   );
                 })}

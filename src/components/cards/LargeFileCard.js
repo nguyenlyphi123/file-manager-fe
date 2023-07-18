@@ -1,17 +1,18 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { AiFillStar } from 'react-icons/ai';
 import { BsDot } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
-import { starFolder } from '../../services/folderController';
+import { starFolder, unstarFolder } from '../../services/folderController';
 import FileIconHelper from '../../utils/helpers/FileIconHelper';
 import OptionHelper from '../../utils/helpers/OptionHelper';
+import { Truncate } from '../../utils/helpers/TypographyHelper';
 import { ThreeDotsDropDown } from '../popups/ModelPopups';
 import ErrorToast from '../toasts/ErrorToast';
 import SuccessToast from '../toasts/SuccessToast';
-import { Truncate } from '../../utils/helpers/TypographyHelper';
 
-export default function LargeFileCard({ data, onClick, refetch }) {
+export default function LargeFileCard({ data, onClick }) {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const [isModal, setIsModal] = useState(false);
@@ -43,9 +44,24 @@ export default function LargeFileCard({ data, onClick, refetch }) {
   // star folder
   const handleStarFolder = useMutation({
     mutationFn: (folderId) => starFolder({ id: folderId }),
-    onSuccess: () => {
+    onSuccess: (_, folderId) => {
       SuccessToast({ message: 'Folder has been starred successfully' });
-      refetch();
+      queryClient.invalidateQueries(['folders']);
+      queryClient.invalidateQueries(['folder', { id: folderId }]);
+    },
+    onError: () => {
+      ErrorToast({
+        message: 'Opps! Something went wrong. Please try again later',
+      });
+    },
+  });
+
+  const handleUnStarFolder = useMutation({
+    mutationFn: (folderId) => unstarFolder({ id: folderId }),
+    onSuccess: (_, folderId) => {
+      SuccessToast({ message: 'Folder has been unstarred successfully' });
+      queryClient.invalidateQueries(['folders']);
+      queryClient.invalidateQueries(['folder', { id: folderId }]);
     },
     onError: () => {
       ErrorToast({
@@ -61,7 +77,6 @@ export default function LargeFileCard({ data, onClick, refetch }) {
         handleClose={handleClose}
         data={data}
         open={isModal}
-        refetch={refetch}
         deleteShow={isDeleteShow}
         handleCancelDelete={handleCancelDelete}
       />
@@ -86,10 +101,16 @@ export default function LargeFileCard({ data, onClick, refetch }) {
 
           <div className='relative'>
             <p className='text-[0.9em] text-gray-600 font-semibold'>
-              {Truncate(data.name, 13)}
+              {Truncate(data.name, 20)}
             </p>
             {data.isStar ? (
-              <AiFillStar className='text-[#8AA3FF] text-xl font-semibold absolute top-0 right-0 translate-x-[35px]' />
+              <AiFillStar
+                className='text-[#8AA3FF] text-xl font-semibold absolute top-0 right-0 translate-x-[35px]'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUnStarFolder.mutate(data._id);
+                }}
+              />
             ) : (
               <AiFillStar
                 className='text-gray-400 text-xl font-semibold absolute top-0 right-0 translate-x-[35px] hidden group-hover/card:block hover/card:text-[#8AA3FF] duration-200'

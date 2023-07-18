@@ -18,7 +18,7 @@ export default function DetailFolder() {
     isLoading: folderLoading,
     refetch,
   } = useQuery({
-    queryKey: ['folderDetail', { id: folder._id }],
+    queryKey: ['folder', { id: folder._id }],
     queryFn: async () => await getFolderDetail({ id: folder._id }),
   });
 

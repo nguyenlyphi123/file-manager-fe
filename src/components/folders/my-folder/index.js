@@ -32,7 +32,7 @@ export default function MyFolder() {
     isLoading: folderLoading,
     refetch,
   } = useQuery({
-    queryKey: ['folder'],
+    queryKey: ['folders'],
     queryFn: async () => await getFolderList(),
     retry: 3,
   });
