@@ -45,6 +45,7 @@ import Loading from '../../parts/Loading';
 import {
   copyFile,
   deleteFile,
+  downloadFile,
   moveFile,
   removeFileToTrash,
   renameFile,
@@ -70,7 +71,6 @@ import {
 } from '../../utils/helpers/TypographyHelper';
 import ErrorToast from '../toasts/ErrorToast';
 import SuccessToast from '../toasts/SuccessToast';
-import { axiosPrivate } from '../../utils/axios';
 
 export const NewFolder = ({ handleClose, open }) => {
   const { _id } = useSelector((state) => state.curentFolder);
@@ -1249,76 +1249,12 @@ export const RemovedThreeDotsDropDown = ({ className, data }) => {
 };
 
 export const FolderDownloadConfirm = ({ open, handleClose, data }) => {
-  // const handleDownloadFolder = useMutation({
-  //   mutationFn: (data) => downloadFolder({ id: data._id }),
-  //   onSuccess: (res) => {
-  //     const blob = new Blob([res], { type: 'application/zip' });
-
-  //     // Generate a URL for the Blob
-  //     const url = window.URL.createObjectURL(blob);
-
-  //     // Create a temporary anchor element to trigger the download
-  //     const link = document.createElement('a');
-  //     link.href = url;
-  //     link.download = `${data.name}.zip`;
-  //     document.body.appendChild(link);
-
-  //     // Programmatically click the link to start the download
-  //     link.click();
-
-  //     // Clean up after the download is complete
-  //     window.URL.revokeObjectURL(url);
-  //     document.body.removeChild(link);
-  //   },
-  //   onError: () => {
-  //     ErrorToast({
-  //       message:
-  //         'Opps! Something went wrong while preparing data for download folder. Please try again later!',
-  //     });
-  //   },
-  // });
-
-  const handleDownloadFolder = async (data) => {
+  const downloadMutation = useCallback(async (fn, data, params) => {
     try {
-      const response = await downloadFolder({
-        id: data._id,
-      });
+      const response = await fn(params);
 
       // Create a blob from the response
       const blob = new Blob([response], { type: 'application/zip' });
-
-      const url = window.URL.createObjectURL(blob);
-
-      // Create a temporary anchor element to trigger the download
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${data.name}.zip`;
-      document.body.appendChild(link);
-
-      link.click();
-
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
-    } catch (error) {
-      ErrorToast({
-        message:
-          'Opps! Something went wrong while preparing data for download folder. Please try again later!',
-      });
-    }
-  };
-
-  const handleDownloadFile = async (data) => {
-    try {
-      const response = await axiosPrivate.post(
-        '/gc/download',
-        {
-          fileName: data.name,
-        },
-        { responseType: 'arraybuffer' },
-      );
-
-      // Create a blob from the response
-      const blob = new Blob([response.data], { type: 'application/zip' });
 
       const url = window.URL.createObjectURL(blob);
 
@@ -1329,7 +1265,7 @@ export const FolderDownloadConfirm = ({ open, handleClose, data }) => {
       // Create a temporary anchor element to trigger the download
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${fileNameWithoutExtension}.zip`;
+      link.download = `${data.type ? fileNameWithoutExtension : data.name}.zip`;
       document.body.appendChild(link);
 
       link.click();
@@ -1342,6 +1278,17 @@ export const FolderDownloadConfirm = ({ open, handleClose, data }) => {
           'Opps! Something went wrong while preparing data for download folder. Please try again later!',
       });
     }
+  }, []);
+
+  const handleDownloadFile = () => {
+    downloadMutation(downloadFile, data, {
+      name: data.name,
+    });
+  };
+  const handleDownloadFolder = () => {
+    downloadMutation(downloadFolder, data, {
+      id: data._id,
+    });
   };
 
   return (
@@ -1365,7 +1312,9 @@ export const FolderDownloadConfirm = ({ open, handleClose, data }) => {
           Cancel
         </div>
         <div
-          onClick={() => handleDownloadFolder(data)}
+          onClick={() =>
+            data.type ? handleDownloadFile() : handleDownloadFolder()
+          }
           className='bg-blue-600/80 text-white font-medium rounded-md cursor-pointer flex justify-center items-center w-[100px] h-[35px] py-2 ml-2 hover:bg-blue-600 duration-200'
         >
           Download

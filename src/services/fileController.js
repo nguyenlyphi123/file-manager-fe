@@ -1,4 +1,3 @@
-import { apiURL } from '../constants/constants';
 import { axiosPrivate } from '../utils/axios';
 
 export const uploadSingleFile = async ({
@@ -9,7 +8,7 @@ export const uploadSingleFile = async ({
   link,
 }) => {
   try {
-    const res = await axiosPrivate.post(`${apiURL}/file`, {
+    const res = await axiosPrivate.post(`/file`, {
       name,
       type,
       size,
@@ -25,7 +24,7 @@ export const uploadSingleFile = async ({
 
 export const getFileList = async () => {
   try {
-    const res = await axiosPrivate.get(`${apiURL}/file`);
+    const res = await axiosPrivate.get(`/file`);
 
     return res.data;
   } catch (error) {
@@ -35,7 +34,7 @@ export const getFileList = async () => {
 
 export const getFileByFolder = async ({ id }) => {
   try {
-    const res = await axiosPrivate.get(`${apiURL}/file/${id}`);
+    const res = await axiosPrivate.get(`/file/${id}`);
 
     return res.data;
   } catch (error) {
@@ -45,7 +44,7 @@ export const getFileByFolder = async ({ id }) => {
 
 export const copyFile = async ({ data, folderId }) => {
   try {
-    const res = await axiosPrivate.post(`${apiURL}/file/copy`, {
+    const res = await axiosPrivate.post(`/file/copy`, {
       data,
       folderId,
     });
@@ -58,7 +57,7 @@ export const copyFile = async ({ data, folderId }) => {
 
 export const moveFile = async ({ data, folderId }) => {
   try {
-    const res = await axiosPrivate.post(`${apiURL}/file/move`, {
+    const res = await axiosPrivate.post(`/file/move`, {
       data,
       folderId,
     });
@@ -71,7 +70,7 @@ export const moveFile = async ({ data, folderId }) => {
 
 export const starFile = async ({ id }) => {
   try {
-    const res = await axiosPrivate.put(`${apiURL}/file/${id}/star`);
+    const res = await axiosPrivate.put(`/file/${id}/star`);
 
     return res.data;
   } catch (error) {
@@ -81,7 +80,7 @@ export const starFile = async ({ id }) => {
 
 export const unstarFile = async ({ id }) => {
   try {
-    const res = await axiosPrivate.put(`${apiURL}/file/${id}/unstar`);
+    const res = await axiosPrivate.put(`/file/${id}/unstar`);
 
     return res.data;
   } catch (error) {
@@ -91,7 +90,7 @@ export const unstarFile = async ({ id }) => {
 
 export const renameFile = async ({ id, name }) => {
   try {
-    const res = await axiosPrivate.put(`${apiURL}/file/rename`, {
+    const res = await axiosPrivate.put(`/file/rename`, {
       fileId: id,
       name,
     });
@@ -104,7 +103,7 @@ export const renameFile = async ({ id, name }) => {
 
 export const removeFileToTrash = async ({ id }) => {
   try {
-    const res = await axiosPrivate.put(`${apiURL}/file/trash`, { fileId: id });
+    const res = await axiosPrivate.put(`/file/trash`, { fileId: id });
 
     return res.data;
   } catch (error) {
@@ -114,7 +113,7 @@ export const removeFileToTrash = async ({ id }) => {
 
 export const restoreFile = async ({ id }) => {
   try {
-    const res = await axiosPrivate.put(`${apiURL}/file/restore`, {
+    const res = await axiosPrivate.put(`/file/restore`, {
       fileId: id,
     });
 
@@ -126,7 +125,7 @@ export const restoreFile = async ({ id }) => {
 
 export const deleteFile = async ({ data }) => {
   try {
-    const res = await axiosPrivate.post(`${apiURL}/file/delete`, {
+    const res = await axiosPrivate.post(`/file/delete`, {
       fileData: data,
     });
 
@@ -138,7 +137,23 @@ export const deleteFile = async ({ data }) => {
 
 export const getRemovedFile = async () => {
   try {
-    const res = await axiosPrivate.get(`${apiURL}/file/trash`);
+    const res = await axiosPrivate.get(`/file/trash`);
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const downloadFile = async ({ name }) => {
+  try {
+    const res = await axiosPrivate.post(
+      `/gc/download`,
+      { fileName: name },
+      {
+        responseType: 'arraybuffer',
+      },
+    );
 
     return res.data;
   } catch (error) {

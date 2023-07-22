@@ -1,4 +1,3 @@
-import { apiURL } from '../constants/constants';
 import { axiosPrivate } from '../utils/axios';
 
 export const createFolder = async ({ name, parent_folder }) => {

@@ -1,9 +1,8 @@
-import React from 'react';
-import refreshToken from '../refreshToken';
-import history from './history';
-import { axiosPrivate } from '../axios';
 import { useDispatch } from 'react-redux';
 import { logOut } from '../../redux/slices/user';
+import { axiosPrivate } from '../axios';
+import refreshToken from '../refreshToken';
+import history from './history';
 
 export default function AxiosInterceptor() {
   const dispatch = useDispatch();
