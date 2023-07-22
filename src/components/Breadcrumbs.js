@@ -26,6 +26,7 @@ export const CustomedBreadcrumbs = ({ location }) => {
         {location.items.map((item) => {
           return (
             <Link
+              key={item._id}
               to={item.href}
               onClick={() => dispatch(pushLocation({ _id: item._id }))}
               state={{ folder: item }}

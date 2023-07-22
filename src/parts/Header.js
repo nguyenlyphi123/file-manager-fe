@@ -1,17 +1,16 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { FiFolder } from 'react-icons/fi';
 import { IoMdNotificationsOutline } from 'react-icons/io';
 import { useDispatch } from 'react-redux';
-import { Logout } from '../redux/slices/user';
+import { Link, useNavigate } from 'react-router-dom';
+import { logOut } from '../redux/slices/user';
 
 export default function Header() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    dispatch(Logout());
-    navigate('/login');
+    dispatch(logOut());
   };
 
   return (

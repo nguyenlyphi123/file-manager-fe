@@ -21,6 +21,7 @@ function useAxiosPrivate() {
 
           if (!refreshResponse) {
             dispatch(Logout());
+
             return Promise.reject(error);
           }
 

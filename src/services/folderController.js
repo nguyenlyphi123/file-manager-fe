@@ -1,9 +1,22 @@
 import { apiURL } from '../constants/constants';
 import { axiosPrivate } from '../utils/axios';
 
+export const createFolder = async ({ name, parent_folder }) => {
+  try {
+    const res = await axiosPrivate.post(`/folder`, {
+      name,
+      parent_folder,
+    });
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getFolderList = async () => {
   try {
-    const res = await axiosPrivate.get(`${apiURL}/folder`);
+    const res = await axiosPrivate.get(`/folder`);
 
     return res.data;
   } catch (error) {
@@ -13,7 +26,7 @@ export const getFolderList = async () => {
 
 export const getFolderDetail = async ({ id }) => {
   try {
-    const res = await axiosPrivate.get(`${apiURL}/folder/${id}/detail`);
+    const res = await axiosPrivate.get(`/folder/${id}/detail`);
 
     return res.data;
   } catch (error) {
@@ -23,7 +36,7 @@ export const getFolderDetail = async ({ id }) => {
 
 export const renameFolder = async ({ id, name }) => {
   try {
-    const res = await axiosPrivate.put(`${apiURL}/folder/${id}`, { name });
+    const res = await axiosPrivate.put(`/folder/${id}`, { name });
 
     return res.data;
   } catch (error) {
@@ -33,7 +46,7 @@ export const renameFolder = async ({ id, name }) => {
 
 export const deleteFolder = async ({ id }) => {
   try {
-    const res = await axiosPrivate.delete(`${apiURL}/folder/${id}`);
+    const res = await axiosPrivate.delete(`/folder/${id}`);
 
     return res.data;
   } catch (error) {
@@ -43,7 +56,7 @@ export const deleteFolder = async ({ id }) => {
 
 export const starFolder = async ({ id }) => {
   try {
-    const res = await axiosPrivate.put(`${apiURL}/folder/star/${id}`);
+    const res = await axiosPrivate.put(`/folder/star/${id}`);
 
     return res.data;
   } catch (error) {
@@ -53,7 +66,7 @@ export const starFolder = async ({ id }) => {
 
 export const unstarFolder = async ({ id }) => {
   try {
-    const res = await axiosPrivate.put(`${apiURL}/folder/unstar/single`, {
+    const res = await axiosPrivate.put(`/folder/unstar/single`, {
       folderId: id,
     });
 
@@ -65,7 +78,7 @@ export const unstarFolder = async ({ id }) => {
 
 export const unstarListOfFolder = async (folderList) => {
   try {
-    const res = await axiosPrivate.put(`${apiURL}/folder/unstar/list-folder`, {
+    const res = await axiosPrivate.put(`/folder/unstar/list-folder`, {
       folderIdList: folderList,
     });
 
@@ -77,7 +90,7 @@ export const unstarListOfFolder = async (folderList) => {
 
 export const getStarredFolder = async () => {
   try {
-    const res = await axiosPrivate.get(`${apiURL}/folder/starred`);
+    const res = await axiosPrivate.get(`/folder/starred`);
 
     return res.data;
   } catch (error) {
@@ -87,7 +100,7 @@ export const getStarredFolder = async () => {
 
 export const removeFolderToTrash = async ({ id }) => {
   try {
-    const res = await axiosPrivate.put(`${apiURL}/folder/${id}/trash`);
+    const res = await axiosPrivate.put(`/folder/${id}/trash`);
 
     return res.data;
   } catch (error) {
@@ -97,7 +110,7 @@ export const removeFolderToTrash = async ({ id }) => {
 
 export const getRemovedFolder = async () => {
   try {
-    const res = await axiosPrivate.get(`${apiURL}/folder/trash`);
+    const res = await axiosPrivate.get(`/folder/trash`);
 
     return res.data;
   } catch (error) {
@@ -107,7 +120,7 @@ export const getRemovedFolder = async () => {
 
 export const restoreFolder = async ({ id }) => {
   try {
-    const res = await axiosPrivate.put(`${apiURL}/folder/${id}/restore`);
+    const res = await axiosPrivate.put(`/folder/${id}/restore`);
 
     return res.data;
   } catch (error) {
@@ -115,11 +128,11 @@ export const restoreFolder = async ({ id }) => {
   }
 };
 
-export const copyFolder = async ({ folderData, newParentFolderId }) => {
+export const copyFolder = async ({ data, folderId }) => {
   try {
-    const res = await axiosPrivate.post(`${apiURL}/folder/copy`, {
-      folderData,
-      newParentFolderId,
+    const res = await axiosPrivate.post(`/folder/copy`, {
+      data,
+      folderId,
     });
 
     return res.data;
@@ -128,12 +141,26 @@ export const copyFolder = async ({ folderData, newParentFolderId }) => {
   }
 };
 
-export const moveFolder = async ({ folderData, newParentFolderId }) => {
+export const moveFolder = async ({ data, folderId }) => {
   try {
-    const res = await axiosPrivate.post(`${apiURL}/folder//move`, {
-      folderData,
-      newParentFolderId,
+    const res = await axiosPrivate.post(`/folder/move`, {
+      data,
+      folderId,
     });
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const downloadFolder = async ({ id, option }) => {
+  try {
+    const res = await axiosPrivate.post(
+      `/gc/folder/download`,
+      { id },
+      { responseType: 'arraybuffer' },
+    );
 
     return res.data;
   } catch (error) {

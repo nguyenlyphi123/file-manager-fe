@@ -5,7 +5,7 @@ import Loading from '../../../parts/Loading';
 import { setCurrentFolder } from '../../../redux/slices/curentFolder';
 import { pushLocation, removeLocation } from '../../../redux/slices/location';
 import { getFolderList } from '../../../services/folderController';
-import LargeFileCard from '../../cards/LargeFileCard';
+import LargeCard from '../../cards/LargeCard';
 
 export default function MyFolder() {
   // dispatch action redux
@@ -27,11 +27,7 @@ export default function MyFolder() {
   }, []);
 
   // folder data
-  const {
-    data: folders,
-    isLoading: folderLoading,
-    refetch,
-  } = useQuery({
+  const { data: folders, isLoading: folderLoading } = useQuery({
     queryKey: ['folders'],
     queryFn: async () => await getFolderList(),
     retry: 3,
@@ -45,11 +41,10 @@ export default function MyFolder() {
         {folders &&
           folders?.data?.map((folder) => {
             return (
-              <LargeFileCard
+              <LargeCard
                 onClick={handleCardSelect}
                 key={folder._id}
                 data={folder}
-                refetch={refetch}
               />
             );
           })}

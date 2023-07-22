@@ -1,12 +1,21 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 
-import { FaFolder } from 'react-icons/fa';
 import { TiArrowSortedDown } from 'react-icons/ti';
-import { BsDot, BsThreeDots } from 'react-icons/bs';
-import { AiFillStar } from 'react-icons/ai';
-import LargeFileCard from '../cards/LargeFileCard';
+
+import { getFileList } from '../../services/fileController';
+import LargeCard from '../cards/LargeCard';
+import Loading from '../../parts/Loading';
 
 export default function Files() {
+  const { data: files, isLoading } = useQuery({
+    queryKey: ['files'],
+    queryFn: () => getFileList(),
+    retry: 3,
+  });
+
+  if (isLoading) return <Loading />;
+
   return (
     <div className='h-[200vh] py-5 px-7 tracking-wide'>
       <div className='text-[20px] text-gray-600 font-bold'>Files</div>
@@ -20,11 +29,9 @@ export default function Files() {
         </div>
 
         <div className='grid grid-cols-4 gap-4'>
-          <LargeFileCard name={'My File'} type={'doc'} />
-          <LargeFileCard name={'My File'} type={'ppt'} />
-          <LargeFileCard name={'My File'} type={'xlsx'} />
-          <LargeFileCard name={'My File'} type={'zip'} />
-          <LargeFileCard name={'My File'} type={'mp4'} />
+          {files?.data?.map((file) => (
+            <LargeCard key={file._id} data={file} isFolder={false} />
+          ))}
         </div>
       </div>
     </div>

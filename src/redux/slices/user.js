@@ -14,7 +14,7 @@ export const logIn = createAsyncThunk(
       dispatch(Authenticate(response.data.data));
       return response.data.data;
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   },
 );
@@ -28,7 +28,19 @@ export const loadUser = createAsyncThunk(
       dispatch(Authenticate(response.data.data));
       return response.data.data;
     } catch (error) {
-      console.log(error);
+      throw error;
+    }
+  },
+);
+
+export const logOut = createAsyncThunk(
+  'user/logOut',
+  async (_, { dispatch }) => {
+    try {
+      await axiosPrivate.post('/authentication/logout');
+      dispatch(Logout());
+    } catch (error) {
+      throw error;
     }
   },
 );
@@ -65,16 +77,27 @@ const user = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(loadUser.fulfilled, (state, { payload }) => {
-      return {
-        ...state,
-        id: payload?.id,
-        name: payload?.name,
-        email: payload?.email,
-        isLecturers: payload?.lecturers,
-        isAuthenticated: payload?.id ? true : false,
-      };
-    });
+    builder
+      .addCase(loadUser.fulfilled, (state, { payload }) => {
+        return {
+          ...state,
+          id: payload?.id,
+          name: payload?.name,
+          email: payload?.email,
+          isLecturers: payload?.lecturers,
+          isAuthenticated: payload?.id ? true : false,
+        };
+      })
+      .addCase(logOut.fulfilled, (state) => {
+        return {
+          ...state,
+          id: '',
+          name: '',
+          email: '',
+          isLecturers: false,
+          isAuthenticated: false,
+        };
+      });
   },
 });
 

@@ -1,20 +1,22 @@
 import {
   Box,
+  Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
   IconButton,
+  LinearProgress,
   Menu,
   MenuItem,
   Modal,
 } from '@mui/material';
-import axios from 'axios';
-import moment from 'moment';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   AiOutlineClose,
+  AiOutlineCloudUpload,
   AiOutlineCopy,
   AiOutlineDownload,
   AiOutlineEye,
@@ -27,11 +29,9 @@ import {
   BsThreeDots,
   BsTrash,
 } from 'react-icons/bs';
-import { TfiReload } from 'react-icons/tfi';
 import { ImSpinner } from 'react-icons/im';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { apiURL } from '../../constants/constants';
+import { TfiReload } from 'react-icons/tfi';
+import { useSelector } from 'react-redux';
 import {
   COPY,
   DELETE,
@@ -41,12 +41,20 @@ import {
   RENAME,
   SHARE,
 } from '../../constants/option';
-import { AuthContext } from '../../contexts/authContext';
-import useGetData from '../../hooks/useGetData';
-import { pushLocation } from '../../redux/slices/location';
+import Loading from '../../parts/Loading';
+import {
+  copyFile,
+  deleteFile,
+  moveFile,
+  removeFileToTrash,
+  renameFile,
+  restoreFile,
+} from '../../services/fileController';
 import {
   copyFolder,
+  createFolder,
   deleteFolder,
+  downloadFolder,
   getFolderDetail,
   getFolderList,
   moveFolder,
@@ -54,59 +62,39 @@ import {
   renameFolder,
   restoreFolder,
 } from '../../services/folderController';
+import { uploadFile } from '../../services/gcController';
 import FileIconHelper from '../../utils/helpers/FileIconHelper';
+import {
+  FormattedDateTime,
+  convertBytesToReadableSize,
+} from '../../utils/helpers/TypographyHelper';
 import ErrorToast from '../toasts/ErrorToast';
 import SuccessToast from '../toasts/SuccessToast';
-import { FormattedDateTime } from '../../utils/helpers/TypographyHelper';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import Loading from '../../parts/Loading';
+import { axiosPrivate } from '../../utils/axios';
 
 export const NewFolder = ({ handleClose, open }) => {
   const { _id } = useSelector((state) => state.curentFolder);
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+
+  const queryClient = useQueryClient();
 
   // folder
-  const [loading, setLoading] = useState(false);
   const [folder, setFolder] = useState('Untitled folder');
 
-  const handleCreate = async () => {
-    setLoading(true);
-
-    const data = {
-      name: folder,
-      parent_folder: _id,
-    };
-
-    try {
-      const response = await axios.post(`${apiURL}/folder`, data, {
-        withCredentials: true,
-      });
-
-      if (response.data.success) {
-        handleClose();
-        setLoading(false);
-        setFolder('Untitled folder');
-        SuccessToast({ message: 'Folder was created successfully' });
-        navigate(`folders/${response.data.data._id}`, {
-          state: { folder: response.data.data },
-        });
-        dispatch(
-          pushLocation({
-            ...response.data.data,
-            parent: response.data.data.parent_folder
-              ? response.data.data.parent_folder._id
-              : '',
-          }),
-        );
-      }
-    } catch (error) {
-      setLoading(false);
+  const handleCreate = useMutation({
+    mutationFn: () => createFolder({ name: folder, parent_folder: _id }),
+    onSuccess: () => {
+      handleClose();
+      setFolder('Untitled folder');
+      SuccessToast({ message: 'Folder was created successfully' });
+      queryClient.invalidateQueries('folders');
+      queryClient.invalidateQueries('folder');
+    },
+    onError: () => {
       ErrorToast({
         message: 'Oops! Something went wrong. Please try again later',
       });
-    }
-  };
+    },
+  });
 
   return (
     <Modal
@@ -141,9 +129,139 @@ export const NewFolder = ({ handleClose, open }) => {
           </div>
           <div
             className='bg-blue-600/80 text-white font-medium rounded-md cursor-pointer flex justify-center items-center w-[100px] h-[40px] py-2 ml-2 hover:bg-blue-600'
-            onClick={handleCreate}
+            onClick={() => handleCreate.mutate()}
           >
-            {loading ? <ImSpinner className='animate-spin' /> : 'Create'}
+            {handleCreate.isLoading ? (
+              <ImSpinner className='animate-spin' />
+            ) : (
+              'Create'
+            )}
+          </div>
+        </div>
+      </Box>
+    </Modal>
+  );
+};
+
+export const UploadFile = ({ handleClose, open }) => {
+  const { _id } = useSelector((state) => state.curentFolder);
+
+  const queryClient = useQueryClient();
+
+  const [file, setFile] = useState();
+
+  const handleChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const [loading, setLoading] = useState(false);
+
+  const handleUpload = useCallback(async () => {
+    if (!file) return ErrorToast({ message: 'Please select a file' });
+
+    setLoading(true);
+
+    const blob = new Blob([file], { type: file.type });
+
+    const formData = new FormData();
+    formData.append('file', blob, file.name);
+
+    try {
+      await uploadFile(formData);
+      SuccessToast({ message: 'File was uploaded successfully' });
+      queryClient.invalidateQueries('files');
+      queryClient.invalidateQueries('file');
+      setFile();
+      setLoading(false);
+      handleClose();
+    } catch (error) {
+      console.error(error);
+      ErrorToast({ message: error?.response?.data?.message });
+      setLoading(false);
+      setFile();
+    }
+  }, [_id, file]);
+
+  return (
+    <Modal
+      keepMounted
+      open={open}
+      onClose={handleClose}
+      aria-labelledby='keep-mounted-modal-title'
+      aria-describedby='keep-mounted-modal-description'
+    >
+      <Box className='bg-white shadow-md rounded-lg w-[40%] absolute top-[50%] left-[50%] translate-x-[-50%]  translate-y-[-50%] overflow-hidden'>
+        <div className='border-b'>
+          <div className='flex justify-between items-center py-4 px-8'>
+            <p className='text-[0.9em] text-gray-700 font-medium'>
+              Upload File
+            </p>
+
+            <div onClick={handleClose} className='cursor-pointer'>
+              <AiOutlineClose className='text-gray-700 text-lg' />
+            </div>
+          </div>
+        </div>
+
+        <div className='py-6 px-8'>
+          <Button
+            component='label'
+            style={{
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+            }}
+            className='rounded-md p-4 w-full h-[200px] flex flex-col justify-center items-center'
+          >
+            <AiOutlineCloudUpload className='text-[5em] text-gray-400 mb-5' />
+
+            <span className='text-lg text-gray-400'>
+              Drag and drop a file here or click
+            </span>
+            <input hidden type='file' onChange={handleChange} />
+          </Button>
+
+          {file && (
+            <div>
+              <div className='flex justify-between items-center mt-5'>
+                <div className='flex items-center'>
+                  <FileIconHelper
+                    type={
+                      file &&
+                      file.name.substring(file.name.lastIndexOf('.') + 1)
+                    }
+                    className='text-2xl'
+                  />
+                  <p className='text-[0.9em] text-gray-600 ml-3'>{file.name}</p>
+                </div>
+                <div onClick={() => setFile(null)} className='cursor-pointer'>
+                  <AiOutlineClose className='text-md text-orange-700' />
+                </div>
+              </div>
+
+              {loading && (
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{ width: '100%', mr: 1, mt: 2 }}>
+                    <LinearProgress />
+                  </Box>
+                </Box>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className='flex justify-end items-center py-3 px-8 bg-[#E5E9F2]'>
+          <div
+            onClick={handleClose}
+            className='bg-white py-2 px-5 rounded-md text-gray-500 text-[0.9em] font-medium mr-4 shadow-sm cursor-pointer hover:text-white hover:bg-gray-600'
+          >
+            Cancel
+          </div>
+
+          <div
+            onClick={() => handleUpload()}
+            className='bg-blue-700/60 py-2 px-5 rounded-md text-white text-[0.9em] font-medium cursor-pointer hover:bg-blue-700/80'
+          >
+            Upload
           </div>
         </div>
       </Box>
@@ -297,7 +415,7 @@ export const Detail = ({ handleClose, data, open }) => {
         <div className='border-b'>
           <div className='flex justify-between items-center py-4 px-8'>
             <div className='flex items-center'>
-              <FileIconHelper className='mr-4 text-3xl' />
+              <FileIconHelper className='mr-4 text-3xl' type={data.type} />
               <p className='text-[0.9em] text-gray-700 font-medium'>
                 {data.name}
               </p>
@@ -323,7 +441,9 @@ export const Detail = ({ handleClose, data, open }) => {
             <span className='w-[100px] text-[0.9em] text-gray-400 font-medium'>
               Size
             </span>
-            <p className='text-gray-500 text-[0.9em] font-medium'>42 kb</p>
+            <p className='text-gray-500 text-[0.9em] font-medium'>
+              {convertBytesToReadableSize(data.size)}
+            </p>
           </div>
 
           <div className='flex items-center py-2'>
@@ -375,7 +495,10 @@ export const Detail = ({ handleClose, data, open }) => {
             Share
           </div>
 
-          <div className='bg-blue-700/60 py-2 px-5 rounded-md text-white font-medium cursor-pointer hover:bg-blue-700/80 duration-200'>
+          <div
+            onClick={() => window.open(data.link, '_blank')}
+            className='bg-blue-700/60 py-2 px-5 rounded-md text-white font-medium cursor-pointer hover:bg-blue-700/80 duration-200'
+          >
             Download
           </div>
         </div>
@@ -452,6 +575,7 @@ export const Share = ({ handleClose, data, open }) => {
 };
 
 export const Copy = ({ handleClose, data, open }) => {
+  const queryClient = useQueryClient();
   // selected folder
   const [selectedFolder, setSelectedFolder] = useState();
 
@@ -522,15 +646,24 @@ export const Copy = ({ handleClose, data, open }) => {
   };
 
   // copy
+  const copyMutation = data.type ? copyFile : copyFolder;
+
   const handleCopy = useMutation({
     mutationFn: () =>
-      copyFolder({
-        folderData: data,
-        newParentFolderId: selectedFolder ? selectedFolder._id : null,
+      copyMutation({
+        data,
+        folderId: selectedFolder ? selectedFolder._id : null,
       }),
     onSuccess: () => {
       handleClose();
       SuccessToast({ message: 'Folder has been copied successfully!' });
+      if (data.type) {
+        queryClient.invalidateQueries(['Files']);
+        queryClient.invalidateQueries(['File']);
+        return;
+      }
+      queryClient.invalidateQueries(['Folders']);
+      queryClient.invalidateQueries(['Folder']);
     },
     onError: () =>
       ErrorToast({
@@ -714,15 +847,20 @@ export const Move = ({ handleClose, data, open }) => {
   };
 
   // move
+  const moveMutation = data.type ? moveFile : moveFolder;
   const handleMove = useMutation({
     mutationFn: () =>
-      moveFolder({
-        folderData: data,
-        newParentFolderId: selectedFolder ? selectedFolder._id : null,
+      moveMutation({
+        data,
+        folderId: selectedFolder ? selectedFolder._id : null,
       }),
     onSuccess: () => {
       handleClose();
       SuccessToast({ message: 'Folder has been moved successfully!' });
+      if (data.type) {
+        queryClient.invalidateQueries(['file']);
+        queryClient.invalidateQueries(['files']);
+      }
       queryClient.invalidateQueries(['folder']);
       queryClient.invalidateQueries(['folders']);
     },
@@ -842,13 +980,22 @@ export const Rename = ({ handleClose, data, open }) => {
   const [folder, setFolder] = useState(data);
 
   // dispatch
+  const renameMutation = data.type ? renameFile : renameFolder;
   const handleSubmit = useMutation({
-    mutationFn: (data) => renameFolder({ id: data._id, name: data.name }),
-    onSuccess: (_, folderId) => {
+    mutationFn: (data) => renameMutation({ id: data._id, name: data.name }),
+    onSuccess: () => {
       handleClose();
-      SuccessToast({ message: 'Folder has been renamed successfully' });
+      SuccessToast({
+        message: `${
+          data.type ? 'File' : 'Folder'
+        } has been renamed successfully!`,
+      });
+      if (data.type) {
+        queryClient.invalidateQueries(['files']);
+        queryClient.invalidateQueries(['file']);
+      }
+      queryClient.invalidateQueries(['folders']);
       queryClient.invalidateQueries(['folder']);
-      queryClient.invalidateQueries(['folder', { id: folderId }]);
     },
     onError: () => {
       handleClose();
@@ -905,14 +1052,24 @@ export const Rename = ({ handleClose, data, open }) => {
   );
 };
 
-export const FolderDeleteConfirm = ({ open, handleClose, data, refetch }) => {
+export const FolderDeleteConfirm = ({ open, handleClose, data }) => {
   const queryClient = useQueryClient();
 
+  const deleteMutation = data.type ? removeFileToTrash : removeFolderToTrash;
   const handleDelete = useMutation({
-    mutationFn: (data) => removeFolderToTrash({ id: data._id }),
-    onSuccess: (_, folderId) => {
+    mutationFn: (data) => deleteMutation({ id: data._id }),
+    onSuccess: () => {
       handleClose();
-      SuccessToast({ message: 'Folder has been deleted successfully' });
+      SuccessToast({
+        message: `${
+          data.type ? 'File' : 'Folder'
+        } has been deleted successfully`,
+      });
+      if (data.type) {
+        queryClient.invalidateQueries(['files']);
+        queryClient.invalidateQueries(['file']);
+        return;
+      }
       queryClient.invalidateQueries(['folders']);
       queryClient.invalidateQueries(['folder']);
     },
@@ -930,13 +1087,14 @@ export const FolderDeleteConfirm = ({ open, handleClose, data, refetch }) => {
       keepMounted
       aria-describedby='alert-dialog-slide-description'
     >
-      <DialogTitle>
-        {'Are you sure you want to delete this folder?'}
-      </DialogTitle>
+      <DialogTitle>{`Are you sure want to delete this ${
+        data.type ? 'file' : 'folder'
+      }?`}</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          If you delete this folder, all files and sub folders in this folder
-          will be deleted!
+          {data.type
+            ? 'If you delete this file, you can restore it recovery!'
+            : 'If you delete this folder, all files and sub folders in this folder will be deleted!'}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
@@ -975,12 +1133,18 @@ export const RemovedThreeDotsDropDown = ({ className, data }) => {
   };
 
   // handle restore
+  const restoreMutation = data.type ? restoreFile : restoreFolder;
   const handleRestore = useMutation({
-    mutationFn: (data) => restoreFolder({ id: data._id }),
+    mutationFn: (data) => restoreMutation({ id: data._id }),
     onSuccess: () => {
       handleClose();
-      SuccessToast({ message: 'Folder has been restored successfully' });
-      queryClient.invalidateQueries(['recovery']);
+      SuccessToast({
+        message: `${
+          data.type ? 'File' : 'Folder'
+        } has been restored successfully`,
+      });
+      queryClient.invalidateQueries(['folder-recovery']);
+      queryClient.invalidateQueries(['file-recovery']);
     },
     onError: () => {
       handleClose();
@@ -991,12 +1155,19 @@ export const RemovedThreeDotsDropDown = ({ className, data }) => {
   });
 
   // handle delete
+  const deleteMutation = data.type ? deleteFile : deleteFolder;
   const handleDelete = useMutation({
-    mutationFn: (data) => deleteFolder({ id: data._id }),
+    mutationFn: (data) =>
+      deleteMutation(data.type ? { data: data } : { id: data._id }),
     onSuccess: () => {
       handleClose();
-      SuccessToast({ message: 'Folder has been deleted successfully' });
-      queryClient.invalidateQueries(['recovery']);
+      SuccessToast({
+        message: `${
+          data.type ? 'File' : 'Folder'
+        } has been deleted successfully`,
+      });
+      queryClient.invalidateQueries(['folder-recovery']);
+      queryClient.invalidateQueries(['file-recovery']);
     },
     onError: () => {
       handleClose();
@@ -1074,5 +1245,132 @@ export const RemovedThreeDotsDropDown = ({ className, data }) => {
         </Menu>
       </div>
     </>
+  );
+};
+
+export const FolderDownloadConfirm = ({ open, handleClose, data }) => {
+  // const handleDownloadFolder = useMutation({
+  //   mutationFn: (data) => downloadFolder({ id: data._id }),
+  //   onSuccess: (res) => {
+  //     const blob = new Blob([res], { type: 'application/zip' });
+
+  //     // Generate a URL for the Blob
+  //     const url = window.URL.createObjectURL(blob);
+
+  //     // Create a temporary anchor element to trigger the download
+  //     const link = document.createElement('a');
+  //     link.href = url;
+  //     link.download = `${data.name}.zip`;
+  //     document.body.appendChild(link);
+
+  //     // Programmatically click the link to start the download
+  //     link.click();
+
+  //     // Clean up after the download is complete
+  //     window.URL.revokeObjectURL(url);
+  //     document.body.removeChild(link);
+  //   },
+  //   onError: () => {
+  //     ErrorToast({
+  //       message:
+  //         'Opps! Something went wrong while preparing data for download folder. Please try again later!',
+  //     });
+  //   },
+  // });
+
+  const handleDownloadFolder = async (data) => {
+    try {
+      const response = await downloadFolder({
+        id: data._id,
+      });
+
+      // Create a blob from the response
+      const blob = new Blob([response], { type: 'application/zip' });
+
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary anchor element to trigger the download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${data.name}.zip`;
+      document.body.appendChild(link);
+
+      link.click();
+
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    } catch (error) {
+      ErrorToast({
+        message:
+          'Opps! Something went wrong while preparing data for download folder. Please try again later!',
+      });
+    }
+  };
+
+  const handleDownloadFile = async (data) => {
+    try {
+      const response = await axiosPrivate.post(
+        '/gc/download',
+        {
+          fileName: data.name,
+        },
+        { responseType: 'arraybuffer' },
+      );
+
+      // Create a blob from the response
+      const blob = new Blob([response.data], { type: 'application/zip' });
+
+      const url = window.URL.createObjectURL(blob);
+
+      // prepare file name
+      const lastDotIndex = data.name.lastIndexOf('.');
+      const fileNameWithoutExtension = data.name.substring(0, lastDotIndex);
+
+      // Create a temporary anchor element to trigger the download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${fileNameWithoutExtension}.zip`;
+      document.body.appendChild(link);
+
+      link.click();
+
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    } catch (error) {
+      ErrorToast({
+        message:
+          'Opps! Something went wrong while preparing data for download folder. Please try again later!',
+      });
+    }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      keepMounted
+      aria-describedby='alert-dialog-slide-description'
+    >
+      <DialogTitle>Confim download</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          The preparation for loading the directory will take some time, do you
+          want to proceed?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions sx={{ padding: '15px 20px' }}>
+        <div
+          onClick={handleClose}
+          className='text-blue-600/80 font-medium cursor-pointer py-2 px-6 hover:text-blue-600 duration-200'
+        >
+          Cancel
+        </div>
+        <div
+          onClick={() => handleDownloadFolder(data)}
+          className='bg-blue-600/80 text-white font-medium rounded-md cursor-pointer flex justify-center items-center w-[100px] h-[35px] py-2 ml-2 hover:bg-blue-600 duration-200'
+        >
+          Download
+        </div>
+      </DialogActions>
+    </Dialog>
   );
 };

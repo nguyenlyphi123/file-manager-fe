@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import ErrorBoundary from './pages/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
@@ -7,8 +7,8 @@ import RestrictedRoute from './utils/RestrictedRoute';
 
 import HomePage from './pages';
 import BlankPage from './pages/BlankPage';
-import PageLoading from './parts/PageLoading';
 import TokenExpired from './pages/tokenExpired';
+import PageLoading from './parts/PageLoading';
 
 const Files = React.lazy(() => import('./components/files'));
 const Folders = React.lazy(() => import('./components/folders'));

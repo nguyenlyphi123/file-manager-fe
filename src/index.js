@@ -1,24 +1,25 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-import { BrowserRouter } from 'react-router-dom';
-import AuthContextProvider from './contexts/authContext';
 import { Provider } from 'react-redux';
-import store from './redux/store';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import App from './App';
+import AuthContextProvider from './contexts/authContext';
+import './index.css';
+import store from './redux/store';
+import reportWebVitals from './reportWebVitals';
+import CustomRouter from './utils/CustomRouter';
+import history from './utils/lib/history';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const queryClient = new QueryClient();
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AuthContextProvider>
-        <Provider store={store}>
+    <Provider store={store}>
+      <CustomRouter history={history}>
+        <AuthContextProvider>
           <QueryClientProvider client={queryClient}>
             <ToastContainer
               position='top-right'
@@ -37,9 +38,9 @@ root.render(
             />
             <App />
           </QueryClientProvider>
-        </Provider>
-      </AuthContextProvider>
-    </BrowserRouter>
+        </AuthContextProvider>
+      </CustomRouter>
+    </Provider>
   </React.StrictMode>,
 );
 

@@ -1,24 +1,31 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { AiFillStar } from 'react-icons/ai';
 import { BsDot } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
 import { starFolder, unstarFolder } from '../../services/folderController';
+import { starFile, unstarFile } from '../../services/fileController';
+
 import FileIconHelper from '../../utils/helpers/FileIconHelper';
 import OptionHelper from '../../utils/helpers/OptionHelper';
-import { Truncate } from '../../utils/helpers/TypographyHelper';
+import {
+  FormattedDate,
+  Truncate,
+  convertBytesToReadableSize,
+} from '../../utils/helpers/TypographyHelper';
 import { ThreeDotsDropDown } from '../popups/ModelPopups';
+
 import ErrorToast from '../toasts/ErrorToast';
 import SuccessToast from '../toasts/SuccessToast';
 
-export default function LargeFileCard({ data, onClick }) {
+const LargeCard = ({ data, onClick, isFolder = true }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const [isModal, setIsModal] = useState(false);
-
-  // handle select option
   const [option, setOption] = useState('');
+  const [isDeleteShow, setIsDeleteShow] = useState(false);
 
   const handleSelectOption = (option) => {
     setOption(option);
@@ -30,9 +37,6 @@ export default function LargeFileCard({ data, onClick }) {
     setIsModal(false);
   };
 
-  // delete confirm
-  const [isDeleteShow, setIsDeleteShow] = useState(false);
-
   const handleCancelDelete = () => {
     setIsDeleteShow(false);
   };
@@ -41,13 +45,24 @@ export default function LargeFileCard({ data, onClick }) {
     setIsDeleteShow(true);
   };
 
-  // star folder
-  const handleStarFolder = useMutation({
-    mutationFn: (folderId) => starFolder({ id: folderId }),
-    onSuccess: (_, folderId) => {
-      SuccessToast({ message: 'Folder has been starred successfully' });
-      queryClient.invalidateQueries(['folders']);
-      queryClient.invalidateQueries(['folder', { id: folderId }]);
+  const handleStarAction = isFolder ? starFolder : starFile;
+  const handleUnstarAction = isFolder ? unstarFolder : unstarFile;
+
+  const handleStar = useMutation({
+    mutationFn: (id) => handleStarAction({ id }),
+    onSuccess: () => {
+      SuccessToast({
+        message: `${
+          isFolder ? 'Folder' : 'File'
+        } has been starred successfully`,
+      });
+      if (isFolder) {
+        queryClient.invalidateQueries(['folders']);
+        queryClient.invalidateQueries(['folder']);
+        return;
+      }
+      queryClient.invalidateQueries(['file']);
+      queryClient.invalidateQueries(['files']);
     },
     onError: () => {
       ErrorToast({
@@ -56,12 +71,21 @@ export default function LargeFileCard({ data, onClick }) {
     },
   });
 
-  const handleUnStarFolder = useMutation({
-    mutationFn: (folderId) => unstarFolder({ id: folderId }),
-    onSuccess: (_, folderId) => {
-      SuccessToast({ message: 'Folder has been unstarred successfully' });
-      queryClient.invalidateQueries(['folders']);
-      queryClient.invalidateQueries(['folder', { id: folderId }]);
+  const handleUnstar = useMutation({
+    mutationFn: (id) => handleUnstarAction({ id }),
+    onSuccess: () => {
+      SuccessToast({
+        message: `${
+          isFolder ? 'Folder' : 'File'
+        } has been unstarred successfully`,
+      });
+      if (isFolder) {
+        queryClient.invalidateQueries(['folders']);
+        queryClient.invalidateQueries(['folder']);
+        return;
+      }
+      queryClient.invalidateQueries(['files']);
+      queryClient.invalidateQueries(['file']);
     },
     onError: () => {
       ErrorToast({
@@ -92,8 +116,12 @@ export default function LargeFileCard({ data, onClick }) {
 
         <div
           onClick={() => {
-            onClick({ ...data, href: `/folders/${data._id}` });
-            navigate(`/folders/${data._id}`, { state: { folder: data } });
+            if (isFolder) {
+              onClick({ ...data, href: `/folders/${data._id}` });
+              navigate(`/folders/${data._id}`, { state: { folder: data } });
+            } else {
+              window.open(data.link, '_blank');
+            }
           }}
           className='w-full h-full flex items-center justify-center flex-col'
         >
@@ -108,7 +136,7 @@ export default function LargeFileCard({ data, onClick }) {
                 className='text-[#8AA3FF] text-xl font-semibold absolute top-0 right-0 translate-x-[35px]'
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleUnStarFolder.mutate(data._id);
+                  handleUnstar.mutate(data._id);
                 }}
               />
             ) : (
@@ -116,17 +144,29 @@ export default function LargeFileCard({ data, onClick }) {
                 className='text-gray-400 text-xl font-semibold absolute top-0 right-0 translate-x-[35px] hidden group-hover/card:block hover/card:text-[#8AA3FF] duration-200'
                 onClick={(event) => {
                   event.stopPropagation();
-                  handleStarFolder.mutate(data._id);
+                  handleStar.mutate(data._id);
                 }}
               />
             )}
           </div>
 
-          <p className='flex items-center text-[0.8em] text-gray-400 mt-2'>
-            Today <BsDot className='text-xl' /> 4.5 MB
+          <p className='flex items-center text-[0.8em] text-gray-400 mt-1'>
+            {isFolder ? (
+              <>
+                Last open <BsDot className='text-xl' />{' '}
+                {FormattedDate(data.lastOpened)}
+              </>
+            ) : (
+              <>
+                {FormattedDate(data.createAt)} <BsDot className='text-xl' />{' '}
+                {convertBytesToReadableSize(data.size)}
+              </>
+            )}
           </p>
         </div>
       </div>
     </>
   );
-}
+};
+
+export default LargeCard;

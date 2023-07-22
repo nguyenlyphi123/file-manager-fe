@@ -2,16 +2,18 @@ import React from 'react';
 
 import {
   Copy,
+  Detail,
+  FolderDeleteConfirm,
+  FolderDownloadConfirm,
   Move,
   Rename,
   Share,
-  Detail,
-  FolderDeleteConfirm,
 } from '../../components/popups/ModelPopups';
 import {
   COPY,
   DELETE,
   DETAILS,
+  DOWNLOAD,
   MOVE,
   RENAME,
   SHARE,
@@ -40,6 +42,15 @@ export default function OptionHelper({
 
     case RENAME:
       return <Rename handleClose={handleClose} data={data} open={open} />;
+
+    case DOWNLOAD:
+      return (
+        <FolderDownloadConfirm
+          handleClose={handleClose}
+          data={data}
+          open={open}
+        />
+      );
 
     case DELETE:
       return (

@@ -13,11 +13,14 @@ import {
   BsFiletypeSvg,
   BsFiletypeTxt,
   BsFiletypeXlsx,
+  BsFiletypePdf,
+  BsFiletypeDocx,
 } from 'react-icons/bs';
 import { FaFolder } from 'react-icons/fa';
 
 const fileColors = {
   doc: '#599DEF',
+  docx: '#599DEF',
   zip: '#7E95C4',
   exe: '#C7E9B0',
   jpg: '#C7E9B0',
@@ -25,6 +28,7 @@ const fileColors = {
   mp3: '#FD8A8A',
   mp4: '#F74141',
   ppt: '#F25168',
+  pdf: '#F25168',
   svg: '#86C8BC',
   txt: '#7E95C4',
   xlsx: '#36C684',
@@ -35,6 +39,9 @@ export default function FileIconHelper({ type, className }) {
   switch (type) {
     case file.DOC:
       return <BsFiletypeDoc color={fileColors.doc} className={className} />;
+
+    case file.DOCX:
+      return <BsFiletypeDocx color={fileColors.docx} className={className} />;
 
     case file.ZIP:
       return <BsFileZip color={fileColors.zip} className={className} />;
@@ -56,6 +63,9 @@ export default function FileIconHelper({ type, className }) {
 
     case file.PPT:
       return <BsFiletypePpt color={fileColors.ppt} className={className} />;
+
+    case file.PDF:
+      return <BsFiletypePdf color={fileColors.pdf} className={className} />;
 
     case file.SVG:
       return <BsFiletypeSvg color={fileColors.svg} className={className} />;

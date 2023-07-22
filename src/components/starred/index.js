@@ -11,7 +11,10 @@ import {
   unstarListOfFolder,
 } from '../../services/folderController';
 import FileIconHelper from '../../utils/helpers/FileIconHelper';
-import { FormattedDateTime } from '../../utils/helpers/TypographyHelper';
+import {
+  FormattedDateTime,
+  convertBytesToReadableSize,
+} from '../../utils/helpers/TypographyHelper';
 import EmptyData from '../EmptyData';
 import ErrorToast from '../toasts/ErrorToast';
 import SuccessToast from '../toasts/SuccessToast';
@@ -153,9 +156,16 @@ export default function Starred() {
                           className='text-3xl mr-3'
                           type={'folder'}
                         />
-                        <p className='text-[0.9em] text-gray-700 font-semibold mr-3'>
-                          {folder.name}
-                        </p>
+                        <div className='flex flex-col'>
+                          <p className='text-[0.9em] text-gray-700 font-semibold mr-3'>
+                            {folder.name}
+                          </p>
+                          <p className='text-[0.7em] text-gray-500 font-semibold mr-3 '>
+                            {folder.parent_folder
+                              ? folder.parent_folder?.name
+                              : 'Root'}
+                          </p>
+                        </div>
                       </Link>
                     </td>
 
@@ -166,7 +176,9 @@ export default function Starred() {
                     </td>
 
                     <td>
-                      <p className='text-[0.9em] text-gray-500'>4.5 KB</p>
+                      <p className='text-[0.9em] text-gray-500'>
+                        {convertBytesToReadableSize(folder.size || 0)}
+                      </p>
                     </td>
 
                     <td className='flex justify-center items-center h-[75px] w-[70px]'>

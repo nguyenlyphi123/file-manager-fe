@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ImSpinner } from 'react-icons/im';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -23,19 +23,13 @@ export default function LoginPage() {
     }
   }, [user.isAuthenticated]);
 
-  useEffect(() => {
-    if (!user.isAuthenticated) {
-      dispatch(loadUser());
-    }
-  }, []);
-
   // login data
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const handleSetLoginData = (e) => {
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
   };
 
-  const handleLoginSubmit = async () => {
+  const handleLoginSubmit = useCallback(async (loginData) => {
     if (loginData.username === '' || loginData.password === '') {
       AlertFail('Username or password is missing !!!');
       return;
@@ -54,7 +48,13 @@ export default function LoginPage() {
       setIsLoading(false);
       console.log(error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!user.isAuthenticated) {
+      dispatch(loadUser());
+    }
+  }, []);
 
   // loading
   const [isLoading, setIsLoading] = useState(false);
@@ -92,7 +92,7 @@ export default function LoginPage() {
               ) : (
                 ''
               )}
-              <form onSubmit={handleLoginSubmit}>
+              <form>
                 <div className='border rounded-md'>
                   <input
                     onChange={handleSetLoginData}
@@ -127,7 +127,7 @@ export default function LoginPage() {
 
           <div className='flex justify-center w-full mt-[150px]'>
             <div
-              onClick={handleLoginSubmit}
+              onClick={() => handleLoginSubmit(loginData)}
               className={`bg-blue-600 text-white py-2 px-10 rounded-md cursor-pointer hover:bg-blue-700 duration-300 relative`}
             >
               {isLoading ? (

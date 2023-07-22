@@ -7,24 +7,35 @@ import { useQuery } from '@tanstack/react-query';
 import 'rsuite/dist/rsuite-no-reset.min.css';
 import Loading from '../../parts/Loading';
 import { getRemovedFolder } from '../../services/folderController';
-import { FormattedDateTime } from '../../utils/helpers/TypographyHelper';
+import {
+  FormattedDateTime,
+  Truncate,
+  convertBytesToReadableSize,
+} from '../../utils/helpers/TypographyHelper';
 import EmptyData from '../EmptyData';
 import { RemovedThreeDotsDropDown } from '../popups/ModelPopups';
+import { getRemovedFile } from '../../services/fileController';
 
 export default function Recovery() {
-  const { data: folders, isLoading } = useQuery({
-    queryKey: ['recovery'],
+  const { data: folders, isLoading: folderLoading } = useQuery({
+    queryKey: ['folder-recovery'],
     queryFn: () => getRemovedFolder(),
     retry: 3,
   });
 
-  if (isLoading) return <Loading />;
+  const { data: files, isLoading: fileLoading } = useQuery({
+    queryKey: ['file-recovery'],
+    queryFn: () => getRemovedFile(),
+    retry: 3,
+  });
+
+  if (folderLoading || fileLoading) return <Loading />;
 
   return (
     <div className='h-[200vh] py-5 px-7 tracking-wide'>
       <div className='text-[20px] text-gray-600 font-bold'>Recovery</div>
 
-      {folders?.data?.length > 0 ? (
+      {folders?.data?.length > 0 || files?.data?.length > 0 ? (
         <div className='mt-5 flex'>
           <div className='w-3/12'>
             <div className='p-2'>
@@ -61,15 +72,19 @@ export default function Recovery() {
               <thead>
                 <tr className='text-[0.9em] text-gray-500'>
                   <th className='text-left font-semibold pb-1 pl-7'>Name</th>
-                  <th className='text-left font-semibold pb-1'>Size</th>
-                  <th className='text-left font-semibold pb-1'>Deleted At</th>
+                  <th className='text-left font-semibold pb-1 w-[100px]'>
+                    Size
+                  </th>
+                  <th className='text-left font-semibold pb-1 w-[200px]'>
+                    Deleted At
+                  </th>
                   <th className=''></th>
                 </tr>
               </thead>
 
               {folders?.data?.map((folder) => {
                 return (
-                  <tbody className='bg-white'>
+                  <tbody key={folder._id} className='bg-white'>
                     <tr className='cursor-pointer border'>
                       <td className='p-4 pl-7'>
                         <div className='flex items-center'>
@@ -79,7 +94,7 @@ export default function Recovery() {
                           />
                           <div className='relative'>
                             <p className='text-[0.9em] text-gray-700 font-semibold mr-3'>
-                              {folder.name}
+                              {Truncate(folder.name, 50)}
                             </p>
                             <p className='text-[0.7em] text-gray-500 font-semibold mr-3 '>
                               {folder.parent_folder
@@ -91,7 +106,9 @@ export default function Recovery() {
                       </td>
 
                       <td>
-                        <p className='text-[0.9em] text-gray-500'>4.5 KB</p>
+                        <p className='text-[0.9em] text-gray-500'>
+                          {convertBytesToReadableSize(folder.size)}
+                        </p>
                       </td>
 
                       <td>
@@ -103,6 +120,51 @@ export default function Recovery() {
                       <td>
                         <div className='p-2 flex group/threedots'>
                           <RemovedThreeDotsDropDown data={folder} />
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                );
+              })}
+
+              {files?.data?.map((file) => {
+                return (
+                  <tbody key={file._id} className='bg-white'>
+                    <tr className='cursor-pointer border'>
+                      <td className='p-4 pl-7'>
+                        <div className='flex items-center'>
+                          <FileIconHelper
+                            className='text-3xl mr-3'
+                            type={file.type}
+                          />
+                          <div className='relative'>
+                            <p className='text-[0.9em] text-gray-700 font-semibold mr-3'>
+                              {Truncate(file.name, 50)}
+                            </p>
+                            <p className='text-[0.7em] text-gray-500 font-semibold mr-3 '>
+                              {file.parent_folder
+                                ? file.parent_folder?.name
+                                : 'Root'}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td>
+                        <p className='text-[0.9em] text-gray-500'>
+                          {convertBytesToReadableSize(file.size)}
+                        </p>
+                      </td>
+
+                      <td>
+                        <p className='text-[0.9em] text-gray-500'>
+                          {FormattedDateTime(file.modifiedAt)}
+                        </p>
+                      </td>
+
+                      <td>
+                        <div className='p-2 flex group/threedots'>
+                          <RemovedThreeDotsDropDown data={file} />
                         </div>
                       </td>
                     </tr>
