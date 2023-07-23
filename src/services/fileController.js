@@ -88,10 +88,10 @@ export const unstarFile = async ({ id }) => {
   }
 };
 
-export const renameFile = async ({ id, name }) => {
+export const renameFile = async ({ data, name }) => {
   try {
     const res = await axiosPrivate.put(`/file/rename`, {
-      fileId: id,
+      fileData: data,
       name,
     });
 
@@ -145,11 +145,11 @@ export const getRemovedFile = async () => {
   }
 };
 
-export const downloadFile = async ({ name }) => {
+export const downloadFile = async ({ data }) => {
   try {
     const res = await axiosPrivate.post(
       `/gc/download`,
-      { fileName: name },
+      { data },
       {
         responseType: 'arraybuffer',
       },

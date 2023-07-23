@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
-import { DatePicker } from 'rsuite';
+import { Checkbox, DatePicker } from 'rsuite';
 import FileIconHelper from '../../utils/helpers/FileIconHelper';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import 'rsuite/dist/rsuite-no-reset.min.css';
 import Loading from '../../parts/Loading';
-import { getRemovedFolder } from '../../services/folderController';
+import {
+  deleteFolder,
+  getRemovedFolder,
+  restoreFolder,
+} from '../../services/folderController';
 import {
   FormattedDateTime,
   Truncate,
@@ -14,9 +18,20 @@ import {
 } from '../../utils/helpers/TypographyHelper';
 import EmptyData from '../EmptyData';
 import { RemovedThreeDotsDropDown } from '../popups/ModelPopups';
-import { getRemovedFile } from '../../services/fileController';
+import {
+  deleteFile,
+  getRemovedFile,
+  restoreFile,
+} from '../../services/fileController';
+import { BsTrash } from 'react-icons/bs';
+import { TfiReload } from 'react-icons/tfi';
+import { Tooltip } from '@mui/material';
+import ErrorToast from '../toasts/ErrorToast';
+import SuccessToast from '../toasts/SuccessToast';
 
 export default function Recovery() {
+  const queryClient = useQueryClient();
+
   const { data: folders, isLoading: folderLoading } = useQuery({
     queryKey: ['folder-recovery'],
     queryFn: () => getRemovedFolder(),
@@ -29,13 +44,101 @@ export default function Recovery() {
     retry: 3,
   });
 
+  const isItems = useMemo(() => {
+    return folders?.data?.length > 0 || files?.data?.length > 0
+      ? {
+          item: true,
+          length: folders?.data?.length + files?.data?.length,
+        }
+      : {
+          item: false,
+          length: 0,
+        };
+  }, [folders, files]);
+
+  // checked list item
+  const [checkedListItem, setCheckedListItem] = useState([]);
+
+  const handleCheckedListItem = (data) => {
+    if (checkedListItem?.includes(data)) {
+      setCheckedListItem(
+        checkedListItem.filter((item) => item._id !== data._id),
+      );
+      return;
+    }
+    setCheckedListItem([...checkedListItem, data]);
+  };
+
+  const handleSelectAll = () => {
+    if (checkedListItem.length === isItems.length) {
+      setCheckedListItem([]);
+      return;
+    }
+    setCheckedListItem([
+      ...folders?.data?.map((folder) => folder),
+      ...files?.data?.map((file) => file),
+    ]);
+  };
+
+  // recovery
+  const multipleRecoveryMutation = useMutation({
+    mutationFn: async () => {
+      const promises = checkedListItem.map(async (item) => {
+        if (item.type) {
+          return await restoreFile({ id: item._id });
+        } else {
+          return await restoreFolder({ id: item._id });
+        }
+      });
+
+      return Promise.all(promises);
+    },
+    onSuccess: () => {
+      SuccessToast({ message: 'Items have been recovered successfully' });
+      queryClient.invalidateQueries('folder-recovery');
+      queryClient.invalidateQueries('file-recovery');
+      setCheckedListItem([]);
+    },
+    onError: () => {
+      ErrorToast({
+        message: 'Opps! Something went wrong. Please try again later',
+      });
+    },
+  });
+
+  // delete
+  const multipleDeleteMutation = useMutation({
+    mutationFn: async () => {
+      const promises = checkedListItem.map(async (item) => {
+        if (item.type) {
+          return await deleteFile({ data: item });
+        } else {
+          return await deleteFolder({ id: item._id });
+        }
+      });
+
+      return Promise.all(promises);
+    },
+    onSuccess: () => {
+      SuccessToast({ message: 'Items have been deleted successfully' });
+      queryClient.invalidateQueries('folder-recovery');
+      queryClient.invalidateQueries('file-recovery');
+      setCheckedListItem([]);
+    },
+    onError: () => {
+      ErrorToast({
+        message: 'Opps! Something went wrong. Please try again later',
+      });
+    },
+  });
+
   if (folderLoading || fileLoading) return <Loading />;
 
   return (
     <div className='h-[200vh] py-5 px-7 tracking-wide'>
       <div className='text-[20px] text-gray-600 font-bold'>Recovery</div>
 
-      {folders?.data?.length > 0 || files?.data?.length > 0 ? (
+      {isItems.item ? (
         <div className='mt-5 flex'>
           <div className='w-3/12'>
             <div className='p-2'>
@@ -71,14 +174,44 @@ export default function Recovery() {
             <table className='w-full'>
               <thead>
                 <tr className='text-[0.9em] text-gray-500'>
-                  <th className='text-left font-semibold pb-1 pl-7'>Name</th>
+                  <th>
+                    <Checkbox
+                      checked={
+                        checkedListItem.length === isItems.length ? true : false
+                      }
+                      onChange={handleSelectAll}
+                    />
+                  </th>
+                  <th className='text-left font-semibold pb-1'>Name</th>
                   <th className='text-left font-semibold pb-1 w-[100px]'>
                     Size
                   </th>
                   <th className='text-left font-semibold pb-1 w-[200px]'>
                     Deleted At
                   </th>
-                  <th className=''></th>
+                  <th className='flex justify-center min-w-[65px]'>
+                    {checkedListItem.length > 0 && (
+                      <div className='flex justify-around w-full'>
+                        <Tooltip title='Delete' placement='top'>
+                          <button
+                            onClick={() => multipleDeleteMutation.mutate()}
+                            className={`text-center flex justify-center items-center text-white h-[30px] px-2 bg-gray-600  rounded-md cursor-pointer ${'hover:bg-red-500'} duration-200`}
+                          >
+                            <BsTrash />
+                          </button>
+                        </Tooltip>
+
+                        <Tooltip title='Recovery' placement='top'>
+                          <button
+                            onClick={() => multipleRecoveryMutation.mutate()}
+                            className={`text-center flex justify-center items-center text-white h-[30px] px-2 bg-gray-600  rounded-md cursor-pointer ${'hover:bg-red-500'} duration-200`}
+                          >
+                            <TfiReload />
+                          </button>
+                        </Tooltip>
+                      </div>
+                    )}
+                  </th>
                 </tr>
               </thead>
 
@@ -86,7 +219,23 @@ export default function Recovery() {
                 return (
                   <tbody key={folder._id} className='bg-white'>
                     <tr className='cursor-pointer border'>
-                      <td className='p-4 pl-7'>
+                      <td className='p-4 w-[65px] text-center'>
+                        <Checkbox
+                          checked={
+                            checkedListItem.find(
+                              (item) => item._id === folder._id,
+                            )
+                              ? true
+                              : false
+                          }
+                          onChange={(_, checked) =>
+                            checked
+                              ? handleCheckedListItem(folder)
+                              : handleCheckedListItem(folder)
+                          }
+                        />
+                      </td>
+                      <td className='p-4 pl-0'>
                         <div className='flex items-center'>
                           <FileIconHelper
                             className='text-3xl mr-3'
@@ -118,7 +267,7 @@ export default function Recovery() {
                       </td>
 
                       <td>
-                        <div className='p-2 flex group/threedots'>
+                        <div className='p-2 flex justify-center group/threedots'>
                           <RemovedThreeDotsDropDown data={folder} />
                         </div>
                       </td>
@@ -131,7 +280,23 @@ export default function Recovery() {
                 return (
                   <tbody key={file._id} className='bg-white'>
                     <tr className='cursor-pointer border'>
-                      <td className='p-4 pl-7'>
+                      <td className='p-4 w-[65px] text-center'>
+                        <Checkbox
+                          checked={
+                            checkedListItem.find(
+                              (item) => item._id === file._id,
+                            )
+                              ? true
+                              : false
+                          }
+                          onChange={(_, checked) =>
+                            checked
+                              ? handleCheckedListItem(file)
+                              : handleCheckedListItem(file)
+                          }
+                        />
+                      </td>
+                      <td className='p-4 pl-0'>
                         <div className='flex items-center'>
                           <FileIconHelper
                             className='text-3xl mr-3'
@@ -139,7 +304,7 @@ export default function Recovery() {
                           />
                           <div className='relative'>
                             <p className='text-[0.9em] text-gray-700 font-semibold mr-3'>
-                              {Truncate(file.name, 50)}
+                              {Truncate(file.name, 30)}
                             </p>
                             <p className='text-[0.7em] text-gray-500 font-semibold mr-3 '>
                               {file.parent_folder
@@ -163,7 +328,7 @@ export default function Recovery() {
                       </td>
 
                       <td>
-                        <div className='p-2 flex group/threedots'>
+                        <div className='p-2 justify-center flex group/threedots'>
                           <RemovedThreeDotsDropDown data={file} />
                         </div>
                       </td>

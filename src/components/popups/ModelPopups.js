@@ -71,6 +71,7 @@ import {
 } from '../../utils/helpers/TypographyHelper';
 import ErrorToast from '../toasts/ErrorToast';
 import SuccessToast from '../toasts/SuccessToast';
+import OverlayLoading from '../OverlayLoading';
 
 export const NewFolder = ({ handleClose, open }) => {
   const { _id } = useSelector((state) => state.curentFolder);
@@ -977,12 +978,20 @@ export const Rename = ({ handleClose, data, open }) => {
   const queryClient = useQueryClient();
 
   // folder data
-  const [folder, setFolder] = useState(data);
+  const [destName, setDestName] = useState();
 
   // dispatch
   const renameMutation = data.type ? renameFile : renameFolder;
   const handleSubmit = useMutation({
-    mutationFn: (data) => renameMutation({ id: data._id, name: data.name }),
+    mutationFn: () => {
+      if (!destName) {
+        ErrorToast({ message: 'Please enter a name!' });
+        throw new Error('Please enter a name!');
+      }
+      return renameMutation(
+        data.type ? { data, name: destName } : { id: data._id, name: destName },
+      );
+    },
     onSuccess: () => {
       handleClose();
       SuccessToast({
@@ -1024,8 +1033,8 @@ export const Rename = ({ handleClose, data, open }) => {
             placeholder='Untitled folder'
             className='w-full outline-none text-gray-700 font-medium'
             autoFocus
-            value={folder.name}
-            onChange={(e) => setFolder({ ...folder, name: e.target.value })}
+            value={destName ? destName : data.name}
+            onChange={(e) => setDestName(e.target.value)}
           />
         </div>
 
@@ -1038,7 +1047,7 @@ export const Rename = ({ handleClose, data, open }) => {
           </div>
           <div
             className='bg-blue-600/80 text-white font-medium rounded-md cursor-pointer flex justify-center items-center w-[100px] h-[40px] py-2 ml-2 hover:bg-blue-600 duration-200'
-            onClick={() => handleSubmit.mutate(folder)}
+            onClick={() => handleSubmit.mutate()}
           >
             {handleSubmit.isLoading ? (
               <ImSpinner className='animate-spin' />
@@ -1249,40 +1258,51 @@ export const RemovedThreeDotsDropDown = ({ className, data }) => {
 };
 
 export const FolderDownloadConfirm = ({ open, handleClose, data }) => {
+  const [loading, setLoading] = useState(false);
+
   const downloadMutation = useCallback(async (fn, data, params) => {
+    setLoading(true);
     try {
       const response = await fn(params);
 
+      const contentType =
+        response?.headers?.get('content-type') || 'application/octet-stream';
+
       // Create a blob from the response
-      const blob = new Blob([response], { type: 'application/zip' });
+      const blob = new Blob([response], {
+        type: contentType,
+      });
 
       const url = window.URL.createObjectURL(blob);
 
-      // prepare file name
-      const lastDotIndex = data.name.lastIndexOf('.');
-      const fileNameWithoutExtension = data.name.substring(0, lastDotIndex);
-
       // Create a temporary anchor element to trigger the download
+      const linkName = data.type
+        ? `${data.name}.${data.type}`
+        : `${data.name}.zip`;
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${data.type ? fileNameWithoutExtension : data.name}.zip`;
+      link.download = linkName;
       document.body.appendChild(link);
 
       link.click();
 
       window.URL.revokeObjectURL(url);
       document.body.removeChild(link);
+      setLoading(false);
+      handleClose();
     } catch (error) {
+      console.log(error);
       ErrorToast({
         message:
           'Opps! Something went wrong while preparing data for download folder. Please try again later!',
       });
+      setLoading(false);
     }
   }, []);
 
   const handleDownloadFile = () => {
     downloadMutation(downloadFile, data, {
-      name: data.name,
+      data: data,
     });
   };
   const handleDownloadFolder = () => {
@@ -1297,7 +1317,8 @@ export const FolderDownloadConfirm = ({ open, handleClose, data }) => {
       keepMounted
       aria-describedby='alert-dialog-slide-description'
     >
-      <DialogTitle>Confim download</DialogTitle>
+      {loading && <OverlayLoading />}
+      <DialogTitle>Confirm download</DialogTitle>
       <DialogContent>
         <DialogContentText>
           The preparation for loading the directory will take some time, do you
@@ -1307,7 +1328,7 @@ export const FolderDownloadConfirm = ({ open, handleClose, data }) => {
       <DialogActions sx={{ padding: '15px 20px' }}>
         <div
           onClick={handleClose}
-          className='text-blue-600/80 font-medium cursor-pointer py-2 px-6 hover:text-blue-600 duration-200'
+          className='text-blue-600/80 font-medium text-[0.9em] cursor-pointer py-2 px-6 hover:text-blue-600 duration-200'
         >
           Cancel
         </div>
@@ -1315,7 +1336,7 @@ export const FolderDownloadConfirm = ({ open, handleClose, data }) => {
           onClick={() =>
             data.type ? handleDownloadFile() : handleDownloadFolder()
           }
-          className='bg-blue-600/80 text-white font-medium rounded-md cursor-pointer flex justify-center items-center w-[100px] h-[35px] py-2 ml-2 hover:bg-blue-600 duration-200'
+          className='bg-blue-600/80 text-white text-[0.9em] font-medium rounded-md cursor-pointer flex justify-center items-center w-[100px] h-[35px] py-2 ml-2 hover:bg-blue-600 duration-200'
         >
           Download
         </div>

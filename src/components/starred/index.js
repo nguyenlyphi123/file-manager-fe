@@ -31,19 +31,6 @@ export default function Starred() {
     retry: 3,
   });
 
-  const handleUnStar = useMutation({
-    mutationFn: async (id) => await unstarFolder({ id }),
-    onSuccess: () => {
-      SuccessToast({ message: 'Folder has been unstarred successfully' });
-      refetch();
-    },
-    onError: () => {
-      ErrorToast({
-        message: 'Opps! Something went wrong. Please try again later',
-      });
-    },
-  });
-
   const handleUnStarListOfFolder = useMutation({
     mutationFn: async (folderList) => await unstarListOfFolder(folderList),
     onSuccess: () => {
@@ -76,9 +63,6 @@ export default function Starred() {
     }
     setCheckedListItem(folders?.data.map((folder) => folder._id));
   };
-
-  // to located button
-  const [currentItem, setCurrentItem] = useState();
 
   if (isLoading) return <Loading />;
 
