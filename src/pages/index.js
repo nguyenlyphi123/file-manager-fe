@@ -2,19 +2,31 @@ import React, { useState } from 'react';
 import { AiOutlineCloudUpload, AiOutlinePlus } from 'react-icons/ai';
 import { FiSearch } from 'react-icons/fi';
 import { Outlet } from 'react-router-dom';
-import { NewFolder } from '../components/popups/ModelPopups';
+import { NewFolder, UploadFile } from '../components/popups/ModelPopups';
 import Header from '../parts/Header';
 import SideMenu from '../parts/SideMenu';
 
 export default function Home() {
-  const [isCreateFolder, setIsCreateFolder] = useState(false);
+  // open/close new folder
+  const [isNewFolderOpen, setIsNewFolderOpen] = useState(false);
 
-  const handleOpenCreateFolder = () => {
-    setIsCreateFolder(true);
+  const handleOpenNewFolder = () => {
+    setIsNewFolderOpen(true);
   };
 
-  const handleCloseCreateFolder = () => {
-    setIsCreateFolder(false);
+  const handleCloseNewFolder = () => {
+    setIsNewFolderOpen(false);
+  };
+
+  // open/close upload file
+  const [isUploadFileOpen, setIsUploadFileOpen] = useState(false);
+
+  const handleOpenUploadFile = () => {
+    setIsUploadFileOpen(true);
+  };
+
+  const handleCloseUploadFile = () => {
+    setIsUploadFileOpen(false);
   };
 
   return (
@@ -24,8 +36,13 @@ export default function Home() {
         <SideMenu />
         <div className='w-10/12'>
           <NewFolder
-            open={isCreateFolder}
-            handleClose={handleCloseCreateFolder}
+            open={isNewFolderOpen}
+            handleClose={handleCloseNewFolder}
+          />
+
+          <UploadFile
+            handleClose={handleCloseUploadFile}
+            open={isUploadFileOpen}
           />
           <div className='bg-white flex justify-between items-center h-[62px] py-3 px-4 border'>
             <div className='flex items-center w-fit'>
@@ -43,7 +60,7 @@ export default function Home() {
               <button
                 className='bg-[#d3d9e7] py-2 px-5 rounded-sm mx-2 flex items-center hover:bg-[#C3C6CE] hover:text-white hover:scale-105 duration-100'
                 type='button'
-                onClick={handleOpenCreateFolder}
+                onClick={handleOpenNewFolder}
               >
                 <AiOutlinePlus className='mr-3 font-bold' />
                 <p className='text-sm font-semibold '>Create</p>
@@ -51,6 +68,7 @@ export default function Home() {
               <button
                 className='bg-[#5664D9] py-2 px-5 rounded-sm mx-2 text-white flex items-center hover:bg-[#2f40dd] hover:scale-105 duration-100'
                 type='button'
+                onClick={handleOpenUploadFile}
               >
                 <AiOutlineCloudUpload className='mr-3 text-lg' />
                 <p className='text-sm font-medium'>Upload</p>

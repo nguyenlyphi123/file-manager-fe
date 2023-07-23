@@ -166,6 +166,7 @@ export const UploadFile = ({ handleClose, open }) => {
 
     const formData = new FormData();
     formData.append('file', blob, file.name);
+    formData.append('folderId', _id);
 
     try {
       await uploadFile(formData);
@@ -177,7 +178,9 @@ export const UploadFile = ({ handleClose, open }) => {
       handleClose();
     } catch (error) {
       console.error(error);
-      ErrorToast({ message: error?.response?.data?.message });
+      ErrorToast({
+        message: 'Oop! Some thing went wrong! Please try again later',
+      });
       setLoading(false);
       setFile();
     }

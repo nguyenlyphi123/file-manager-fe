@@ -64,7 +64,7 @@ export default function Home() {
     dispatch(pushLocation(data));
   };
 
-  if (folderLoading) return <Loading />;
+  if (folderLoading || fileLoading) return <Loading />;
 
   return (
     <>
