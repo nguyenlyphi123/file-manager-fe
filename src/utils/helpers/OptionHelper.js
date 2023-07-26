@@ -8,7 +8,7 @@ import {
   Move,
   Rename,
   Share,
-} from '../../components/popups/ModelPopups';
+} from 'components/popups/ModelPopups';
 import {
   COPY,
   DELETE,
@@ -17,7 +17,7 @@ import {
   MOVE,
   RENAME,
   SHARE,
-} from '../../constants/option';
+} from 'constants/option';
 
 export default function OptionHelper({
   type,

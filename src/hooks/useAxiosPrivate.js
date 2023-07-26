@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { axiosPrivate } from '../utils/axios';
-import refreshToken from '../utils/refreshToken';
 import { useDispatch } from 'react-redux';
-import { Logout } from '../redux/slices/user';
+
+import { axiosPrivate } from 'utils/axios';
+import refreshToken from 'utils/refreshToken';
+import { Logout } from 'redux/slices/user';
 
 function useAxiosPrivate() {
   const dispatch = useDispatch();

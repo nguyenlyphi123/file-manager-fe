@@ -1,33 +1,37 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Checkbox, DatePicker } from 'rsuite';
 import FileIconHelper from '../../utils/helpers/FileIconHelper';
 
+import { Tooltip } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { BsTrash } from 'react-icons/bs';
+import { TfiReload } from 'react-icons/tfi';
 import 'rsuite/dist/rsuite-no-reset.min.css';
-import Loading from '../../parts/Loading';
+
+import Loading from 'parts/Loading';
+
 import {
-  deleteFolder,
+  deleteMultipleFile,
+  getRemovedFile,
+  restoreMultipleFile,
+} from 'services/fileController';
+import {
+  deleteMultipleFolder,
   getRemovedFolder,
-  restoreFolder,
-} from '../../services/folderController';
+  restoreMultipleFolder,
+} from 'services/folderController';
+
 import {
   FormattedDateTime,
   Truncate,
   convertBytesToReadableSize,
-} from '../../utils/helpers/TypographyHelper';
-import EmptyData from '../EmptyData';
-import { RemovedThreeDotsDropDown } from '../popups/ModelPopups';
-import {
-  deleteFile,
-  getRemovedFile,
-  restoreFile,
-} from '../../services/fileController';
-import { BsTrash } from 'react-icons/bs';
-import { TfiReload } from 'react-icons/tfi';
-import { Tooltip } from '@mui/material';
-import ErrorToast from '../toasts/ErrorToast';
-import SuccessToast from '../toasts/SuccessToast';
+} from 'utils/helpers/TypographyHelper';
+
+import EmptyData from 'components/EmptyData';
+import { RemovedThreeDotsDropDown } from 'components/popups/ModelPopups';
+import ErrorToast from 'components/toasts/ErrorToast';
+import SuccessToast from 'components/toasts/SuccessToast';
 
 export default function Recovery() {
   const queryClient = useQueryClient();
@@ -82,16 +86,29 @@ export default function Recovery() {
 
   // recovery
   const multipleRecoveryMutation = useMutation({
-    mutationFn: async () => {
-      const promises = checkedListItem.map(async (item) => {
-        if (item.type) {
-          return await restoreFile({ id: item._id });
-        } else {
-          return await restoreFolder({ id: item._id });
+    mutationFn: () => {
+      const folderList = checkedListItem.filter((item) => {
+        if (!item.type) {
+          return {
+            ...item,
+            parent_folder: item.parent_folder ? item.parent_folder._id : null,
+          };
         }
       });
 
-      return Promise.all(promises);
+      const fileList = checkedListItem.filter((item) => {
+        if (item.type) {
+          return {
+            ...item,
+            parent_folder: item.parent_folder ? item.parent_folder._id : null,
+          };
+        }
+      });
+
+      return Promise.all([
+        folderList.length > 0 && restoreMultipleFolder(folderList),
+        fileList.length > 0 && restoreMultipleFile(fileList),
+      ]);
     },
     onSuccess: () => {
       SuccessToast({ message: 'Items have been recovered successfully' });
@@ -109,15 +126,28 @@ export default function Recovery() {
   // delete
   const multipleDeleteMutation = useMutation({
     mutationFn: async () => {
-      const promises = checkedListItem.map(async (item) => {
-        if (item.type) {
-          return await deleteFile({ data: item });
-        } else {
-          return await deleteFolder({ id: item._id });
+      const folderList = checkedListItem.filter((item) => {
+        if (!item.type) {
+          return {
+            ...item,
+            parent_folder: item.parent_folder ? item.parent_folder._id : null,
+          };
         }
       });
 
-      return Promise.all(promises);
+      const fileList = checkedListItem.filter((item) => {
+        if (item.type) {
+          return {
+            ...item,
+            parent_folder: item.parent_folder ? item.parent_folder._id : null,
+          };
+        }
+      });
+
+      return Promise.all([
+        folderList.length > 0 && deleteMultipleFolder(folderList),
+        fileList.length > 0 && deleteMultipleFile(fileList),
+      ]);
     },
     onSuccess: () => {
       SuccessToast({ message: 'Items have been deleted successfully' });
@@ -170,7 +200,7 @@ export default function Recovery() {
             </div>
           </div>
 
-          <div className='w-9/12 p-2'>
+          <div className='w-9/12 p-2 pt-0'>
             <table className='w-full'>
               <thead>
                 <tr className='text-[0.9em] text-gray-500'>
@@ -189,9 +219,9 @@ export default function Recovery() {
                   <th className='text-left font-semibold pb-1 w-[200px]'>
                     Deleted At
                   </th>
-                  <th className='flex justify-center min-w-[65px]'>
+                  <th className='flex justify-center w-full min-w-[80px]'>
                     {checkedListItem.length > 0 && (
-                      <div className='flex justify-around w-full'>
+                      <div className='flex justify-around w-[80px]'>
                         <Tooltip title='Delete' placement='top'>
                           <button
                             onClick={() => multipleDeleteMutation.mutate()}

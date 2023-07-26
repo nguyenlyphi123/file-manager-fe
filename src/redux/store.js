@@ -1,8 +1,8 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import folder from './slices/folder';
-import user from './slices/user';
-import location from './slices/location';
-import curentFolder from './slices/curentFolder';
+import folder from 'redux/slices/folder';
+import user from 'redux/slices/user';
+import location from 'redux/slices/location';
+import curentFolder from 'redux/slices/curentFolder';
 
 const reducers = combineReducers({
   user: user,

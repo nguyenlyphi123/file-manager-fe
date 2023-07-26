@@ -4,16 +4,17 @@ import { AiOutlinePlusCircle } from 'react-icons/ai';
 import { TiArrowSortedDown } from 'react-icons/ti';
 import { useDispatch } from 'react-redux';
 
-import Loading from '../../parts/Loading';
-import { setCurrentFolder } from '../../redux/slices/curentFolder';
-import { pushLocation } from '../../redux/slices/location';
+import Loading from 'parts/Loading';
 
-import { getFileList } from '../../services/fileController';
-import { getFolderList } from '../../services/folderController';
+import { setCurrentFolder } from 'redux/slices/curentFolder';
+import { pushLocation } from 'redux/slices/location';
 
-import LargeCard from '../cards/LargeCard';
-import MediumCard from '../cards/MediumCard';
-import { NewFolder, UploadFile } from '../popups/ModelPopups';
+import { getFileList } from 'services/fileController';
+import { getFolderList } from 'services/folderController';
+
+import LargeCard from 'components/cards/LargeCard';
+import MediumCard from 'components/cards/MediumCard';
+import { NewFolder, UploadFile } from 'components/popups/ModelPopups';
 
 export default function Home() {
   // fetch folder data
@@ -77,20 +78,22 @@ export default function Home() {
 
         <div className='text-[20px] text-gray-600 font-bold'>Home</div>
 
-        <div className='mt-5'>
-          <p className='text-md text-gray-600 font-bold mb-2'>Quick Access</p>
-          <div className='grid lg:grid-cols-4 gap-4 md:grid-cols-3'>
-            {folders?.data.map((folder) => {
-              return (
-                <LargeCard
-                  onClick={handleCardSelect}
-                  key={folder._id}
-                  data={folder}
-                />
-              );
-            })}
+        {folders?.data?.length > 0 && (
+          <div className='mt-5'>
+            <p className='text-md text-gray-600 font-bold mb-2'>Quick Access</p>
+            <div className='grid lg:grid-cols-4 gap-4 md:grid-cols-3'>
+              {folders?.data.map((folder) => {
+                return (
+                  <LargeCard
+                    onClick={handleCardSelect}
+                    key={folder._id}
+                    data={folder}
+                  />
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className='mt-5'>
           <p className='text-md text-gray-600 font-bold mb-2'>Recent Files</p>

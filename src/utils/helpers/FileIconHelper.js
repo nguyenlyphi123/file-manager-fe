@@ -1,6 +1,6 @@
 import React from 'react';
 
-import * as file from '../../constants/file';
+import * as file from 'constants/file';
 import {
   BsFileZip,
   BsFiletypeDoc,

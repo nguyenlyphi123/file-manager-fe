@@ -1,5 +1,5 @@
-import { apiURL } from '../constants/constants';
-import { axiosPrivate } from '../utils/axios';
+import { apiURL } from 'constants/constants';
+import { axiosPrivate } from 'utils/axios';
 
 export const uploadFile = async (file) => {
   try {

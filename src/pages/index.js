@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { AiOutlineCloudUpload, AiOutlinePlus } from 'react-icons/ai';
 import { FiSearch } from 'react-icons/fi';
 import { Outlet } from 'react-router-dom';
-import { NewFolder, UploadFile } from '../components/popups/ModelPopups';
-import Header from '../parts/Header';
-import SideMenu from '../parts/SideMenu';
+
+import { NewFolder, UploadFile } from 'components/popups/ModelPopups';
+
+import Header from 'parts/Header';
+import SideMenu from 'parts/SideMenu';
 
 export default function Home() {
   // open/close new folder

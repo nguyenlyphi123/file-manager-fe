@@ -1,19 +1,29 @@
+import { useSelector } from 'react-redux';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useCallback, useEffect, useState } from 'react';
+
 import {
+  Avatar,
+  Badge,
   Box,
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControlLabel,
+  FormGroup,
+  Grid,
   IconButton,
   LinearProgress,
   Menu,
   MenuItem,
   Modal,
+  Stack,
+  Tooltip,
 } from '@mui/material';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import React, { useCallback, useEffect, useState } from 'react';
 import {
   AiOutlineClose,
   AiOutlineCloudUpload,
@@ -22,26 +32,21 @@ import {
   AiOutlineEye,
   AiOutlineShareAlt,
 } from 'react-icons/ai';
-import { BiRightArrow } from 'react-icons/bi';
+import { BiRightArrow, BiUpArrow } from 'react-icons/bi';
 import {
   BsBoxArrowRight,
+  BsCheckCircle,
+  BsCheckCircleFill,
   BsPencil,
+  BsPlusCircle,
   BsThreeDots,
   BsTrash,
 } from 'react-icons/bs';
 import { ImSpinner } from 'react-icons/im';
 import { TfiReload } from 'react-icons/tfi';
-import { useSelector } from 'react-redux';
-import {
-  COPY,
-  DELETE,
-  DETAILS,
-  DOWNLOAD,
-  MOVE,
-  RENAME,
-  SHARE,
-} from '../../constants/option';
-import Loading from '../../parts/Loading';
+
+import Loading from 'parts/Loading';
+
 import {
   copyFile,
   deleteFile,
@@ -50,7 +55,8 @@ import {
   removeFileToTrash,
   renameFile,
   restoreFile,
-} from '../../services/fileController';
+  shareFile,
+} from 'services/fileController';
 import {
   copyFolder,
   createFolder,
@@ -62,19 +68,53 @@ import {
   removeFolderToTrash,
   renameFolder,
   restoreFolder,
-} from '../../services/folderController';
-import { uploadFile } from '../../services/gcController';
-import FileIconHelper from '../../utils/helpers/FileIconHelper';
+  shareFolder,
+} from 'services/folderController';
+import { uploadFile } from 'services/gcController';
+import { getSpecialization } from 'services/specializationController';
+import { getClasses } from 'services/classController';
+import { getPupils } from 'services/pupilController';
+
+import {
+  CLASS,
+  PERMISSION_DOWNLOAD,
+  PERMISSION_EDIT,
+  PERMISSION_READ,
+  PERMISSION_READ_WRITE,
+  PERMISSION_SHARE,
+  PERMISSION_WRITE,
+  PUPIL,
+  SPECIALIZATION,
+} from 'constants/constants';
+import {
+  COPY,
+  DELETE,
+  DETAILS,
+  DOWNLOAD,
+  MOVE,
+  RENAME,
+  SHARE,
+} from 'constants/option';
+
+import ErrorToast from 'components/toasts/ErrorToast';
+import SuccessToast from 'components/toasts/SuccessToast';
+import OverlayLoading from 'components/OverlayLoading';
+
+import { hasFFPermission, isAuthor } from 'utils/helpers/Helper';
+import ShareRenderHelper from 'utils/helpers/ShareRenderHelper';
 import {
   FormattedDateTime,
+  Truncate,
   convertBytesToReadableSize,
-} from '../../utils/helpers/TypographyHelper';
-import ErrorToast from '../toasts/ErrorToast';
-import SuccessToast from '../toasts/SuccessToast';
-import OverlayLoading from '../OverlayLoading';
+  validateEmail,
+} from 'utils/helpers/TypographyHelper';
+import FileIconHelper from 'utils/helpers/FileIconHelper';
 
 export const NewFolder = ({ handleClose, open }) => {
-  const { _id } = useSelector((state) => state.curentFolder);
+  const { _id, author, permission } = useSelector(
+    (state) => state.curentFolder,
+  );
+  const user = useSelector((state) => state.user);
 
   const queryClient = useQueryClient();
 
@@ -110,20 +150,41 @@ export const NewFolder = ({ handleClose, open }) => {
           <p className='text-2xl text-gray-700 font-medium'>New Folder</p>
         </div>
 
-        <div className='border-2 border-blue-600 rounded-md py-2 px-4 mt-6'>
-          <input
-            onChange={(e) => setFolder(e.target.value)}
-            type='text'
-            value={folder}
-            placeholder='Untitled folder'
-            className='w-full outline-none text-gray-700 font-medium'
-            autoFocus
-          />
-        </div>
+        {(() => {
+          if (
+            !hasFFPermission(
+              permission,
+              PERMISSION_WRITE,
+              isAuthor(user.id, author),
+            ) &&
+            _id !== null
+          ) {
+            return (
+              <div className='flex items-center justify-center mt-6'>
+                <p className='text-gray-500 text-[0.9em] font-medium'>
+                  You don't have permission to create folder in this folder
+                </p>
+              </div>
+            );
+          } else {
+            return (
+              <div className='border-2 border-blue-600 rounded-md py-2 px-4 mt-6'>
+                <input
+                  onChange={(e) => setFolder(e.target.value)}
+                  type='text'
+                  value={folder}
+                  placeholder='Untitled folder'
+                  className='w-full outline-none text-gray-700 font-medium'
+                  autoFocus
+                />
+              </div>
+            );
+          }
+        })()}
 
         <div className='flex items-center justify-end mt-12'>
           <div
-            onClick={handleClose}
+            onClick={() => handleClose()}
             className='text-blue-600/80 font-medium cursor-pointer py-2 px-6 hover:text-blue-600'
           >
             Cancel
@@ -166,7 +227,7 @@ export const UploadFile = ({ handleClose, open }) => {
 
     const formData = new FormData();
     formData.append('file', blob, file.name);
-    formData.append('folderId', _id);
+    _id !== null && formData.append('folderId', _id);
 
     try {
       await uploadFile(formData);
@@ -273,11 +334,36 @@ export const UploadFile = ({ handleClose, open }) => {
   );
 };
 
+export const ThreeDotsDropDownItem = ({ children, option, onClick, show }) => {
+  if (!show)
+    return (
+      <MenuItem
+        className='group/drop-items flex items-center px-4 py-3 hover:bg-blue-100/30 '
+        disabled
+      >
+        {children}
+      </MenuItem>
+    );
+
+  return (
+    <MenuItem
+      onClick={() => onClick(option)}
+      className='group/drop-items flex items-center px-4 py-3 hover:bg-blue-100/30 '
+    >
+      {children}
+    </MenuItem>
+  );
+};
+
 export const ThreeDotsDropDown = ({
+  data,
   handleSelectOption,
-  className,
   handleShowDelete,
+  className,
 }) => {
+  const user = useSelector((state) => state.user);
+
+  // menu
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -343,51 +429,78 @@ export const ThreeDotsDropDown = ({
               Details
             </p>
           </MenuItem>
-          <MenuItem
-            onClick={() => handleSelectOption(SHARE)}
-            className='group/drop-items flex items-center px-4 py-3 hover:bg-blue-100/30'
+
+          <ThreeDotsDropDownItem
+            option={SHARE}
+            onClick={handleSelectOption}
+            show={hasFFPermission(
+              data.permission,
+              PERMISSION_SHARE,
+              isAuthor(user.id, data.author),
+            )}
           >
             <AiOutlineShareAlt className='mr-4 text-xl text-blue-300 group-hover/drop-items:text-blue-400' />
             <p className='text-gray-500 text-[0.9em] font-medium group-hover/drop-items:text-gray-600'>
               Share
             </p>
-          </MenuItem>
-          <MenuItem
-            onClick={() => handleSelectOption(COPY)}
-            className='group/drop-items flex items-center px-4 py-3 hover:bg-blue-100/30'
+          </ThreeDotsDropDownItem>
+
+          <ThreeDotsDropDownItem
+            option={COPY}
+            onClick={handleSelectOption}
+            show={hasFFPermission(
+              data.permission,
+              PERMISSION_EDIT,
+              isAuthor(user.id, data.author),
+            )}
           >
             <AiOutlineCopy className='mr-4 text-xl text-blue-300 group-hover/drop-items:text-blue-400' />
             <p className='text-gray-500 text-[0.9em] font-medium group-hover/drop-items:text-gray-600'>
               Copy
             </p>
-          </MenuItem>
-          <MenuItem
-            onClick={() => handleSelectOption(MOVE)}
-            className='group/drop-items flex items-center px-4 py-3 hover:bg-blue-100/30'
+          </ThreeDotsDropDownItem>
+
+          <ThreeDotsDropDownItem
+            option={MOVE}
+            onClick={handleSelectOption}
+            show={data?.author === user.id}
           >
             <BsBoxArrowRight className='mr-4 text-xl text-blue-300 group-hover/drop-items:text-blue-400' />
             <p className='text-gray-500 text-[0.9em] font-medium group-hover/drop-items:text-gray-600'>
               Move
             </p>
-          </MenuItem>
-          <MenuItem
-            onClick={() => handleSelectOption(DOWNLOAD)}
-            className='group/drop-items flex items-center px-4 py-3 hover:bg-blue-100/30'
+          </ThreeDotsDropDownItem>
+
+          <ThreeDotsDropDownItem
+            option={DOWNLOAD}
+            onClick={handleSelectOption}
+            show={hasFFPermission(
+              data.permission,
+              PERMISSION_DOWNLOAD,
+              isAuthor(user.id, data.author),
+            )}
           >
             <AiOutlineDownload className='mr-4 text-xl text-blue-300 group-hover/drop-items:text-blue-400' />
             <p className='text-gray-500 text-[0.9em] font-medium group-hover/drop-items:text-gray-600'>
               Download
             </p>
-          </MenuItem>
-          <MenuItem
-            onClick={() => handleSelectOption(RENAME)}
-            className='group/drop-items flex items-center px-4 py-3 hover:bg-blue-100/30'
+          </ThreeDotsDropDownItem>
+
+          <ThreeDotsDropDownItem
+            show={hasFFPermission(
+              data.permission,
+              PERMISSION_EDIT,
+              isAuthor(user.id, data.author),
+            )}
+            option={RENAME}
+            onClick={handleSelectOption}
           >
             <BsPencil className='mr-4 text-xl text-blue-300 group-hover/drop-items:text-blue-400' />
             <p className='text-gray-500 text-[0.9em] font-medium group-hover/drop-items:text-gray-600'>
               Rename
             </p>
-          </MenuItem>
+          </ThreeDotsDropDownItem>
+
           <MenuItem
             onClick={() => {
               handleSelectOption(DELETE);
@@ -511,7 +624,320 @@ export const Detail = ({ handleClose, data, open }) => {
   );
 };
 
+export const SpecializeSelect = ({ handleSelect, handleReturn }) => {
+  // fetch data
+  const { data: specializes, isLoading: specializesLoading } = useQuery({
+    queryKey: ['specializes'],
+    queryFn: getSpecialization,
+    retry: 3,
+  });
+  return (
+    <div className='min-h-[150px] relative'>
+      <p className='text-sm text-gray-600 font-semibold'>Specialization</p>
+      <Grid
+        container
+        spacing={1}
+        sx={{ width: '100%', marginTop: '5px', marginLeft: 0 }}
+      >
+        {specializesLoading ? (
+          <Loading />
+        ) : (
+          specializes?.data?.map((specialize) => (
+            <Grid item xs={6} md={6} lg={6}>
+              <div
+                onClick={() => handleSelect(specialize)}
+                className='border rounded-md py-2 px-2 flex items-center justify-between cursor-pointer'
+              >
+                <p className='m-b-0 text-sm text-gray-700'>{specialize.name}</p>
+                <Avatar
+                  sx={{
+                    height: 20,
+                    width: 20,
+                    fontSize: '70%',
+                    bgcolor: '#1F6CFA',
+                    marginLeft: '10px',
+                  }}
+                >
+                  {specialize.member}
+                </Avatar>
+              </div>
+            </Grid>
+          ))
+        )}
+      </Grid>
+    </div>
+  );
+};
+
+export const ClassSelect = ({ data, handleSelect, handleReturn }) => {
+  // fetch class data
+  const { data: classes, isLoading: classesLoading } = useQuery({
+    queryKey: ['classes'],
+    queryFn: () => getClasses(data?._id),
+    retry: 3,
+  });
+
+  return (
+    <div className='min-h-[150px] relative'>
+      <div className='flex items-center'>
+        <p className='text-sm text-gray-600 font-semibold mr-2'>Classes</p>
+
+        <BiUpArrow
+          onClick={handleReturn}
+          className='text-gray-600 font-semibold cursor-pointer'
+        />
+      </div>
+      <Grid
+        container
+        spacing={1}
+        sx={{ width: '100%', marginTop: '5px', marginLeft: 0 }}
+      >
+        {classesLoading ? (
+          <Loading />
+        ) : (
+          classes?.data?.map((class_) => (
+            <Grid key={class_._id} item xs={3} md={3} lg={3}>
+              <div
+                onClick={() => handleSelect(class_)}
+                className='border rounded-md py-2 px-2 flex items-center justify-between cursor-pointer'
+              >
+                <p className='m-b-0 text-sm text-gray-700'>{class_?.name}</p>
+                <Avatar
+                  sx={{
+                    height: 20,
+                    width: 20,
+                    fontSize: '70%',
+                    bgcolor: '#1F6CFA',
+                    marginLeft: '10px',
+                  }}
+                >
+                  {class_?.pupil?.length}
+                </Avatar>
+              </div>
+            </Grid>
+          ))
+        )}
+      </Grid>
+    </div>
+  );
+};
+
+export const MemberSelect = ({
+  data,
+  handleReturn,
+  memberSelected,
+  handleSelect,
+  handleMutipleMemberSelect,
+}) => {
+  // fetch class data
+  const { data: pupils, isLoading: pupilsLoading } = useQuery({
+    queryKey: ['pupils'],
+    queryFn: () => getPupils(data?._id),
+    retry: 3,
+  });
+
+  // select all
+  const handleSelectAndUnselectAll = () => {
+    handleMutipleMemberSelect(pupils?.data);
+  };
+
+  return (
+    <div className='min-h-[150px] relative'>
+      <div className='flex justify-between items-center'>
+        <div className='flex items-center'>
+          <p className='text-sm text-gray-600 font-semibold mr-2'>Pupils</p>
+
+          <BiUpArrow
+            onClick={handleReturn}
+            className='text-gray-600 font-semibold cursor-pointer'
+          />
+        </div>
+        {memberSelected?.length === pupils?.data?.length &&
+        memberSelected?.length !== 0 ? (
+          <p
+            onClick={handleSelectAndUnselectAll}
+            className='text-gray-600 text-sm font-semibold cursor-pointer'
+          >
+            Remove all
+          </p>
+        ) : (
+          <p
+            onClick={handleSelectAndUnselectAll}
+            className='text-gray-600 text-sm font-semibold cursor-pointer'
+          >
+            Select all
+          </p>
+        )}
+      </div>
+      <Grid
+        container
+        spacing={1}
+        sx={{ width: '100%', marginTop: '5px', marginLeft: 0 }}
+      >
+        {pupilsLoading ? (
+          <Loading />
+        ) : (
+          pupils?.data?.map((pupil) => (
+            <Grid key={pupil._id} item xs={4} md={4} lg={4}>
+              <div
+                onClick={() => handleSelect(pupil)}
+                className='border rounded-md py-2 px-2 flex items-center justify-between cursor-pointer'
+              >
+                <p className='m-b-0 text-[0.85em] text-gray-700 mr-3'>
+                  {pupil?.name}
+                </p>
+
+                <Checkbox
+                  icon={<BsCheckCircle />}
+                  checkedIcon={<BsCheckCircleFill />}
+                  sx={{ padding: '3px' }}
+                  color='success'
+                  checked={
+                    memberSelected?.findIndex(
+                      (item) => item._id === pupil._id,
+                    ) !== -1
+                  }
+                />
+              </div>
+            </Grid>
+          ))
+        )}
+      </Grid>
+    </div>
+  );
+};
+
 export const Share = ({ handleClose, data, open }) => {
+  const user = useSelector((state) => state.user);
+
+  // generate component
+  const [selection, setSelection] = useState(SPECIALIZATION);
+
+  // specializations selected
+  const [specSelected, setSpecSelected] = useState();
+
+  const handleSpecializeItemSelect = (specialize) => {
+    setSelection(CLASS);
+    setSpecSelected(specialize);
+  };
+
+  // classes selected
+  const [classSelected, setClassSelected] = useState();
+
+  const handleClassItemSelect = (class_) => {
+    setSelection(PUPIL);
+    setClassSelected(class_);
+  };
+
+  // return
+  const handleReturn = () => {
+    if (selection === SPECIALIZATION) return handleClose();
+    if (selection === CLASS) return setSelection(SPECIALIZATION);
+    if (selection === PUPIL) return setSelection(CLASS);
+  };
+
+  // pupil selected
+  const [pupilSelected, setPupilSelected] = useState([]);
+
+  const handlePupilItemSelect = (pupil) => {
+    setPupilSelected((prev) => {
+      const index = prev.findIndex((item) => item._id === pupil._id);
+      if (index !== -1) {
+        return prev.filter((item) => item._id !== pupil._id);
+      }
+      return [...prev, pupil];
+    });
+  };
+
+  const handleMutipleMemberSelect = (arr) => {
+    if (pupilSelected?.length === arr?.length) return setPupilSelected([]);
+    if (pupilSelected?.length < arr?.length) {
+      setPupilSelected((prev) => {
+        const newArr = arr?.filter((arr) => {
+          const index = prev.findIndex((item) => item._id === arr._id);
+          if (index === -1) return arr;
+        });
+        return [...prev, ...newArr];
+      });
+    }
+  };
+
+  // email input
+  const [email, setEmail] = useState();
+
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+  };
+
+  const handleAddEmail = () => {
+    setPupilSelected((prev) => {
+      return [...prev, { email: email }];
+    });
+    setEmail();
+  };
+
+  // permission
+  const [permission, setPermission] = useState([
+    PERMISSION_READ,
+    PERMISSION_DOWNLOAD,
+    PERMISSION_SHARE,
+  ]);
+
+  const handleChangePermission = (e) => {
+    setPermission((prev) => {
+      if (permission.length < 0) return [e.target.value];
+
+      if (permission.length < 0 && e.target.value === PERMISSION_READ_WRITE)
+        return [PERMISSION_READ, PERMISSION_WRITE];
+
+      if (e.target.value === PERMISSION_READ_WRITE) {
+        if (prev?.includes(PERMISSION_WRITE && PERMISSION_READ))
+          return prev?.filter(
+            (item) => item !== PERMISSION_WRITE && item !== PERMISSION_READ,
+          );
+        if (prev?.includes(PERMISSION_READ && !PERMISSION_WRITE))
+          return [...prev, PERMISSION_WRITE];
+        if (prev?.includes(PERMISSION_WRITE && !PERMISSION_READ))
+          return [...prev, PERMISSION_READ];
+        return [...prev, PERMISSION_READ, PERMISSION_WRITE];
+      }
+
+      if (prev?.includes(e.target.value)) {
+        return prev?.filter((item) => item !== e.target.value);
+      }
+
+      return [...prev, e.target.value];
+    });
+  };
+
+  const shareMutation = data.type ? shareFile : shareFolder;
+
+  // handle share
+  const handleShare = useMutation({
+    mutationFn: () => {
+      const emails = pupilSelected?.map((pupil) => pupil.email);
+      const permissions =
+        !permission || permission.length === 0 ? [PERMISSION_READ] : permission;
+
+      return shareMutation(
+        data.type
+          ? { emails, fileId: data._id }
+          : { emails, permissions, folderId: data._id },
+      );
+    },
+    onSuccess: () => {
+      SuccessToast({
+        message: `${data.type ? 'File' : 'Folder'} was shared successfully`,
+      });
+      handleClose();
+    },
+    onError: () => {
+      ErrorToast({
+        message: 'Oops! Something went wrong. Please try again later',
+      });
+    },
+  });
+
   return (
     <Modal
       keepMounted
@@ -537,28 +963,163 @@ export const Share = ({ handleClose, data, open }) => {
         </div>
 
         <div className='py-2 px-8 border-b'>
-          <div className='flex items-center py-2'>
-            <span className='text-[0.9em] text-gray-400 font-medium mr-4'>
-              To
-            </span>
-            <input
-              type='text'
-              name=''
-              value=''
-              placeholder='Email or Name'
-              autoFocus
-              className='p-1 w-full outline-none'
-            />
+          <div className='flex flex-col py-2'>
+            <div className='flex items-center'>
+              <span className='text-[0.9em] text-gray-400 font-medium mr-4'>
+                To
+              </span>
+              <input
+                type='text'
+                value={email ? email : ''}
+                placeholder='Email or Name'
+                autoFocus
+                className='p-1 w-full outline-none'
+                onChange={handleEmailChange}
+              />
+              {email && validateEmail(email) && (
+                <BsPlusCircle
+                  className='text-lg text-gray-500 hover:text-gray-700'
+                  onClick={handleAddEmail}
+                />
+              )}
+            </div>
+
+            {pupilSelected?.length > 0 && (
+              <div className='border rounded mt-3 p-3 max-h-[200px] overflow-y-scroll'>
+                <Grid container spacing={1}>
+                  {pupilSelected?.map((pupil) => (
+                    <Grid key={pupil._id} item xs={4} md={4} lg={4}>
+                      <Tooltip title={pupil.email} placement='top'>
+                        <div className='flex justify-between items-center text-gray-700 border rounded-md px-2 py-1'>
+                          <Avatar sx={{ height: '20px', width: '20px' }} />
+                          <p className='text-[13px] font-semibold'>
+                            {Truncate(pupil.email, 13)}
+                          </p>
+                          <AiOutlineClose
+                            onClick={() => handlePupilItemSelect(pupil)}
+                            className='cursor-pointer'
+                          />
+                        </div>
+                      </Tooltip>
+                    </Grid>
+                  ))}
+                </Grid>
+              </div>
+            )}
           </div>
         </div>
 
         <div className='px-8 py-4'>
-          <textarea
-            rows=''
-            cols=''
-            placeholder='Add a Message'
-            className='w-full min-h-[200px] outline-none'
-          />
+          {
+            <ShareRenderHelper
+              selection={selection}
+              handleSpecSelect={handleSpecializeItemSelect}
+              handleClassSelect={handleClassItemSelect}
+              handlePupilSelect={handlePupilItemSelect}
+              handleMutipleMemberSelect={handleMutipleMemberSelect}
+              handleReturn={handleReturn}
+              specData={specSelected}
+              classData={classSelected}
+              pupilData={pupilSelected}
+            />
+          }
+          {isAuthor(user.id, data.author) && pupilSelected?.length > 0 && (
+            <div className='mt-5'>
+              <p className='text-sm text-gray-600 font-semibold'>Permission</p>
+              <FormGroup
+                row
+                sx={{ marginLeft: 0, marginRight: 0, justifyContent: 'center' }}
+              >
+                {!data.type && (
+                  <>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          size='small'
+                          checked={permission?.includes(PERMISSION_READ)}
+                        />
+                      }
+                      label={<p className='text-sm text-gray-700'>Read</p>}
+                      value={PERMISSION_READ}
+                      onChange={handleChangePermission}
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          size='small'
+                          checked={permission?.includes(PERMISSION_WRITE)}
+                        />
+                      }
+                      label={<p className='text-sm text-gray-700'>Write</p>}
+                      value={PERMISSION_WRITE}
+                      onChange={handleChangePermission}
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          size='small'
+                          checked={
+                            permission?.includes(PERMISSION_READ) &&
+                            permission?.includes(PERMISSION_WRITE)
+                              ? true
+                              : false
+                          }
+                        />
+                      }
+                      label={
+                        <p className='text-sm text-gray-700'>Read & Write</p>
+                      }
+                      value={PERMISSION_READ_WRITE}
+                      onChange={handleChangePermission}
+                    />
+                  </>
+                )}
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      size='small'
+                      checked={permission?.includes(PERMISSION_DOWNLOAD)}
+                    />
+                  }
+                  label={<p className='text-sm text-gray-700'>Download</p>}
+                  value={PERMISSION_DOWNLOAD}
+                  defaultChecked
+                  onChange={handleChangePermission}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      size='small'
+                      checked={permission?.includes(PERMISSION_SHARE)}
+                    />
+                  }
+                  label={<p className='text-sm text-gray-700'>Share</p>}
+                  value={PERMISSION_SHARE}
+                  onChange={handleChangePermission}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      size='small'
+                      checked={permission?.includes(PERMISSION_EDIT)}
+                    />
+                  }
+                  label={<p className='text-sm text-gray-700'>Edit</p>}
+                  value={PERMISSION_EDIT}
+                  onChange={handleChangePermission}
+                />
+              </FormGroup>
+            </div>
+          )}
+          <div className='mt-5'>
+            <p className='text-sm text-gray-600 font-semibold'>Message</p>
+            <textarea
+              rows=''
+              cols=''
+              placeholder='Add a message'
+              className='w-full border rounded outline-none p-3 py-2 ml-2 mt-2'
+            />
+          </div>
         </div>
 
         <div className='flex justify-end items-center py-3 px-8 bg-[#E5E9F2]'>
@@ -569,8 +1130,15 @@ export const Share = ({ handleClose, data, open }) => {
             Cancel
           </div>
 
-          <div className='bg-blue-700/60 py-2 px-5 rounded-md text-white font-medium cursor-pointer hover:bg-blue-700/80 duration-200'>
-            Share
+          <div
+            onClick={() => handleShare.mutate()}
+            className='bg-blue-700/60 flex justify-center items-center py-2 px-5 min-w-[80px] h-[37px] rounded-md text-white text-[0.9em] font-medium cursor-pointer hover:bg-blue-700/80 duration-200'
+          >
+            {handleShare.isLoading ? (
+              <ImSpinner className='animate-spin' />
+            ) : (
+              'Share'
+            )}
           </div>
         </div>
       </Box>
@@ -1005,14 +1573,16 @@ export const Rename = ({ handleClose, data, open }) => {
       if (data.type) {
         queryClient.invalidateQueries(['files']);
         queryClient.invalidateQueries(['file']);
+        queryClient.invalidateQueries(['file-shared']);
       }
       queryClient.invalidateQueries(['folders']);
       queryClient.invalidateQueries(['folder']);
+      queryClient.invalidateQueries(['folder-shared']);
     },
-    onError: () => {
+    onError: (err) => {
       handleClose();
       ErrorToast({
-        message: 'Opps! Something went wrong. Please try again later',
+        message: err.response.data.message,
       });
     },
   });
@@ -1080,15 +1650,19 @@ export const FolderDeleteConfirm = ({ open, handleClose, data }) => {
       if (data.type) {
         queryClient.invalidateQueries(['files']);
         queryClient.invalidateQueries(['file']);
+        queryClient.invalidateQueries(['file-shared']);
+
         return;
       }
       queryClient.invalidateQueries(['folders']);
       queryClient.invalidateQueries(['folder']);
+      queryClient.invalidateQueries(['folder-shared']);
     },
-    onError: () => {
+    onError: (err) => {
+      console.log(err);
       handleClose();
       ErrorToast({
-        message: 'Opps! Something went wrong. Please try again later',
+        message: err.response.data.message,
       });
     },
   });
@@ -1297,7 +1871,7 @@ export const FolderDownloadConfirm = ({ open, handleClose, data }) => {
       console.log(error);
       ErrorToast({
         message:
-          'Opps! Something went wrong while preparing data for download folder. Please try again later!',
+          'Data preparation for download failed, or you do not have permission to download. Please contact your manager for more information.',
       });
       setLoading(false);
     }

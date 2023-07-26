@@ -4,24 +4,21 @@ import { AiFillStar } from 'react-icons/ai';
 import { BsDot } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 
-import { starFolder, unstarFolder } from '../../services/folderController';
-import {
-  downloadFile,
-  starFile,
-  unstarFile,
-} from '../../services/fileController';
+import { starFolder, unstarFolder } from 'services/folderController';
+import { downloadFile, starFile, unstarFile } from 'services/fileController';
 
-import FileIconHelper from '../../utils/helpers/FileIconHelper';
-import OptionHelper from '../../utils/helpers/OptionHelper';
-import { ThreeDotsDropDown } from '../popups/ModelPopups';
+import FileIconHelper from 'utils/helpers/FileIconHelper';
+import OptionHelper from 'utils/helpers/OptionHelper';
 import {
   FormattedDate,
   Truncate,
   convertBytesToReadableSize,
-} from '../../utils/helpers/TypographyHelper';
+} from 'utils/helpers/TypographyHelper';
 
-import SuccessToast from '../toasts/SuccessToast';
-import ErrorToast from '../toasts/SuccessToast';
+import SuccessToast from 'components/toasts/SuccessToast';
+import ErrorToast from 'components/toasts/ErrorToast';
+import { ThreeDotsDropDown } from 'components/popups/ModelPopups';
+
 import { Tooltip } from '@mui/material';
 
 export default function MediumCard({ data, onClick, isFolder = true }) {
@@ -133,7 +130,7 @@ export default function MediumCard({ data, onClick, isFolder = true }) {
     } catch (error) {
       ErrorToast({
         message:
-          'Opps! Something went wrong while preparing data for download folder. Please try again later!',
+          'Data preparation for download failed, or you do not have permission to download. Please contact your manager for more information.',
       });
     }
   }, [data]);
@@ -155,6 +152,7 @@ export default function MediumCard({ data, onClick, isFolder = true }) {
               handleSelectOption={handleSelectOption}
               handleShowDelete={handleShowDelete}
               className='rounded-[50%] h-[18px] text-gray-600'
+              data={data}
             />
           </div>
 

@@ -6,7 +6,7 @@ export default function ErrorToast({ message }) {
   return toast(
     <Alert variant='outlined' severity='error' onClose={() => toast.dismiss()}>
       <AlertTitle sx={{ fontWeight: '600', fontSize: '18', color: '#D74242' }}>
-        Success
+        Error
       </AlertTitle>
       {message}
     </Alert>,

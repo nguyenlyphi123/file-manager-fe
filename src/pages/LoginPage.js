@@ -2,8 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ImSpinner } from 'react-icons/im';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { DangerAlert } from '../parts/AlertPopup';
-import { loadUser, logIn } from '../redux/slices/user';
+
+import { DangerAlert } from 'parts/AlertPopup';
+import { loadUser, logIn } from 'redux/slices/user';
 
 export default function LoginPage() {
   // redirect if user logged in

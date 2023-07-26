@@ -16,6 +16,7 @@ const Home = React.lazy(() => import('./components/home'));
 const Recovery = React.lazy(() => import('./components/recovery'));
 const Settings = React.lazy(() => import('./components/settings'));
 const Starred = React.lazy(() => import('./components/starred'));
+const Shared = React.lazy(() => import('./components/shared'));
 
 const MyFolder = React.lazy(() => import('./components/folders/my-folder'));
 const DetailFolder = React.lazy(() =>
@@ -86,6 +87,14 @@ function App() {
               element={
                 <Suspense fallback={<PageLoading />}>
                   <Starred />
+                </Suspense>
+              }
+            />
+            <Route
+              path='shared'
+              element={
+                <Suspense fallback={<PageLoading />}>
+                  <Shared />
                 </Suspense>
               }
             />

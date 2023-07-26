@@ -45,15 +45,17 @@ export const logOut = createAsyncThunk(
   },
 );
 
+const initializeState = {
+  id: null,
+  name: null,
+  email: null,
+  permission: null,
+  isAuthenticated: false,
+};
+
 const user = createSlice({
   name: 'user',
-  initialState: {
-    id: '',
-    name: '',
-    email: '',
-    isLecturers: false,
-    isAuthenticated: false,
-  },
+  initialState: initializeState,
   reducers: {
     Authenticate: (state, { payload }) => {
       return {
@@ -61,20 +63,11 @@ const user = createSlice({
         id: payload?.id,
         name: payload?.name,
         email: payload?.email,
-        isLecturers: payload?.lecturers,
+        permission: payload?.permission,
         isAuthenticated: true,
       };
     },
-    Logout: (state) => {
-      return {
-        ...state,
-        id: '',
-        name: '',
-        email: '',
-        isLecturers: false,
-        isAuthenticated: false,
-      };
-    },
+    Logout: (state) => (state = initializeState),
   },
   extraReducers: (builder) => {
     builder
@@ -84,20 +77,11 @@ const user = createSlice({
           id: payload?.id,
           name: payload?.name,
           email: payload?.email,
-          isLecturers: payload?.lecturers,
+          permission: payload?.permission,
           isAuthenticated: payload?.id ? true : false,
         };
       })
-      .addCase(logOut.fulfilled, (state) => {
-        return {
-          ...state,
-          id: '',
-          name: '',
-          email: '',
-          isLecturers: false,
-          isAuthenticated: false,
-        };
-      });
+      .addCase(logOut.fulfilled, (state) => (state = initializeState));
   },
 });
 

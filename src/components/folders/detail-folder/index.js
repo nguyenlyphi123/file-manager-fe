@@ -1,16 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
-import MediumCard from '../../cards/MediumCard';
-import Loading from '../../../parts/Loading';
+import Loading from 'parts/Loading';
 
-import { pushLocation } from '../../../redux/slices/location';
-import { setCurrentFolder } from '../../../redux/slices/curentFolder';
+import MediumCard from 'components/cards/MediumCard';
 
-import { getFileByFolder } from '../../../services/fileController';
-import { getFolderDetail } from '../../../services/folderController';
+import { setCurrentFolder } from 'redux/slices/curentFolder';
+import { pushLocation } from 'redux/slices/location';
+
+import { getFileByFolder } from 'services/fileController';
+import { getFolderDetail } from 'services/folderController';
+import EmptyData from 'components/EmptyData';
 
 export default function DetailFolder() {
   // fetch folder and file data
@@ -45,6 +47,9 @@ export default function DetailFolder() {
   }, [location]);
 
   if (folderLoading || fileLoading) return <Loading />;
+
+  if (folders?.data?.length === 0 && files.data?.length === 0)
+    return <EmptyData message='You do not have any folders or files yet' />;
 
   return (
     <>

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import '../stylesheet/PageLoading.css';
+import 'stylesheet/PageLoading.css';
 
 export default function PageLoading() {
   return (

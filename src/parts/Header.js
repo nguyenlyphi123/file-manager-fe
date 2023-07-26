@@ -3,7 +3,8 @@ import { FiFolder } from 'react-icons/fi';
 import { IoMdNotificationsOutline } from 'react-icons/io';
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { logOut } from '../redux/slices/user';
+
+import { logOut } from 'redux/slices/user';
 
 export default function Header() {
   const dispatch = useDispatch();

@@ -4,24 +4,21 @@ import { BsDot } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { starFolder, unstarFolder } from '../../services/folderController';
-import {
-  downloadFile,
-  starFile,
-  unstarFile,
-} from '../../services/fileController';
+import { starFolder, unstarFolder } from 'services/folderController';
+import { downloadFile, starFile, unstarFile } from 'services/fileController';
 
-import FileIconHelper from '../../utils/helpers/FileIconHelper';
-import OptionHelper from '../../utils/helpers/OptionHelper';
+import FileIconHelper from 'utils/helpers/FileIconHelper';
+import OptionHelper from 'utils/helpers/OptionHelper';
 import {
   FormattedDate,
   Truncate,
   convertBytesToReadableSize,
-} from '../../utils/helpers/TypographyHelper';
-import { ThreeDotsDropDown } from '../popups/ModelPopups';
+} from 'utils/helpers/TypographyHelper';
 
-import ErrorToast from '../toasts/ErrorToast';
-import SuccessToast from '../toasts/SuccessToast';
+import { ThreeDotsDropDown } from '../popups/ModelPopups';
+import ErrorToast from 'components/toasts/ErrorToast';
+import SuccessToast from 'components/toasts/SuccessToast';
+
 import { Tooltip } from '@mui/material';
 
 const LargeCard = ({ data, onClick, isFolder = true }) => {
@@ -150,6 +147,7 @@ const LargeCard = ({ data, onClick, isFolder = true }) => {
               handleSelectOption={handleSelectOption}
               handleShowDelete={handleShowDelete}
               className='rounded-[50%] h-[18px] text-gray-600'
+              data={data}
             />
           </div>
 

@@ -5,7 +5,6 @@ import { Provider } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import App from './App';
-import AuthContextProvider from './contexts/authContext';
 import './index.css';
 import store from './redux/store';
 import reportWebVitals from './reportWebVitals';
@@ -19,26 +18,24 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <CustomRouter history={history}>
-        <AuthContextProvider>
-          <QueryClientProvider client={queryClient}>
-            <ToastContainer
-              position='top-right'
-              autoClose={3000}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              pauseOnHover={false}
-              draggable
-              theme='light'
-              style={{ width: 'fit-content' }}
-              toastStyle={{
-                padding: 0,
-                boxShadow: 'rgba(0, 0, 0, 0.16) 0px 1px 4px',
-              }}
-            />
-            <App />
-          </QueryClientProvider>
-        </AuthContextProvider>
+        <QueryClientProvider client={queryClient}>
+          <ToastContainer
+            position='top-right'
+            autoClose={3000}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            pauseOnHover={false}
+            draggable
+            theme='light'
+            style={{ width: 'fit-content' }}
+            toastStyle={{
+              padding: 0,
+              boxShadow: 'rgba(0, 0, 0, 0.16) 0px 1px 4px',
+            }}
+          />
+          <App />
+        </QueryClientProvider>
       </CustomRouter>
     </Provider>
   </React.StrictMode>,

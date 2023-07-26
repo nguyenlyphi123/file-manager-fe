@@ -2,8 +2,10 @@ import React, { useEffect } from 'react';
 import { TiArrowSortedDown } from 'react-icons/ti';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet } from 'react-router-dom';
-import { locationSelector, pushTab } from '../../redux/slices/location';
-import { CustomedBreadcrumbs } from '../Breadcrumbs';
+
+import { locationSelector, pushTab } from 'redux/slices/location';
+
+import { CustomedBreadcrumbs } from 'components/Breadcrumbs';
 
 export default function Folders() {
   // redux

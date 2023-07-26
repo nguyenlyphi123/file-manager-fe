@@ -1,11 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import Loading from '../../../parts/Loading';
-import { setCurrentFolder } from '../../../redux/slices/curentFolder';
-import { pushLocation, removeLocation } from '../../../redux/slices/location';
-import { getFolderList } from '../../../services/folderController';
-import LargeCard from '../../cards/LargeCard';
+
+import Loading from 'parts/Loading';
+
+import { setCurrentFolder } from 'redux/slices/curentFolder';
+import { pushLocation, removeLocation } from 'redux/slices/location';
+import { getFolderList } from 'services/folderController';
+
+import LargeCard from 'components/cards/LargeCard';
+import EmptyData from 'components/EmptyData';
 
 export default function MyFolder() {
   // dispatch action redux
@@ -32,6 +36,9 @@ export default function MyFolder() {
     queryFn: async () => await getFolderList(),
     retry: 3,
   });
+
+  if (folders?.data?.length === 0)
+    return <EmptyData message='You do not have any folders yet' />;
 
   if (folderLoading) return <Loading />;
 

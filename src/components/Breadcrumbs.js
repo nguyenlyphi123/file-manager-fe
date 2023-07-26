@@ -3,8 +3,9 @@ import { Link as StyledLink } from '@mui/material';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { pushLocation } from '../redux/slices/location';
-import { resetCurrentFolder } from '../redux/slices/curentFolder';
+
+import { pushLocation } from 'redux/slices/location';
+import { resetCurrentFolder } from 'redux/slices/curentFolder';
 
 export const CustomedBreadcrumbs = ({ location }) => {
   const dispatch = useDispatch();

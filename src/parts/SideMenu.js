@@ -1,12 +1,12 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
-import { AiOutlineHome } from 'react-icons/ai';
+import { AiOutlineHome, AiOutlineShareAlt } from 'react-icons/ai';
 import { FiFile, FiFolder, FiSettings, FiStar, FiTrash } from 'react-icons/fi';
 import { useDispatch } from 'react-redux';
-import { removeLocation } from '../redux/slices/location';
-import { resetCurrentFolder } from '../redux/slices/curentFolder';
-import SideMenuItem from './SideMenuItem';
+
+import { removeLocation } from 'redux/slices/location';
+import { resetCurrentFolder } from 'redux/slices/curentFolder';
+import SideMenuItem from 'parts/SideMenuItem';
 
 export default function SideMenu() {
   // dispatch action redux
@@ -65,6 +65,18 @@ export default function SideMenu() {
         </div>
 
         <div className='text-[#526484] text-md font-medium'>Starred</div>
+      </SideMenuItem>
+
+      <SideMenuItem
+        onClick={handleClick}
+        to='shared'
+        className='cursor-pointer flex items-center p-2 pl-4 my-2 rounded-md hover:bg-[#EFF1FF] duration-200'
+      >
+        <div className='text-[#8094AE] text-xl font-bold mr-4'>
+          <AiOutlineShareAlt />
+        </div>
+
+        <div className='text-[#526484] text-md font-medium'>Shared with me</div>
       </SideMenuItem>
 
       <SideMenuItem
