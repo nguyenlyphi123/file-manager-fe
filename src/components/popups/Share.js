@@ -13,6 +13,9 @@ import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
 import {
   CLASS,
+  LECTURERS,
+  MANAGER,
+  MEMBER,
   PERMISSION_DOWNLOAD,
   PERMISSION_EDIT,
   PERMISSION_READ,
@@ -23,7 +26,7 @@ import {
   SPECIALIZATION,
 } from 'constants/constants';
 import Loading from 'parts/Loading';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import { BiUpArrow } from 'react-icons/bi';
 import { BsCheckCircle, BsCheckCircleFill, BsPlusCircle } from 'react-icons/bs';
@@ -32,6 +35,7 @@ import { useSelector } from 'react-redux';
 import { getClasses } from 'services/classController';
 import { shareFile } from 'services/fileController';
 import { shareFolder } from 'services/folderController';
+import { getLecturersBySpecialize } from 'services/lecturersController';
 import { getPupils } from 'services/pupilController';
 import { getSpecialization } from 'services/specializationController';
 import FileIconHelper from 'utils/helpers/FileIconHelper';
@@ -84,7 +88,14 @@ export const SpecializeSelect = ({ handleSelect, handleReturn }) => {
   );
 };
 
-export const ClassSelect = ({ data, handleSelect, handleReturn }) => {
+export const ClassSelect = ({
+  data,
+  memberSelected,
+  handleSelect,
+  handleReturn,
+  handleMemberSelect,
+  handleMutipleMemberSelect,
+}) => {
   // fetch class data
   const { data: classes, isLoading: classesLoading } = useQuery({
     queryKey: ['classes'],
@@ -92,48 +103,126 @@ export const ClassSelect = ({ data, handleSelect, handleReturn }) => {
     retry: 3,
   });
 
-  return (
-    <div className='min-h-[150px] relative'>
-      <div className='flex items-center'>
-        <p className='text-sm text-gray-600 font-semibold mr-2'>Classes</p>
+  const { data: lecturers, isLoading: lecturersLoading } = useQuery({
+    queryKey: ['lecturers'],
+    queryFn: () => getLecturersBySpecialize(data?._id),
+    retry: 3,
+  });
 
-        <BiUpArrow
-          onClick={handleReturn}
-          className='text-gray-600 font-semibold cursor-pointer'
-        />
-      </div>
-      <Grid
-        container
-        spacing={1}
-        sx={{ width: '100%', marginTop: '5px', marginLeft: 0 }}
-      >
-        {classesLoading ? (
-          <Loading />
-        ) : (
-          classes?.data?.map((class_) => (
-            <Grid key={class_._id} item xs={3} md={3} lg={3}>
-              <div
-                onClick={() => handleSelect(class_)}
-                className='border rounded-md py-2 px-2 flex items-center justify-between cursor-pointer'
-              >
-                <p className='m-b-0 text-sm text-gray-700'>{class_?.name}</p>
-                <Avatar
-                  sx={{
-                    height: 20,
-                    width: 20,
-                    fontSize: '70%',
-                    bgcolor: '#1F6CFA',
-                    marginLeft: '10px',
-                  }}
+  // select all
+  const handleSelectAndUnselectAll = () => {
+    handleMutipleMemberSelect(lecturers?.data);
+  };
+
+  return (
+    <>
+      <div className='min-h-[100px] relative'>
+        <div className='flex items-center'>
+          <p className='text-sm text-gray-600 font-semibold mr-2'>Classes</p>
+
+          <BiUpArrow
+            onClick={handleReturn}
+            className='text-gray-600 font-semibold cursor-pointer'
+          />
+        </div>
+        <Grid
+          container
+          spacing={1}
+          sx={{ width: '100%', marginTop: '5px', marginLeft: 0 }}
+        >
+          {classesLoading ? (
+            <Loading />
+          ) : (
+            classes?.data?.map((class_) => (
+              <Grid key={class_._id} item xs={2} md={2} lg={2}>
+                <div
+                  onClick={() => handleSelect(class_)}
+                  className='border rounded-md py-1 px-2 flex items-center justify-between cursor-pointer'
                 >
-                  {class_?.pupil?.length}
-                </Avatar>
-              </div>
-            </Grid>
-          ))
-        )}
-      </Grid>
-    </div>
+                  <p className='m-b-0 text-xs text-gray-700'>{class_?.name}</p>
+                  <Avatar
+                    sx={{
+                      height: 20,
+                      width: 20,
+                      fontSize: '70%',
+                      bgcolor: '#1F6CFA',
+                      marginLeft: '10px',
+                    }}
+                  >
+                    {class_?.pupil?.length}
+                  </Avatar>
+                </div>
+              </Grid>
+            ))
+          )}
+        </Grid>
+      </div>
+
+      <div className='relative min-h-[100px] max-h-[200px] overflow-y-scroll'>
+        <div className='flex justify-between items-center pr-2'>
+          <div className='flex items-center'>
+            <p className='text-sm text-gray-600 font-semibold mr-2'>
+              Lecturers
+            </p>
+          </div>
+          {lecturers?.data.every((item) => memberSelected?.includes(item)) &&
+          memberSelected?.length !== 0 ? (
+            <p
+              onClick={handleSelectAndUnselectAll}
+              className='text-gray-600 text-sm font-semibold cursor-pointer'
+            >
+              Remove all
+            </p>
+          ) : (
+            <p
+              onClick={handleSelectAndUnselectAll}
+              className='text-gray-600 text-sm font-semibold cursor-pointer'
+            >
+              Select all
+            </p>
+          )}
+        </div>
+        <Grid
+          container
+          spacing={1}
+          sx={{
+            width: '100%',
+            marginTop: '5px',
+            marginLeft: 0,
+            paddingRight: 1,
+          }}
+        >
+          {lecturersLoading ? (
+            <Loading />
+          ) : (
+            lecturers?.data?.map((lecturers) => (
+              <Grid key={lecturers._id} item xs={3} md={3} lg={3}>
+                <div
+                  onClick={() => handleMemberSelect(lecturers)}
+                  className='border rounded-md py-1 px-2 flex items-center justify-between cursor-pointer'
+                >
+                  <p className='m-b-0 text-[0.85em] text-gray-700 mr-3'>
+                    {lecturers?.name}
+                  </p>
+
+                  <Checkbox
+                    icon={<BsCheckCircle />}
+                    checkedIcon={<BsCheckCircleFill />}
+                    sx={{ padding: '3px' }}
+                    color='success'
+                    checked={
+                      memberSelected?.findIndex(
+                        (item) => item._id === lecturers._id,
+                      ) !== -1
+                    }
+                  />
+                </div>
+              </Grid>
+            ))
+          )}
+        </Grid>
+      </div>
+    </>
   );
 };
 
@@ -157,8 +246,8 @@ export const MemberSelect = ({
   };
 
   return (
-    <div className='min-h-[150px] relative'>
-      <div className='flex justify-between items-center'>
+    <div className='min-h-[150px] max-h-[300px] overflow-y-scroll relative'>
+      <div className='flex justify-between items-center pr-2'>
         <div className='flex items-center'>
           <p className='text-sm text-gray-600 font-semibold mr-2'>Pupils</p>
 
@@ -167,7 +256,7 @@ export const MemberSelect = ({
             className='text-gray-600 font-semibold cursor-pointer'
           />
         </div>
-        {memberSelected?.length === pupils?.data?.length &&
+        {pupils?.data.every((item) => memberSelected?.includes(item)) &&
         memberSelected?.length !== 0 ? (
           <p
             onClick={handleSelectAndUnselectAll}
@@ -187,16 +276,16 @@ export const MemberSelect = ({
       <Grid
         container
         spacing={1}
-        sx={{ width: '100%', marginTop: '5px', marginLeft: 0 }}
+        sx={{ width: '100%', marginTop: '5px', marginLeft: 0, paddingRight: 1 }}
       >
         {pupilsLoading ? (
           <Loading />
         ) : (
           pupils?.data?.map((pupil) => (
-            <Grid key={pupil._id} item xs={4} md={4} lg={4}>
+            <Grid key={pupil._id} item xs={3} md={3} lg={3}>
               <div
                 onClick={() => handleSelect(pupil)}
-                className='border rounded-md py-2 px-2 flex items-center justify-between cursor-pointer'
+                className='border rounded-md py-1 px-2 flex items-center justify-between cursor-pointer'
               >
                 <p className='m-b-0 text-[0.85em] text-gray-700 mr-3'>
                   {pupil?.name}
@@ -226,7 +315,23 @@ export const Share = ({ handleClose, data, open }) => {
   const user = useSelector((state) => state.user);
 
   // generate component
-  const [selection, setSelection] = useState(SPECIALIZATION);
+  const initSelection = useMemo(() => {
+    switch (user.permission) {
+      case MANAGER:
+        break;
+
+      case LECTURERS:
+        return SPECIALIZATION;
+
+      case PUPIL:
+        return MEMBER;
+
+      default:
+        break;
+    }
+  }, []);
+
+  const [selection, setSelection] = useState(initSelection);
 
   // specializations selected
   const [specSelected, setSpecSelected] = useState();
@@ -240,7 +345,7 @@ export const Share = ({ handleClose, data, open }) => {
   const [classSelected, setClassSelected] = useState();
 
   const handleClassItemSelect = (class_) => {
-    setSelection(PUPIL);
+    setSelection(MEMBER);
     setClassSelected(class_);
   };
 
@@ -248,14 +353,14 @@ export const Share = ({ handleClose, data, open }) => {
   const handleReturn = () => {
     if (selection === SPECIALIZATION) return handleClose();
     if (selection === CLASS) return setSelection(SPECIALIZATION);
-    if (selection === PUPIL) return setSelection(CLASS);
+    if (selection === MEMBER) return setSelection(CLASS);
   };
 
   // pupil selected
-  const [pupilSelected, setPupilSelected] = useState([]);
+  const [memberSelected, setMemberSelected] = useState([]);
 
-  const handlePupilItemSelect = (pupil) => {
-    setPupilSelected((prev) => {
+  const handleMemberItemSelect = (pupil) => {
+    setMemberSelected((prev) => {
       const index = prev.findIndex((item) => item._id === pupil._id);
       if (index !== -1) {
         return prev.filter((item) => item._id !== pupil._id);
@@ -265,15 +370,15 @@ export const Share = ({ handleClose, data, open }) => {
   };
 
   const handleMutipleMemberSelect = (arr) => {
-    if (pupilSelected?.length === arr?.length) return setPupilSelected([]);
-    if (pupilSelected?.length < arr?.length) {
-      setPupilSelected((prev) => {
-        const newArr = arr?.filter((arr) => {
-          const index = prev.findIndex((item) => item._id === arr._id);
-          if (index === -1) return arr;
-        });
-        return [...prev, ...newArr];
+    if (arr.every((item) => memberSelected?.includes(item))) {
+      return setMemberSelected((prev) => {
+        return prev.filter((item) => !arr.includes(item));
       });
+    }
+
+    if (!memberSelected?.includes(arr)) {
+      const newArr = arr?.filter((item) => !memberSelected?.includes(item));
+      return setMemberSelected((prev) => [...prev, ...newArr]);
     }
   };
 
@@ -285,7 +390,7 @@ export const Share = ({ handleClose, data, open }) => {
   };
 
   const handleAddEmail = () => {
-    setPupilSelected((prev) => {
+    setMemberSelected((prev) => {
       return [...prev, { email: email }];
     });
     setEmail();
@@ -330,7 +435,7 @@ export const Share = ({ handleClose, data, open }) => {
   // handle share
   const handleShare = useMutation({
     mutationFn: () => {
-      const emails = pupilSelected?.map((pupil) => pupil.email);
+      const emails = memberSelected?.map((pupil) => pupil.email);
       const permissions =
         !permission || permission.length === 0 ? [PERMISSION_READ] : permission;
 
@@ -361,7 +466,7 @@ export const Share = ({ handleClose, data, open }) => {
       aria-labelledby='keep-mounted-modal-title'
       aria-describedby='keep-mounted-modal-description'
     >
-      <Box className='bg-white shadow-md rounded-lg w-[40%] absolute top-[50%] left-[50%] translate-x-[-50%]  translate-y-[-50%] overflow-hidden'>
+      <Box className='bg-white shadow-md rounded-lg w-[50%] absolute top-[50%] left-[50%] translate-x-[-50%]  translate-y-[-50%] overflow-hidden'>
         <div className='border-b'>
           <div className='flex justify-between items-center py-4 px-8'>
             <div className='flex items-center'>
@@ -399,11 +504,11 @@ export const Share = ({ handleClose, data, open }) => {
               )}
             </div>
 
-            {pupilSelected?.length > 0 && (
+            {memberSelected?.length > 0 && (
               <div className='border rounded mt-3 p-3 max-h-[200px] overflow-y-scroll'>
                 <Grid container spacing={1}>
-                  {pupilSelected?.map((pupil) => (
-                    <Grid key={pupil._id} item xs={4} md={4} lg={4}>
+                  {memberSelected?.map((pupil) => (
+                    <Grid key={pupil._id} item xs={3} md={3} lg={3}>
                       <Tooltip title={pupil.email} placement='top'>
                         <div className='flex justify-between items-center text-gray-700 border rounded-md px-2 py-1'>
                           <Avatar sx={{ height: '20px', width: '20px' }} />
@@ -411,7 +516,7 @@ export const Share = ({ handleClose, data, open }) => {
                             {Truncate(pupil.email, 13)}
                           </p>
                           <AiOutlineClose
-                            onClick={() => handlePupilItemSelect(pupil)}
+                            onClick={() => handleMemberItemSelect(pupil)}
                             className='cursor-pointer'
                           />
                         </div>
@@ -430,15 +535,15 @@ export const Share = ({ handleClose, data, open }) => {
               selection={selection}
               handleSpecSelect={handleSpecializeItemSelect}
               handleClassSelect={handleClassItemSelect}
-              handlePupilSelect={handlePupilItemSelect}
+              handleMemberSelect={handleMemberItemSelect}
               handleMutipleMemberSelect={handleMutipleMemberSelect}
               handleReturn={handleReturn}
               specData={specSelected}
               classData={classSelected}
-              pupilData={pupilSelected}
+              memberData={memberSelected}
             />
           }
-          {isAuthor(user.id, data.author) && pupilSelected?.length > 0 && (
+          {isAuthor(user.id, data.author) && memberSelected?.length > 0 && (
             <div className='mt-5'>
               <p className='text-sm text-gray-600 font-semibold'>Permission</p>
               <FormGroup
@@ -526,7 +631,7 @@ export const Share = ({ handleClose, data, open }) => {
               </FormGroup>
             </div>
           )}
-          <div className='mt-5'>
+          <div className='mt-1'>
             <p className='text-sm text-gray-600 font-semibold'>Message</p>
             <textarea
               rows=''

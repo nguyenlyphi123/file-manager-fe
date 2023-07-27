@@ -13,6 +13,7 @@ export const ADMIN = 'ADMIN';
 // type
 export const SPECIALIZATION = 'SPECIALIZATION';
 export const CLASS = 'CLASS';
+export const MEMBER = 'MEMBER';
 
 // folder/file permission
 export const PERMISSION_READ = 'READ';

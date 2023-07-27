@@ -1,5 +1,5 @@
 import React from 'react';
-import { CLASS, PUPIL, SPECIALIZATION } from 'constants/constants';
+import { CLASS, MEMBER, PUPIL, SPECIALIZATION } from 'constants/constants';
 import {
   ClassSelect,
   MemberSelect,
@@ -10,11 +10,11 @@ export default function ShareRenderHelper({
   selection,
   specData,
   classData,
-  pupilData,
+  memberData,
   handleReturn,
   handleSpecSelect,
   handleClassSelect,
-  handlePupilSelect,
+  handleMemberSelect,
   handleMutipleMemberSelect,
 }) {
   switch (selection) {
@@ -30,18 +30,21 @@ export default function ShareRenderHelper({
       return (
         <ClassSelect
           data={specData}
+          memberSelected={memberData}
           handleSelect={handleClassSelect}
           handleReturn={handleReturn}
+          handleMemberSelect={handleMemberSelect}
+          handleMutipleMemberSelect={handleMutipleMemberSelect}
         />
       );
 
-    case PUPIL:
+    case MEMBER:
       return (
         <MemberSelect
           data={classData}
           handleReturn={handleReturn}
-          memberSelected={pupilData}
-          handleSelect={handlePupilSelect}
+          memberSelected={memberData}
+          handleSelect={handleMemberSelect}
           handleMutipleMemberSelect={handleMutipleMemberSelect}
         />
       );
