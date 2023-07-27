@@ -141,7 +141,7 @@ export const restoreFolder = async ({ id }) => {
 
 export const restoreMultipleFolder = async (folderList) => {
   try {
-    const res = await axiosPrivate.put(`/folder/multiple-restore`, {
+    const res = await axiosPrivate.post(`/folder/multiple-restore`, {
       folders: folderList,
     });
 

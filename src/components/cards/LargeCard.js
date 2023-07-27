@@ -15,7 +15,7 @@ import {
   convertBytesToReadableSize,
 } from 'utils/helpers/TypographyHelper';
 
-import { ThreeDotsDropDown } from '../popups/ModelPopups';
+import { ThreeDotsDropdown } from '../popups/ModelPopups';
 import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
 
@@ -143,7 +143,7 @@ const LargeCard = ({ data, onClick, isFolder = true }) => {
       <Tooltip title={data.name} placement='top'>
         <div className='group/card flex-col bg-white h-[180px] border rounded-md relative cursor-pointer'>
           <div className='absolute top-2 right-2 p-2 flex justify-center items-center group/threedots'>
-            <ThreeDotsDropDown
+            <ThreeDotsDropdown
               handleSelectOption={handleSelectOption}
               handleShowDelete={handleShowDelete}
               className='rounded-[50%] h-[18px] text-gray-600'

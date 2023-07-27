@@ -29,7 +29,7 @@ import {
 } from 'utils/helpers/TypographyHelper';
 
 import EmptyData from 'components/EmptyData';
-import { RemovedThreeDotsDropDown } from 'components/popups/ModelPopups';
+import { RemovedThreeDotsDropdown } from 'components/popups/ModelPopups';
 import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
 
@@ -298,7 +298,7 @@ export default function Recovery() {
 
                       <td>
                         <div className='p-2 flex justify-center group/threedots'>
-                          <RemovedThreeDotsDropDown data={folder} />
+                          <RemovedThreeDotsDropdown data={folder} />
                         </div>
                       </td>
                     </tr>
@@ -359,7 +359,7 @@ export default function Recovery() {
 
                       <td>
                         <div className='p-2 justify-center flex group/threedots'>
-                          <RemovedThreeDotsDropDown data={file} />
+                          <RemovedThreeDotsDropdown data={file} />
                         </div>
                       </td>
                     </tr>

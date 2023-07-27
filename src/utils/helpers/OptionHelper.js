@@ -3,8 +3,8 @@ import React from 'react';
 import {
   Copy,
   Detail,
-  FolderDeleteConfirm,
-  FolderDownloadConfirm,
+  DeleteConfirm,
+  DownloadConfirm,
   Move,
   Rename,
   Share,
@@ -45,16 +45,12 @@ export default function OptionHelper({
 
     case DOWNLOAD:
       return (
-        <FolderDownloadConfirm
-          handleClose={handleClose}
-          data={data}
-          open={open}
-        />
+        <DownloadConfirm handleClose={handleClose} data={data} open={open} />
       );
 
     case DELETE:
       return (
-        <FolderDeleteConfirm
+        <DeleteConfirm
           open={deleteShow}
           data={data}
           handleClose={handleCancelDelete}

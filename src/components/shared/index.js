@@ -41,10 +41,16 @@ function Shared() {
   if (folderLoading || fileLoading) return <Loading />;
 
   if (folders?.data?.length === 0 || files.data?.length === 0)
-    return <EmptyData message={'You do not have any folders or files yet'} />;
+    return (
+      <EmptyData
+        message={'You do not have any folders or files that shared with you'}
+      />
+    );
 
   return (
     <div className='h-[200vh] py-5 px-7 tracking-wide'>
+      <div className='text-[20px] text-gray-600 font-bold'>Share With Me</div>
+
       <div className='mt-5'>
         <div className='flex items-center mb-4'>
           <p className='text-sm text-gray-500 font-semibold mr-2'>

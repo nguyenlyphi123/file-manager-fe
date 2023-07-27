@@ -4,7 +4,7 @@ import {
   ClassSelect,
   MemberSelect,
   SpecializeSelect,
-} from 'components/popups/ModelPopups';
+} from 'components/popups/Share';
 
 export default function ShareRenderHelper({
   selection,

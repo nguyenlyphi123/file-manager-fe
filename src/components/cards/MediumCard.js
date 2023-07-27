@@ -17,7 +17,7 @@ import {
 
 import SuccessToast from 'components/toasts/SuccessToast';
 import ErrorToast from 'components/toasts/ErrorToast';
-import { ThreeDotsDropDown } from 'components/popups/ModelPopups';
+import { ThreeDotsDropdown } from 'components/popups/ModelPopups';
 
 import { Tooltip } from '@mui/material';
 
@@ -148,7 +148,7 @@ export default function MediumCard({ data, onClick, isFolder = true }) {
       <Tooltip title={data.name} placement='top'>
         <div className='flex-col relative bg-white border rounded-md p-4 cursor-pointer group/card'>
           <div className='absolute top-2 right-2 p-2 flex justify-center items-center group/threedots'>
-            <ThreeDotsDropDown
+            <ThreeDotsDropdown
               handleSelectOption={handleSelectOption}
               handleShowDelete={handleShowDelete}
               className='rounded-[50%] h-[18px] text-gray-600'
