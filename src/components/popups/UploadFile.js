@@ -2,14 +2,20 @@ import { Box, Button, LinearProgress, Modal } from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
 import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
+import { PERMISSION_WRITE } from 'constants/constants';
 import { useCallback, useState } from 'react';
 import { AiOutlineClose, AiOutlineCloudUpload } from 'react-icons/ai';
 import { useSelector } from 'react-redux';
 import { uploadFile } from 'services/gcController';
 import FileIconHelper from 'utils/helpers/FileIconHelper';
+import { hasFFPermission, isAuthor } from 'utils/helpers/Helper';
 
 export const UploadFile = ({ handleClose, open }) => {
-  const { _id } = useSelector((state) => state.curentFolder);
+  const { _id, author, permission } = useSelector(
+    (state) => state.curentFolder,
+  );
+
+  const user = useSelector((state) => state.user);
 
   const queryClient = useQueryClient();
 
@@ -80,12 +86,35 @@ export const UploadFile = ({ handleClose, open }) => {
             }}
             className='rounded-md p-4 w-full h-[200px] flex flex-col justify-center items-center'
           >
-            <AiOutlineCloudUpload className='text-[5em] text-gray-400 mb-5' />
+            {(() => {
+              if (
+                !hasFFPermission(
+                  permission,
+                  PERMISSION_WRITE,
+                  isAuthor(user.id, author),
+                ) &&
+                _id !== null
+              ) {
+                return (
+                  <div className='flex items-center justify-center mt-6'>
+                    <p className='text-gray-500 text-md font-medium'>
+                      You don't have permission to upload file in this folder
+                    </p>
+                  </div>
+                );
+              } else {
+                return (
+                  <>
+                    <AiOutlineCloudUpload className='text-[5em] text-gray-400 mb-5' />
 
-            <span className='text-lg text-gray-400'>
-              Drag and drop a file here or click
-            </span>
-            <input hidden type='file' onChange={handleChange} />
+                    <span className='text-lg text-gray-400'>
+                      Drag and drop a file here or click
+                    </span>
+                    <input hidden type='file' onChange={handleChange} />
+                  </>
+                );
+              }
+            })()}
           </Button>
 
           {file && (
@@ -125,12 +154,34 @@ export const UploadFile = ({ handleClose, open }) => {
             Cancel
           </div>
 
-          <div
-            onClick={() => handleUpload()}
-            className='bg-blue-700/60 py-2 px-5 rounded-md text-white text-[0.9em] font-medium cursor-pointer hover:bg-blue-700/80'
-          >
-            Upload
-          </div>
+          {(() => {
+            if (
+              !hasFFPermission(
+                permission,
+                PERMISSION_WRITE,
+                isAuthor(user.id, author),
+              ) &&
+              _id !== null
+            ) {
+              return (
+                <div
+                  onClick={() => handleClose()}
+                  className='bg-blue-700/60 py-2 px-5 rounded-md text-white text-[0.9em] font-medium cursor-pointer hover:bg-blue-700/80'
+                >
+                  Upload
+                </div>
+              );
+            } else {
+              return (
+                <div
+                  onClick={() => handleUpload()}
+                  className='bg-blue-700/60 py-2 px-5 rounded-md text-white text-[0.9em] font-medium cursor-pointer hover:bg-blue-700/80'
+                >
+                  Upload
+                </div>
+              );
+            }
+          })()}
         </div>
       </Box>
     </Modal>

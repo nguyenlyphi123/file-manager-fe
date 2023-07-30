@@ -19,7 +19,7 @@ export default function Files() {
   if (isLoading) return <Loading />;
 
   return (
-    <div className='h-[200vh] py-5 px-7 tracking-wide'>
+    <div className='min-h-[calc(100vh-142px)] py-5 px-7 tracking-wide relative'>
       <div className='text-[20px] text-gray-600 font-bold'>Files</div>
 
       <div className='mt-5'>
@@ -32,14 +32,14 @@ export default function Files() {
               <TiArrowSortedDown className='text-gray-500' />
             </div>
 
-            <div className='grid grid-cols-4 gap-4'>
+            <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4'>
               {files?.data?.map((file) => (
                 <LargeCard key={file._id} data={file} isFolder={false} />
               ))}
             </div>
           </>
         ) : (
-          <EmptyData message={'You do not have any files yet'} />
+          <EmptyData message={'There are no files yet'} />
         )}
       </div>
     </div>

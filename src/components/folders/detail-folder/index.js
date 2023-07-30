@@ -13,6 +13,7 @@ import { pushLocation } from 'redux/slices/location';
 import { getFileByFolder } from 'services/fileController';
 import { getFolderDetail } from 'services/folderController';
 import EmptyData from 'components/EmptyData';
+import { TiArrowSortedDown } from 'react-icons/ti';
 
 export default function DetailFolder() {
   // fetch folder and file data
@@ -49,15 +50,19 @@ export default function DetailFolder() {
   if (folderLoading || fileLoading) return <Loading />;
 
   if (folders?.data?.length === 0 && files.data?.length === 0)
-    return <EmptyData message='You do not have any folders or files yet' />;
+    return <EmptyData message='There are no folders or files yet' />;
 
   return (
     <>
+      <div className='flex items-center mb-4 h-5'>
+        <p className='text-sm text-gray-500 font-semibold mr-2'>Last Opened</p>
+        <TiArrowSortedDown className='text-gray-500' />
+      </div>
       <div>
         {folders && folders?.data?.length > 0 && (
           <>
             <p className='text-gray-700 font-medium'>Folders</p>
-            <div className='grid grid-cols-4 gap-4 mt-2'>
+            <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4 mt-2'>
               {folders?.data?.map((folder) => {
                 return (
                   <MediumCard
@@ -75,7 +80,7 @@ export default function DetailFolder() {
           {files && files?.data?.length > 0 && (
             <>
               <p className='text-gray-700 font-medium'>Files</p>
-              <div className='grid grid-cols-4 gap-4 mt-2'>
+              <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4 mt-2'>
                 {files?.data?.map((file) => {
                   return (
                     <MediumCard

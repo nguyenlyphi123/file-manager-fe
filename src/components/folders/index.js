@@ -20,16 +20,9 @@ export default function Folders() {
 
   return (
     <>
-      <div className='h-[200vh] py-5 px-7 tracking-wide'>
+      <div className='min-h-[calc(100vh-142px)] py-5 px-7 tracking-wide relative'>
         <CustomedBreadcrumbs location={folderLocation} />
-        <div className='mt-5'>
-          <div className='flex items-center mb-4'>
-            <p className='text-sm text-gray-500 font-semibold mr-2'>
-              Last Opened
-            </p>
-            <TiArrowSortedDown className='text-gray-500' />
-          </div>
-
+        <div className='mt-5 min-h-[calc(100vh-142px-90px)] flex flex-col'>
           <Outlet />
         </div>
       </div>

@@ -40,10 +40,10 @@ function Shared() {
 
   if (folderLoading || fileLoading) return <Loading />;
 
-  if (folders?.data?.length === 0 || files.data?.length === 0)
+  if (folders?.data?.length === 0 && files?.data?.length === 0)
     return (
       <EmptyData
-        message={'You do not have any folders or files that shared with you'}
+        message={'There is no folders or files that shared with you'}
       />
     );
 
@@ -63,7 +63,7 @@ function Shared() {
           {folders && folders?.data?.length > 0 && (
             <>
               <p className='text-gray-700 font-medium'>Folders</p>
-              <div className='grid grid-cols-4 gap-4 mt-2'>
+              <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4 mt-2'>
                 {folders?.data?.map((folder) => {
                   return (
                     <MediumCard
@@ -81,7 +81,7 @@ function Shared() {
             {files && files?.data?.length > 0 && (
               <>
                 <p className='text-gray-700 font-medium'>Files</p>
-                <div className='grid grid-cols-4 gap-4 mt-2'>
+                <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4 mt-2'>
                   {files?.data?.map((file) => {
                     return (
                       <MediumCard

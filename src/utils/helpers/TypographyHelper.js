@@ -8,6 +8,10 @@ export const FormattedDate = (date) => {
   return moment(date).startOf('minute').fromNow();
 };
 
+export const FormattedChatDate = (date) => {
+  return moment(date).format('LT');
+};
+
 export const Truncate = (str, n) => {
   return str?.length > n ? str.substr(0, n - 1) + '...' : str;
 };

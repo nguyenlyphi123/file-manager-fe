@@ -165,7 +165,7 @@ export default function Recovery() {
   if (folderLoading || fileLoading) return <Loading />;
 
   return (
-    <div className='h-[200vh] py-5 px-7 tracking-wide'>
+    <div className='min-h-[calc(100vh-142px)] py-5 px-7 tracking-wide'>
       <div className='text-[20px] text-gray-600 font-bold'>Recovery</div>
 
       {isItems.item ? (

@@ -10,6 +10,7 @@ import { getFolderList } from 'services/folderController';
 
 import LargeCard from 'components/cards/LargeCard';
 import EmptyData from 'components/EmptyData';
+import { TiArrowSortedDown } from 'react-icons/ti';
 
 export default function MyFolder() {
   // dispatch action redux
@@ -38,13 +39,17 @@ export default function MyFolder() {
   });
 
   if (folders?.data?.length === 0)
-    return <EmptyData message='You do not have any folders yet' />;
+    return <EmptyData message='There are no folders yet' />;
 
   if (folderLoading) return <Loading />;
 
   return (
     <>
-      <div className='grid grid-cols-4 gap-4'>
+      <div className='flex items-center mb-4 h-5'>
+        <p className='text-sm text-gray-500 font-semibold mr-2'>Last Opened</p>
+        <TiArrowSortedDown className='text-gray-500' />
+      </div>
+      <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4'>
         {folders &&
           folders?.data?.map((folder) => {
             return (

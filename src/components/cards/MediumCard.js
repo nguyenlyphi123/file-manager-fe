@@ -175,7 +175,7 @@ export default function MediumCard({ data, onClick, isFolder = true }) {
                 />
 
                 <div className='relative'>
-                  <p className='text-[0.9em] text-gray-600 font-semibold'>
+                  <p className='text-sm text-gray-600 font-semibold'>
                     {Truncate(data.name, 15)}
                   </p>
 

@@ -51,7 +51,7 @@ export const SpecializeSelect = ({ handleSelect, handleReturn }) => {
     retry: 3,
   });
   return (
-    <div className='min-h-[150px] relative'>
+    <div className='min-h-[150px] relative mb-5'>
       <p className='text-sm text-gray-600 font-semibold'>Specialization</p>
       <Grid
         container
@@ -96,6 +96,8 @@ export const ClassSelect = ({
   handleMemberSelect,
   handleMutipleMemberSelect,
 }) => {
+  const user = useSelector((state) => state.user);
+
   // fetch class data
   const { data: classes, isLoading: classesLoading } = useQuery({
     queryKey: ['classes'],
@@ -114,26 +116,31 @@ export const ClassSelect = ({
     handleMutipleMemberSelect(lecturers?.data);
   };
 
+  if (classesLoading || lecturersLoading)
+    return (
+      <div className='min-h-[150px] relative'>
+        <Loading />
+      </div>
+    );
+
   return (
     <>
-      <div className='min-h-[100px] relative'>
-        <div className='flex items-center'>
-          <p className='text-sm text-gray-600 font-semibold mr-2'>Classes</p>
+      {user?.permission !== MANAGER && (
+        <div className='min-h-[100px] relative'>
+          <div className='flex items-center'>
+            <p className='text-sm text-gray-600 font-semibold mr-2'>Classes</p>
 
-          <BiUpArrow
-            onClick={handleReturn}
-            className='text-gray-600 font-semibold cursor-pointer'
-          />
-        </div>
-        <Grid
-          container
-          spacing={1}
-          sx={{ width: '100%', marginTop: '5px', marginLeft: 0 }}
-        >
-          {classesLoading ? (
-            <Loading />
-          ) : (
-            classes?.data?.map((class_) => (
+            <BiUpArrow
+              onClick={handleReturn}
+              className='text-gray-600 font-semibold cursor-pointer'
+            />
+          </div>
+          <Grid
+            container
+            spacing={1}
+            sx={{ width: '100%', marginTop: '5px', marginLeft: 0 }}
+          >
+            {classes?.data?.map((class_) => (
               <Grid key={class_._id} item xs={2} md={2} lg={2}>
                 <div
                   onClick={() => handleSelect(class_)}
@@ -153,10 +160,10 @@ export const ClassSelect = ({
                   </Avatar>
                 </div>
               </Grid>
-            ))
-          )}
-        </Grid>
-      </div>
+            ))}
+          </Grid>
+        </div>
+      )}
 
       <div className='relative min-h-[100px] max-h-[200px] overflow-y-scroll'>
         <div className='flex justify-between items-center pr-2'>
@@ -164,6 +171,12 @@ export const ClassSelect = ({
             <p className='text-sm text-gray-600 font-semibold mr-2'>
               Lecturers
             </p>
+            {user?.permission === MANAGER && (
+              <BiUpArrow
+                onClick={handleReturn}
+                className='text-gray-600 font-semibold cursor-pointer'
+              />
+            )}
           </div>
           {lecturers?.data.every((item) => memberSelected?.includes(item)) &&
           memberSelected?.length !== 0 ? (
@@ -192,34 +205,30 @@ export const ClassSelect = ({
             paddingRight: 1,
           }}
         >
-          {lecturersLoading ? (
-            <Loading />
-          ) : (
-            lecturers?.data?.map((lecturers) => (
-              <Grid key={lecturers._id} item xs={3} md={3} lg={3}>
-                <div
-                  onClick={() => handleMemberSelect(lecturers)}
-                  className='border rounded-md py-1 px-2 flex items-center justify-between cursor-pointer'
-                >
-                  <p className='m-b-0 text-[0.85em] text-gray-700 mr-3'>
-                    {lecturers?.name}
-                  </p>
+          {lecturers?.data?.map((lecturers) => (
+            <Grid key={lecturers._id} item xs={3} md={3} lg={3}>
+              <div
+                onClick={() => handleMemberSelect(lecturers)}
+                className='border rounded-md py-1 px-2 flex items-center justify-between cursor-pointer'
+              >
+                <p className='m-b-0 text-[0.85em] text-gray-700 mr-3'>
+                  {lecturers?.name}
+                </p>
 
-                  <Checkbox
-                    icon={<BsCheckCircle />}
-                    checkedIcon={<BsCheckCircleFill />}
-                    sx={{ padding: '3px' }}
-                    color='success'
-                    checked={
-                      memberSelected?.findIndex(
-                        (item) => item._id === lecturers._id,
-                      ) !== -1
-                    }
-                  />
-                </div>
-              </Grid>
-            ))
-          )}
+                <Checkbox
+                  icon={<BsCheckCircle />}
+                  checkedIcon={<BsCheckCircleFill />}
+                  sx={{ padding: '3px' }}
+                  color='success'
+                  checked={
+                    memberSelected?.findIndex(
+                      (item) => item._id === lecturers._id,
+                    ) !== -1
+                  }
+                />
+              </div>
+            </Grid>
+          ))}
         </Grid>
       </div>
     </>
@@ -318,7 +327,7 @@ export const Share = ({ handleClose, data, open }) => {
   const initSelection = useMemo(() => {
     switch (user.permission) {
       case MANAGER:
-        break;
+        return SPECIALIZATION;
 
       case LECTURERS:
         return SPECIALIZATION;

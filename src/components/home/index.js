@@ -81,7 +81,7 @@ export default function Home() {
         {folders?.data?.length > 0 && (
           <div className='mt-5'>
             <p className='text-md text-gray-600 font-bold mb-2'>Quick Access</p>
-            <div className='grid lg:grid-cols-4 gap-4 md:grid-cols-3'>
+            <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4'>
               {folders?.data.map((folder) => {
                 return (
                   <LargeCard
@@ -109,7 +109,7 @@ export default function Home() {
               <p className='text-[0.8em] text-gray-600 font-bold uppercase tracking-wide'>
                 Folder
               </p>
-              <div className='grid grid-cols-4 gap-4 mt-3 '>
+              <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4 mt-3 '>
                 {folders?.data.map((folder) => {
                   return (
                     <MediumCard
@@ -133,7 +133,7 @@ export default function Home() {
               <p className='text-[0.8em] text-gray-600 font-bold uppercase'>
                 Files
               </p>
-              <div className='grid grid-cols-4 gap-4 mt-3 '>
+              <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4 mt-3 '>
                 {files?.data?.map((file) => (
                   <MediumCard key={file._id} data={file} isFolder={false} />
                 ))}
