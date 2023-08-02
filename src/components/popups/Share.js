@@ -338,7 +338,7 @@ export const Share = ({ handleClose, data, open }) => {
       default:
         break;
     }
-  }, []);
+  }, [user.permission]);
 
   const [selection, setSelection] = useState(initSelection);
 

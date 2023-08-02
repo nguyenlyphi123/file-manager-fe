@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   AiFillMessage,
   AiOutlineCloudUpload,
@@ -6,17 +6,19 @@ import {
 } from 'react-icons/ai';
 import { FiSearch } from 'react-icons/fi';
 import { Outlet } from 'react-router-dom';
-import io from 'socket.io-client';
+
+import socket from 'utils/socket';
 
 import { NewFolder, UploadFile } from 'components/popups/ModelPopups';
 
+import { Badge, Fab } from '@mui/material';
+import ChatContainer from 'components/chat/ChatContainer';
 import Header from 'parts/Header';
 import SideMenu from 'parts/SideMenu';
-import { Fab } from '@mui/material';
-import ChatContainer from 'components/chat/ChatContainer';
 import { useEffect } from 'react';
-import { host } from 'constants/constants';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { removeChat } from 'redux/slices/chat';
+import { getUnseenMessages } from 'redux/slices/chatNotification';
 
 export default function Home() {
   // open/close new folder
@@ -42,15 +44,27 @@ export default function Home() {
   };
 
   // open/close chat
+  const dispatch = useDispatch();
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const handleToggeleChat = () => {
     setIsChatOpen(!isChatOpen);
+
+    if (isChatOpen) {
+      dispatch(removeChat());
+      dispatch(getUnseenMessages());
+    }
   };
+
+  // get unseen messages
+  const chatNotification = useSelector((state) => state.chatNotification);
+
+  useEffect(() => {
+    dispatch(getUnseenMessages());
+  }, [dispatch]);
 
   // connect to socket
   const user = useSelector((state) => state.user);
-  const socket = io(host, { withCredentials: true });
 
   useEffect(() => {
     socket.on('connect', () => {
@@ -59,10 +73,15 @@ export default function Home() {
 
     socket.emit('setup', user);
 
+    socket.on('receive-message', () => {
+      dispatch(getUnseenMessages());
+    });
+
     return () => {
-      socket.disconnect();
+      socket.off('connect');
+      socket.off('receive-message');
     };
-  }, [user, socket]);
+  });
 
   return (
     <>
@@ -124,13 +143,16 @@ export default function Home() {
             setIsChatOpen(true);
           }}
         >
-          <AiFillMessage className='text-2xl' />
+          <Badge
+            badgeContent={
+              chatNotification?.quantity ? chatNotification?.quantity : 0
+            }
+            color='error'
+          >
+            <AiFillMessage className='text-2xl' />
+          </Badge>
         </Fab>
-        <ChatContainer
-          socket={socket}
-          open={isChatOpen}
-          handleToggleChat={handleToggeleChat}
-        />
+        <ChatContainer open={isChatOpen} handleToggleChat={handleToggeleChat} />
       </div>
     </>
   );

@@ -6,6 +6,7 @@ const initialState = {
   isGroupChat: false,
   members: [],
   lastMessage: {},
+  lastActive: null,
 };
 
 const chat = createSlice({
@@ -20,17 +21,20 @@ const chat = createSlice({
       }
 
       return {
-        ...state,
         id: action.payload._id,
         name: action.payload.name,
         isGroupChat: action.payload.isGroupChat,
         members: action.payload.member,
         lastMessage: action.payload.lastMessage,
+        lastActive: action.payload.lastOpened,
       };
+    },
+    removeChat: (state) => {
+      return (state = initialState);
     },
   },
 });
 
-export const { selectChat } = chat.actions;
+export const { selectChat, removeChat } = chat.actions;
 
 export default chat.reducer;

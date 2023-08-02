@@ -1,20 +1,36 @@
-import { Avatar, IconButton, Paper } from '@mui/material';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Avatar, IconButton, Paper, Tooltip } from '@mui/material';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import TypingLoading from 'components/TypingLoading';
 import Loading from 'parts/Loading';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BiSend } from 'react-icons/bi';
 import { useSelector } from 'react-redux';
 import { getMessages, sendMessage } from 'services/messageController';
-import { isSender } from './helpers/chatHelpers';
+import socket from 'utils/socket';
+import { isLastMessage, isSameSender, isSender } from './helpers/chatHelpers';
+import { FormattedDate } from 'utils/helpers/TypographyHelper';
 
 // Message Component for rendering individual messages
-const Message = ({ message, isCurrentUser }) => {
+const Message = ({ message, isCurrentUser, isSameSender, isLastMessage }) => {
   const messageClass = isCurrentUser ? 'bg-[#5145E5]' : 'bg-[#949494]';
 
   return (
-    <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+    <div
+      className={`flex items-center ${
+        isCurrentUser ? 'justify-end' : 'justify-start'
+      }`}
+    >
+      {isCurrentUser
+        ? null
+        : (isLastMessage || isSameSender) && (
+            <Tooltip title={message?.sender?.name}>
+              <Avatar sx={{ marginRight: '0.5rem', height: 30, width: 30 }} />
+            </Tooltip>
+          )}
       <div
-        className={`${messageClass} rounded-3xl py-2 px-3 mt-1 w-max max-w-[50%]`}
+        className={`${messageClass} items-center rounded-lg pt-[5px] pb-[7px] px-3 ${
+          !isLastMessage && !isSameSender && 'ml-[2.4rem]'
+        } mt-1 w-max max-w-[50%]`}
       >
         <p className='text-white text-sm m-0'>{message.content}</p>
       </div>
@@ -22,46 +38,50 @@ const Message = ({ message, isCurrentUser }) => {
   );
 };
 
-const ChatContent = ({ socket }) => {
+const ChatContent = () => {
   const chat = useSelector((state) => state.chat);
   const user = useSelector((state) => state.user);
 
-  const bottomRef = useRef(null);
   const queryClient = useQueryClient();
 
-  const [messages, setMessages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const bottomRef = useRef(null);
+
+  // Message input
   const [message, setMessage] = useState('');
+
+  const [typing, setTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+
+  // last sign in
+  const lastSignIn = useMemo(() => {
+    if (chat?.members.length > 2) return null;
+    if (chat?.members) {
+      const member = chat.members.filter((member) => member._id !== user.id)[0];
+      return member?.lastSigned;
+    }
+  }, [user.id, chat?.members]);
 
   // Connect to socket room
   useEffect(() => {
     if (socket) {
       socket.emit('join-room', chat.id);
     }
-  }, [socket, chat]);
+  }, [chat]);
 
   const sendMessageSocket = (message) => {
     socket.emit('send-message', message);
   };
 
-  // Get messages from the server
-  useEffect(() => {
-    const fetchMessages = async () => {
-      setIsLoading(true);
-      if (chat.id) {
-        try {
-          const response = await getMessages({ id: chat.id });
-          setMessages(response.data);
-          setIsLoading(false);
-        } catch (error) {
-          console.error('Error fetching messages:', error);
-          setIsLoading(false);
-        }
-      }
-    };
+  const stopTyping = () => {
+    socket.emit('stop-typing', chat.id);
+  };
 
-    fetchMessages();
-  }, [chat.id]);
+  const { data: messages, isLoading } = useQuery({
+    queryKey: ['messages', { id: chat.id }],
+    queryFn: () => getMessages({ id: chat.id }),
+    retry: 3,
+    retryDelay: 3000,
+  });
 
   // Scroll to the bottom when new messages are added
   useEffect(() => {
@@ -80,37 +100,78 @@ const ChatContent = ({ socket }) => {
 
       sendMessageSocket(newMessage);
 
-      setMessages((prev) => [...prev, newMessage]);
+      stopTyping();
 
       setMessage('');
       return sendMessage({ id: chat.id, content: message });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries('messages');
+      queryClient.invalidateQueries(['chats']);
+      queryClient.invalidateQueries(['messages']);
     },
   });
 
-  // Receive message
+  // Connect to socket room and handle socket listeners
   useEffect(() => {
     if (socket) {
-      const receiveMessage = (message) => {
-        setMessages((prev) => [...prev, message]);
-      };
+      socket.emit('join-room', chat.id);
 
-      socket.on('receive-message', receiveMessage);
+      socket.on('receive-message', () => {
+        queryClient.invalidateQueries(['messages']);
+        queryClient.invalidateQueries(['chats']);
+      });
 
-      // Return a cleanup function to unsubscribe from the event when the component unmounts
-      return () => {
-        socket.off('receive-message', receiveMessage);
-      };
+      socket.on('typing', () => setIsTyping(true));
+      socket.on('stop-typing', () => setIsTyping(false));
     }
-  }, [socket]);
+
+    return () => {
+      // Clean up the socket listener when the component unmounts
+      socket.off('receive-message');
+      socket.off('typing');
+      socket.off('stop-typing');
+    };
+  }, [chat, queryClient]);
+
+  // handle typing
+  const typingTimeoutRef = useRef(null);
+
+  const handleTyping = useCallback(
+    (e) => {
+      setMessage(e.target.value);
+
+      if (!typing) {
+        setTyping(true);
+        socket.emit('typing', chat.id);
+      }
+
+      const TYPING_TIMER_LENGTH = 3000;
+
+      clearTimeout(typingTimeoutRef.current);
+
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit('stop-typing', chat.id);
+        setTyping(false);
+      }, TYPING_TIMER_LENGTH);
+    },
+    [chat.id, typing],
+  );
 
   return (
     <div className='py-5 px-3 h-full flex flex-col justify-between bg-white relative'>
-      <div className='pb-4 mb-1 flex items-center border-b'>
-        <Avatar />
-        <p className='text-md text-gray-500 font-semibold ml-3'>{chat?.name}</p>
+      <div className='pb-4 mb-1 flex justify-between items-center border-b'>
+        <div className='flex items-center'>
+          <Avatar />
+          <div className='flex flex-col'>
+            <p className='text-md text-gray-500 font-semibold ml-3'>
+              {chat?.name}
+            </p>
+            <p className='text-[13px] text-gray-500 ml-3'>
+              Last active:{' '}
+              {FormattedDate(chat?.isGroupChat ? chat?.lastActive : lastSignIn)}
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className='relative h-full overflow-y-scroll py-3'>
@@ -118,13 +179,16 @@ const ChatContent = ({ socket }) => {
           <Loading />
         ) : (
           <div className='absolute bottom-0 left-0 w-full max-h-full'>
-            {messages?.map((msg, index) => (
+            {messages?.data?.map((msg, index) => (
               <Message
                 key={index}
                 message={msg}
                 isCurrentUser={isSender(user.id, msg.sender?._id)}
+                isLastMessage={isLastMessage(messages?.data, index, user.id)}
+                isSameSender={isSameSender(messages?.data, msg, index, user.id)}
               />
             ))}
+            {isTyping && <TypingLoading className={'ml-[2.3rem]'} />}
             <div ref={bottomRef}></div>
           </div>
         )}
@@ -149,7 +213,7 @@ const ChatContent = ({ socket }) => {
             className='border-0 outline-none w-full bg-[#F5F6FA]'
             autoFocus
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={handleTyping}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 handleSendMessage.mutate();

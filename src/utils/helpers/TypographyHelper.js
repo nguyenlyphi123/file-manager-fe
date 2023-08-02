@@ -9,7 +9,7 @@ export const FormattedDate = (date) => {
 };
 
 export const FormattedChatDate = (date) => {
-  return moment(date).format('LT');
+  return moment(date).format('DD MMM, h:mm a ');
 };
 
 export const Truncate = (str, n) => {

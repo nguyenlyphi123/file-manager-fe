@@ -6,6 +6,7 @@ import ChatContent from './ChatContent';
 import ChatList from './ChatList';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectChat } from 'redux/slices/chat';
+import NewGroupChat from 'components/popups/NewGroupChat';
 
 export default function ChatContainer({ socket, open, handleToggleChat }) {
   const chat = useSelector((state) => state.chat);
@@ -13,39 +14,54 @@ export default function ChatContainer({ socket, open, handleToggleChat }) {
   const dispatch = useDispatch();
 
   // selected chat
-  const [chatSelected, setChatSelected] = useState();
-
   const handleSelectChat = (chat) => {
-    setChatSelected(chat);
+    console.log(chat);
     dispatch(selectChat(chat));
+  };
+
+  // new group chat
+  const [openNewGroupChat, setOpenNewGroupChat] = useState(false);
+
+  const handleOpenNewGroupChat = () => {
+    setOpenNewGroupChat(true);
+  };
+
+  const handleCloseNewGroupChat = () => {
+    setOpenNewGroupChat(false);
   };
 
   return (
     <div>
+      <NewGroupChat
+        open={openNewGroupChat}
+        handleClose={handleCloseNewGroupChat}
+      />
       <React.Fragment>
         <Drawer
           anchor={'right'}
           open={open}
           onClose={() => {
             handleToggleChat();
-            setChatSelected();
           }}
         >
           <Grid
             container
-            sx={{ minWidth: chatSelected ? '60vw' : 350, height: '100vh' }}
+            sx={{ minWidth: chat?.id ? '70vw' : 350, height: '100vh' }}
           >
             <Grid
               item
               xs={12}
-              md={chatSelected ? 3 : 12}
-              lg={chatSelected ? 4 : 12}
+              md={chat?.id ? 3 : 12}
+              lg={chat?.id ? 4 : 12}
               sx={{ height: '100%' }}
             >
-              <ChatList handleSelectChat={handleSelectChat} />
+              <ChatList
+                handleSelectChat={handleSelectChat}
+                handleOpenNewGroupChat={handleOpenNewGroupChat}
+              />
             </Grid>
 
-            {chatSelected && chat.id && (
+            {chat.id && (
               <Grid item xs={12} md={9} lg={8} sx={{ height: '100vh' }}>
                 <ChatContent socket={socket} />
               </Grid>
