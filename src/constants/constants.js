@@ -1,7 +1,7 @@
 export const LECTURERS_URL = '/lecturers';
 export const PUPIL_URL = '/pupil';
-export const apiURL = 'http://localhost:9000/api';
-export const host = 'http://localhost:9000';
+export const apiURL = 'https://banafile-server.onrender.com/api';
+export const host = 'https://banafile-server.onrender.com';
 export const LOCAL_STORAGE_ACCESS_TOKEN = 'accessToken';
 export const LOCAL_STORAGE_REFRESH_TOKEN = 'refreshToken';
 
