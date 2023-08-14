@@ -7,4 +7,9 @@ axios.defaults.baseURL = apiURL;
 export const axiosPrivate = axios.create({
   baseURL: `${apiURL}`,
   withCredentials: true,
+  headers: {
+    'SameSite': 'None',
+    'Secure': true,
+    'Content-Type': 'application/json',
+  },
 });
