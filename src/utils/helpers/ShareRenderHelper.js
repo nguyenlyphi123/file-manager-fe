@@ -1,10 +1,9 @@
-import React from 'react';
-import { CLASS, MEMBER, PUPIL, SPECIALIZATION } from 'constants/constants';
 import {
   ClassSelect,
   MemberSelect,
   SpecializeSelect,
 } from 'components/popups/Share';
+import { CLASS, MEMBER, SPECIALIZATION } from 'constants/constants';
 
 export default function ShareRenderHelper({
   selection,

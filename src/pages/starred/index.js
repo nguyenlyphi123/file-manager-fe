@@ -40,23 +40,19 @@ export default function Starred() {
 
   const handleUnStar = useMutation({
     mutationFn: () => {
-      const folderList = checkedListItem.filter((item) => {
-        if (!item.type) {
-          return {
-            ...item,
-            parent_folder: item.parent_folder ? item.parent_folder._id : null,
-          };
-        }
-      });
+      const folderList = checkedListItem
+        .filter((item) => !item.type)
+        .map((item) => ({
+          ...item,
+          parent_folder: item.parent_folder ? item.parent_folder._id : null,
+        }));
 
-      const fileList = checkedListItem.filter((item) => {
-        if (item.type) {
-          return {
-            ...item,
-            parent_folder: item.parent_folder ? item.parent_folder._id : null,
-          };
-        }
-      });
+      const fileList = checkedListItem
+        .filter((item) => !!item.type)
+        .map((item) => ({
+          ...item,
+          parent_folder: item.parent_folder ? item.parent_folder._id : null,
+        }));
 
       return Promise.all([
         folderList.length > 0 && unstarListOfFolder(folderList),

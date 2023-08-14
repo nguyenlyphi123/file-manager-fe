@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 
 import ErrorBoundary from './pages/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
@@ -10,18 +10,16 @@ import BlankPage from './pages/BlankPage';
 import TokenExpired from './pages/tokenExpired';
 import PageLoading from './parts/PageLoading';
 
-const Files = React.lazy(() => import('./components/files'));
-const Folders = React.lazy(() => import('./components/folders'));
-const Home = React.lazy(() => import('./components/home'));
-const Recovery = React.lazy(() => import('./components/recovery'));
-const Settings = React.lazy(() => import('./components/settings'));
-const Starred = React.lazy(() => import('./components/starred'));
-const Shared = React.lazy(() => import('./components/shared'));
+const Files = React.lazy(() => import('./pages/files'));
+const Folders = React.lazy(() => import('./pages/folders'));
+const Home = React.lazy(() => import('./pages/home'));
+const Recovery = React.lazy(() => import('./pages/recovery'));
+const Settings = React.lazy(() => import('./pages/settings'));
+const Starred = React.lazy(() => import('./pages/starred'));
+const Shared = React.lazy(() => import('./pages/shared'));
 
-const MyFolder = React.lazy(() => import('./components/folders/my-folder'));
-const DetailFolder = React.lazy(() =>
-  import('./components/folders/detail-folder'),
-);
+const MyFolder = React.lazy(() => import('./pages/folders/my-folder'));
+const DetailFolder = React.lazy(() => import('./pages/folders/detail-folder'));
 
 function App() {
   const location = useLocation();

@@ -1,14 +1,13 @@
-import React from 'react';
+import { Badge, IconButton } from '@mui/material';
 import { FiFolder } from 'react-icons/fi';
 import { IoMdNotificationsOutline } from 'react-icons/io';
 import { useDispatch } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { logOut } from 'redux/slices/user';
 
 export default function Header() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     dispatch(logOut());
@@ -25,12 +24,16 @@ export default function Header() {
       </Link>
 
       <div className='flex items-center'>
-        <div className='group relative mr-5 p-1 cursor-pointer hover:bg-[#E5E9F2] rounded-full transition duration-300 ease-in-out'>
-          <IoMdNotificationsOutline className='text-3xl text-gray-600 group-hover:text-blue-600 duration-300 ease-in-out' />
-          <div className='absolute top-[6px] right-[5px] p-[2px] bg-white rounded-full'>
-            <div className='w-2 h-2 bg-blue-400 rounded-full '></div>
-          </div>
-        </div>
+        <IconButton sx={{ marginRight: '10px' }}>
+          <Badge
+            color='primary'
+            badgeContent='1'
+            overlap='circular'
+            variant='dot'
+          >
+            <IoMdNotificationsOutline />
+          </Badge>
+        </IconButton>
 
         <div onClick={handleLogout} className='cursor-pointer'>
           <img

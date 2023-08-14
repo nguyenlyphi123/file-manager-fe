@@ -85,25 +85,28 @@ export default function Recovery() {
   };
 
   // recovery
-  const multipleRecoveryMutation = useMutation({
-    mutationFn: () => {
-      const folderList = checkedListItem.filter((item) => {
-        if (!item.type) {
-          return {
-            ...item,
-            parent_folder: item.parent_folder ? item.parent_folder._id : null,
-          };
-        }
-      });
+  const generateFolderAndFileLists = (items) => {
+    const folderList = items
+      .filter((item) => !item.type)
+      .map((item) => ({
+        ...item,
+        parent_folder: item.parent_folder ? item.parent_folder._id : null,
+      }));
 
-      const fileList = checkedListItem.filter((item) => {
-        if (item.type) {
-          return {
-            ...item,
-            parent_folder: item.parent_folder ? item.parent_folder._id : null,
-          };
-        }
-      });
+    const fileList = items
+      .filter((item) => !!item.type)
+      .map((item) => ({
+        ...item,
+        parent_folder: item.parent_folder ? item.parent_folder._id : null,
+      }));
+
+    return { folderList, fileList };
+  };
+
+  const multipleRecoveryMutation = useMutation({
+    mutationFn: async () => {
+      const { folderList, fileList } =
+        generateFolderAndFileLists(checkedListItem);
 
       return Promise.all([
         folderList.length > 0 && restoreMultipleFolder(folderList),
@@ -123,26 +126,10 @@ export default function Recovery() {
     },
   });
 
-  // delete
   const multipleDeleteMutation = useMutation({
     mutationFn: async () => {
-      const folderList = checkedListItem.filter((item) => {
-        if (!item.type) {
-          return {
-            ...item,
-            parent_folder: item.parent_folder ? item.parent_folder._id : null,
-          };
-        }
-      });
-
-      const fileList = checkedListItem.filter((item) => {
-        if (item.type) {
-          return {
-            ...item,
-            parent_folder: item.parent_folder ? item.parent_folder._id : null,
-          };
-        }
-      });
+      const { folderList, fileList } =
+        generateFolderAndFileLists(checkedListItem);
 
       return Promise.all([
         folderList.length > 0 && deleteMultipleFolder(folderList),

@@ -1,42 +1,19 @@
-import { Avatar, IconButton, Paper, Tooltip } from '@mui/material';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import TypingLoading from 'components/TypingLoading';
-import Loading from 'parts/Loading';
+import { Avatar, IconButton } from '@mui/material';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { ChatThreeDotsDropdown } from 'components/popups/ChatThreeDotsDropdown';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BiSend } from 'react-icons/bi';
+import { BiLeftArrowAlt } from 'react-icons/bi';
 import { useSelector } from 'react-redux';
 import { getMessages, sendMessage } from 'services/messageController';
-import socket from 'utils/socket';
-import { isLastMessage, isSameSender, isSender } from './helpers/chatHelpers';
 import { FormattedDate } from 'utils/helpers/TypographyHelper';
-
-// Message Component for rendering individual messages
-const Message = ({ message, isCurrentUser, isSameSender, isLastMessage }) => {
-  const messageClass = isCurrentUser ? 'bg-[#5145E5]' : 'bg-[#949494]';
-
-  return (
-    <div
-      className={`flex items-center ${
-        isCurrentUser ? 'justify-end' : 'justify-start'
-      }`}
-    >
-      {isCurrentUser
-        ? null
-        : (isLastMessage || isSameSender) && (
-            <Tooltip title={message?.sender?.name}>
-              <Avatar sx={{ marginRight: '0.5rem', height: 30, width: 30 }} />
-            </Tooltip>
-          )}
-      <div
-        className={`${messageClass} items-center rounded-lg pt-[5px] pb-[7px] px-3 ${
-          !isLastMessage && !isSameSender && 'ml-[2.4rem]'
-        } mt-1 w-max max-w-[50%]`}
-      >
-        <p className='text-white text-sm m-0'>{message.content}</p>
-      </div>
-    </div>
-  );
-};
+import socket from 'utils/socket';
+import ChatMessages from './ChatMessages';
+import ChatMember from './ChatMember';
+import ChatAddMember from './ChatAddMember';
 
 const ChatContent = () => {
   const chat = useSelector((state) => state.chat);
@@ -44,13 +21,37 @@ const ChatContent = () => {
 
   const queryClient = useQueryClient();
 
+  // ref
+  const typingTimeoutRef = useRef(null);
   const bottomRef = useRef(null);
+  const lastMessageRef = useRef(null);
+  const chatContentRef = useRef(null);
 
   // Message input
   const [message, setMessage] = useState('');
 
   const [typing, setTyping] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+
+  // Chat content options
+  const CHAT_CONTENT_OPTIONS = useMemo(
+    () => ({
+      CHAT: 'chat',
+      MEMBER: 'member',
+      NEW_MEMBER: 'new-member',
+    }),
+    [],
+  );
+
+  const [option, setOption] = useState(CHAT_CONTENT_OPTIONS.CHAT);
+
+  const handleSelectChatOption = (option) => {
+    setOption(option);
+  };
+
+  useEffect(() => {
+    setOption(CHAT_CONTENT_OPTIONS.CHAT);
+  }, [chat, CHAT_CONTENT_OPTIONS]);
 
   // last sign in
   const lastSignIn = useMemo(() => {
@@ -76,17 +77,65 @@ const ChatContent = () => {
     socket.emit('stop-typing', chat.id);
   };
 
-  const { data: messages, isLoading } = useQuery({
+  // get messages
+  const {
+    data: messages,
+    isLoading,
+    isFetching,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ['messages', { id: chat.id }],
-    queryFn: () => getMessages({ id: chat.id }),
+    queryFn: ({ pageParam = 1 }) =>
+      getMessages({ id: chat.id, page: pageParam }),
+    getNextPageParam: (lastPage, pages) => {
+      const nextPage = pages?.length + 1;
+      return lastPage.data?.length !== 0 ? nextPage : undefined;
+    },
     retry: 3,
     retryDelay: 3000,
   });
 
+  const messagesData = useMemo(() => {
+    if (messages?.pages) {
+      return messages.pages
+        .map((page) => page.data)
+        .flat()
+        .reverse();
+    }
+    return [];
+  }, [messages]);
+
+  // get messages if last message
+  const lastElementRef = useCallback(
+    (node) => {
+      if (isLoading) return;
+
+      if (lastMessageRef.current) lastMessageRef.current?.disconnect();
+      lastMessageRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetching) {
+          fetchNextPage();
+        }
+      });
+
+      if (node) lastMessageRef.current.observe(node);
+    },
+    [isLoading, hasNextPage, fetchNextPage, isFetching],
+  );
+
   // Scroll to the bottom when new messages are added
   useEffect(() => {
+    if (messagesData.length > 20)
+      if (chatContentRef.current) {
+        chatContentRef.current.scrollTo(
+          0,
+          chatContentRef.current.offsetHeight + 100,
+        );
+        return;
+      }
     bottomRef.current?.scrollIntoView();
-  }, [messages]);
+  }, [messagesData, bottomRef]);
 
   // Send message
   const handleSendMessage = useMutation({
@@ -103,11 +152,21 @@ const ChatContent = () => {
       stopTyping();
 
       setMessage('');
+
+      const messageTmp = {
+        sender: { _id: user.id },
+        content: message,
+        _id: Date.now(),
+      };
+
+      messagesData.push(messageTmp);
+
+      bottomRef.current?.scrollIntoView();
+
       return sendMessage({ id: chat.id, content: message });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['chats']);
-      queryClient.invalidateQueries(['messages']);
     },
   });
 
@@ -134,8 +193,6 @@ const ChatContent = () => {
   }, [chat, queryClient]);
 
   // handle typing
-  const typingTimeoutRef = useRef(null);
-
   const handleTyping = useCallback(
     (e) => {
       setMessage(e.target.value);
@@ -157,6 +214,49 @@ const ChatContent = () => {
     [chat.id, typing],
   );
 
+  // render chat content
+  const renderChatContent = useMemo(() => {
+    switch (option) {
+      case CHAT_CONTENT_OPTIONS.CHAT:
+        return (
+          <ChatMessages
+            ref={chatContentRef}
+            isLoading={isLoading}
+            isFetchingNextPage={isFetchingNextPage}
+            isTyping={isTyping}
+            messagesData={messagesData}
+            bottomRef={bottomRef}
+            lastElementRef={lastElementRef}
+            user={user}
+            message={message}
+            handleSendMessage={handleSendMessage}
+            handleTyping={handleTyping}
+          />
+        );
+
+      case CHAT_CONTENT_OPTIONS.MEMBER:
+        return <ChatMember />;
+
+      case CHAT_CONTENT_OPTIONS.NEW_MEMBER:
+        return <ChatAddMember />;
+
+      default:
+        break;
+    }
+  }, [
+    isLoading,
+    isFetchingNextPage,
+    isTyping,
+    messagesData,
+    option,
+    user,
+    message,
+    handleSendMessage,
+    handleTyping,
+    lastElementRef,
+    CHAT_CONTENT_OPTIONS,
+  ]);
+
   return (
     <div className='py-5 px-3 h-full flex flex-col justify-between bg-white relative'>
       <div className='pb-4 mb-1 flex justify-between items-center border-b'>
@@ -172,60 +272,22 @@ const ChatContent = () => {
             </p>
           </div>
         </div>
+        {chat?.isGroupChat &&
+          (option === CHAT_CONTENT_OPTIONS.CHAT ? (
+            <ChatThreeDotsDropdown
+              data={chat}
+              onSelect={handleSelectChatOption}
+            />
+          ) : (
+            <IconButton
+              onClick={() => handleSelectChatOption(CHAT_CONTENT_OPTIONS.CHAT)}
+            >
+              <BiLeftArrowAlt />
+            </IconButton>
+          ))}
       </div>
 
-      <div className='relative h-full overflow-y-scroll py-3'>
-        {isLoading ? (
-          <Loading />
-        ) : (
-          <div className='absolute bottom-0 left-0 w-full max-h-full'>
-            {messages?.data?.map((msg, index) => (
-              <Message
-                key={index}
-                message={msg}
-                isCurrentUser={isSender(user.id, msg.sender?._id)}
-                isLastMessage={isLastMessage(messages?.data, index, user.id)}
-                isSameSender={isSameSender(messages?.data, msg, index, user.id)}
-              />
-            ))}
-            {isTyping && <TypingLoading className={'ml-[2.3rem]'} />}
-            <div ref={bottomRef}></div>
-          </div>
-        )}
-      </div>
-
-      <div className='flex items-center justify-between w-full mt-3'>
-        <Paper
-          sx={{
-            paddingY: '8px',
-            paddingX: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            borderRadius: '20px',
-            boxShadow: 'none',
-            bgcolor: '#F5F6FA',
-            width: '100%',
-          }}
-        >
-          <input
-            type='text'
-            placeholder='Write a message...'
-            className='border-0 outline-none w-full bg-[#F5F6FA]'
-            autoFocus
-            value={message}
-            onChange={handleTyping}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleSendMessage.mutate();
-              }
-            }}
-          />
-        </Paper>
-
-        <IconButton color='primary' sx={{ marginLeft: 1 }}>
-          <BiSend />
-        </IconButton>
-      </div>
+      {renderChatContent}
     </div>
   );
 };

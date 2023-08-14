@@ -12,13 +12,16 @@ import useDebounce from 'hooks/useDebounce';
 import Loading from 'parts/Loading';
 import { useCallback, useState } from 'react';
 import { BsPencil, BsPlus, BsSearch } from 'react-icons/bs';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { createSingleChat, getChatList } from 'services/chatController';
 import { searchUser } from 'services/userController';
 import ChatListItem from './ChatListItem';
+import { selectChat } from 'redux/slices/chat';
 
 export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
   const user = useSelector((state) => state.user);
+
+  const dispatch = useDispatch();
 
   const queryClient = useQueryClient();
 
@@ -53,6 +56,7 @@ export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
       queryClient.invalidateQueries(['chats']);
       setSearch('');
       setSearchInput('');
+      dispatch(selectChat(res.data));
     },
     onError: (error) => {
       ErrorToast({ message: error.message });
@@ -65,7 +69,7 @@ export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
       chat?.member?.find((member) => member._id === user.account_id),
     );
 
-    if (chatExist) {
+    if (chatExist && !chatExist?.isGroupChat) {
       setSearch('');
       setSearchInput('');
       return handleSelectChat({ ...chatExist, name: chatTitle(chatExist) });
@@ -155,13 +159,15 @@ export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
         <Loading />
       ) : (
         <div className='mt-[1rem]'>
-          {chats?.data?.map((chat) => (
-            <ChatListItem
-              key={chat._id}
-              data={chat}
-              handleSelectChat={handleSelectChat}
-            />
-          ))}
+          {chats?.data
+            ?.sort((a, b) => new Date(b.createAt) - new Date(a.createAt))
+            .map((chat) => (
+              <ChatListItem
+                key={chat._id}
+                data={chat}
+                handleSelectChat={handleSelectChat}
+              />
+            ))}
         </div>
       )}
 

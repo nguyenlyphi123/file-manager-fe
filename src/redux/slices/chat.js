@@ -7,6 +7,7 @@ const initialState = {
   members: [],
   lastMessage: {},
   lastActive: null,
+  author: null,
 };
 
 const chat = createSlice({
@@ -27,14 +28,25 @@ const chat = createSlice({
         members: action.payload.member,
         lastMessage: action.payload.lastMessage,
         lastActive: action.payload.lastOpened,
+        author: action.payload.author,
       };
     },
     removeChat: (state) => {
       return (state = initialState);
     },
+    removeChatMember: (state, action) => {
+      const newMembers = state.members.filter(
+        (member) => member._id !== action.payload,
+      );
+
+      return {
+        ...state,
+        members: newMembers,
+      };
+    },
   },
 });
 
-export const { selectChat, removeChat } = chat.actions;
+export const { selectChat, removeChat, removeChatMember } = chat.actions;
 
 export default chat.reducer;

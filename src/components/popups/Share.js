@@ -61,8 +61,8 @@ export const SpecializeSelect = ({ handleSelect, handleReturn }) => {
         {specializesLoading ? (
           <Loading />
         ) : (
-          specializes?.data?.map((specialize) => (
-            <Grid item xs={6} md={6} lg={6}>
+          specializes?.data?.map((specialize, index) => (
+            <Grid key={index} item xs={6} md={6} lg={6}>
               <div
                 onClick={() => handleSelect(specialize)}
                 className='border rounded-md py-2 px-2 flex items-center justify-between cursor-pointer'
@@ -205,30 +205,33 @@ export const ClassSelect = ({
             paddingRight: 1,
           }}
         >
-          {lecturers?.data?.map((lecturers) => (
-            <Grid key={lecturers._id} item xs={3} md={3} lg={3}>
-              <div
-                onClick={() => handleMemberSelect(lecturers)}
-                className='border rounded-md py-1 px-2 flex items-center justify-between cursor-pointer'
-              >
-                <p className='m-b-0 text-[0.85em] text-gray-700 mr-3'>
-                  {lecturers?.name}
-                </p>
+          {lecturers?.data?.map(
+            (lecturer) =>
+              lecturer.account_id !== user.id && (
+                <Grid key={lecturer._id} item xs={3} md={3} lg={3}>
+                  <div
+                    onClick={() => handleMemberSelect(lecturer)}
+                    className='border rounded-md py-1 px-2 flex items-center justify-between cursor-pointer'
+                  >
+                    <p className='m-b-0 text-[0.85em] text-gray-700 mr-3'>
+                      {lecturer?.name}
+                    </p>
 
-                <Checkbox
-                  icon={<BsCheckCircle />}
-                  checkedIcon={<BsCheckCircleFill />}
-                  sx={{ padding: '3px' }}
-                  color='success'
-                  checked={
-                    memberSelected?.findIndex(
-                      (item) => item._id === lecturers._id,
-                    ) !== -1
-                  }
-                />
-              </div>
-            </Grid>
-          ))}
+                    <Checkbox
+                      icon={<BsCheckCircle />}
+                      checkedIcon={<BsCheckCircleFill />}
+                      sx={{ padding: '3px' }}
+                      color='primary'
+                      checked={
+                        memberSelected?.findIndex(
+                          (item) => item._id === lecturer._id,
+                        ) !== -1
+                      }
+                    />
+                  </div>
+                </Grid>
+              ),
+          )}
         </Grid>
       </div>
     </>

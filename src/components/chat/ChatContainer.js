@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectChat } from 'redux/slices/chat';
 import NewGroupChat from 'components/popups/NewGroupChat';
 
-export default function ChatContainer({ socket, open, handleToggleChat }) {
+export default function ChatContainer({ open, handleToggleChat }) {
   const chat = useSelector((state) => state.chat);
 
   const dispatch = useDispatch();
@@ -63,7 +63,7 @@ export default function ChatContainer({ socket, open, handleToggleChat }) {
 
             {chat.id && (
               <Grid item xs={12} md={9} lg={8} sx={{ height: '100vh' }}>
-                <ChatContent socket={socket} />
+                <ChatContent />
               </Grid>
             )}
           </Grid>

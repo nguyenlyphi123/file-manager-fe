@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { TiArrowSortedDown } from 'react-icons/ti';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet } from 'react-router-dom';
 
@@ -16,13 +15,13 @@ export default function Folders() {
 
   useEffect(() => {
     dispatch(pushTab('Folders'));
-  }, []);
+  }, [dispatch]);
 
   return (
     <>
       <div className='min-h-[calc(100vh-142px)] py-5 px-7 tracking-wide relative'>
         <CustomedBreadcrumbs location={folderLocation} />
-        <div className='mt-5 min-h-[calc(100vh-142px-90px)] flex flex-col'>
+        <div className='mt-5 min-h-[calc(100vh-142px-90px)] flex flex-col relative'>
           <Outlet />
         </div>
       </div>

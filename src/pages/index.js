@@ -21,6 +21,8 @@ import { removeChat } from 'redux/slices/chat';
 import { getUnseenMessages } from 'redux/slices/chatNotification';
 
 export default function Home() {
+  const user = useSelector((state) => state.user);
+
   // open/close new folder
   const [isNewFolderOpen, setIsNewFolderOpen] = useState(false);
 
@@ -64,8 +66,6 @@ export default function Home() {
   }, [dispatch]);
 
   // connect to socket
-  const user = useSelector((state) => state.user);
-
   useEffect(() => {
     socket.on('connect', () => {
       console.log(socket.id);
@@ -112,20 +112,20 @@ export default function Home() {
 
             <div className='flex'>
               <button
-                className='bg-[#d3d9e7] py-2 px-5 rounded-sm mx-2 flex items-center hover:bg-[#C3C6CE] hover:text-white hover:scale-105 duration-100'
+                className='bg-[#d3d9e7] py-2 px-3 rounded-sm mx-2 flex items-center hover:bg-[#C3C6CE] hover:text-white hover:scale-105 duration-100'
                 type='button'
                 onClick={handleOpenNewFolder}
               >
                 <AiOutlinePlus className='mr-3 font-bold' />
-                <p className='text-sm font-semibold '>Create</p>
+                <p className='text-sm font-semibold '>New Folder</p>
               </button>
               <button
-                className='bg-[#5664D9] py-2 px-5 rounded-sm mx-2 text-white flex items-center hover:bg-[#2f40dd] hover:scale-105 duration-100'
+                className='bg-[#5664D9] py-2 px-3 rounded-sm mx-2 text-white flex items-center hover:bg-[#2f40dd] hover:scale-105 duration-100'
                 type='button'
                 onClick={handleOpenUploadFile}
               >
                 <AiOutlineCloudUpload className='mr-3 text-lg' />
-                <p className='text-sm font-medium'>Upload</p>
+                <p className='text-sm font-medium'>Upload File</p>
               </button>
             </div>
           </div>

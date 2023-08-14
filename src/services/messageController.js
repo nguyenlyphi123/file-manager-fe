@@ -1,8 +1,12 @@
 import { axiosPrivate } from 'utils/axios';
 
-export const getMessages = async ({ id }) => {
+const ITEMS_PER_PAGE = 20;
+
+export const getMessages = async ({ id, page }) => {
   try {
-    const res = await axiosPrivate.get(`/message/${id}`);
+    const res = await axiosPrivate.get(
+      `/message/${id}?limit=${ITEMS_PER_PAGE}&page=${page}`,
+    );
 
     return res.data;
   } catch (error) {

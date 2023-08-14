@@ -45,7 +45,7 @@ export default function DetailFolder() {
 
   useEffect(() => {
     dispatch(setCurrentFolder(folder));
-  }, [location]);
+  }, [location, dispatch, folder]);
 
   if (folderLoading || fileLoading) return <Loading />;
 

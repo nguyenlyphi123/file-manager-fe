@@ -29,7 +29,7 @@ export default function MyFolder() {
 
   useEffect(() => {
     dispatch(removeLocation());
-  }, []);
+  }, [dispatch]);
 
   // folder data
   const { data: folders, isLoading: folderLoading } = useQuery({
