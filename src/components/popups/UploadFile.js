@@ -54,7 +54,7 @@ export const UploadFile = ({ handleClose, open }) => {
       setLoading(false);
       setFile();
     }
-  }, [_id, file]);
+  }, [_id, file, handleClose, queryClient]);
 
   return (
     <Modal

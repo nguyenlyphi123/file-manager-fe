@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Avatar, IconButton, Paper, Tooltip } from '@mui/material';
 import { BiSend } from 'react-icons/bi';
 
@@ -6,6 +6,10 @@ import TypingLoading from 'components/TypingLoading';
 import Loading from 'parts/Loading';
 
 import { isLastMessage, isSameSender, isSender } from './helpers/chatHelpers';
+import socket from 'utils/socket';
+import { useSelector } from 'react-redux';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { sendMessage } from 'services/messageController';
 
 // Message Component for rendering individual messages
 const Message = React.forwardRef(
@@ -39,21 +43,151 @@ const Message = React.forwardRef(
 );
 
 export default function ChatMessages({
-  ref,
   isLoading,
   isFetchingNextPage,
   messagesData,
-  isTyping,
-  lastElementRef,
   bottomRef,
-  user,
-  message,
-  handleTyping,
-  handleSendMessage,
+  hasNextPage,
+  isFetching,
+  fetchNextPage,
 }) {
+  const chat = useSelector((state) => state.chat);
+  const user = useSelector((state) => state.user);
+
+  const queryClient = useQueryClient();
+
+  // ref
+  const lastMessageRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const chatContentRef = useRef(null);
+
+  // get messages if last message
+  const lastElementRef = useCallback(
+    (node) => {
+      if (isLoading) return;
+
+      if (lastMessageRef.current) lastMessageRef.current?.disconnect();
+      lastMessageRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetching) {
+          fetchNextPage();
+        }
+      });
+
+      if (node) lastMessageRef.current.observe(node);
+    },
+    [isLoading, hasNextPage, fetchNextPage, isFetching],
+  );
+
+  // Scroll to the bottom when new messages are added
+  useEffect(() => {
+    if (messagesData.length > 20)
+      if (chatContentRef.current) {
+        chatContentRef.current.scrollTo(
+          0,
+          chatContentRef.current.offsetHeight + 100,
+        );
+        return;
+      }
+    bottomRef.current?.scrollIntoView();
+  }, [messagesData, bottomRef]);
+
+  // Message input
+  const [message, setMessage] = useState('');
+
+  const [typing, setTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+
+  // Send message
+  const handleSendMessage = useMutation({
+    mutationFn: () => {
+      const newMessage = {
+        receiver: chat?.members,
+        roomId: chat?.id,
+        content: message,
+        sender: { _id: user.id },
+      };
+
+      sendMessageSocket(newMessage);
+
+      stopTyping();
+
+      setMessage('');
+
+      const messageTmp = {
+        sender: { _id: user.id },
+        content: message,
+        _id: Date.now(),
+      };
+
+      messagesData.push(messageTmp);
+
+      bottomRef.current?.scrollIntoView();
+
+      return sendMessage({ id: chat.id, content: message });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['chats']);
+    },
+  });
+
+  // handle typing
+  const handleTyping = useCallback(
+    (e) => {
+      setMessage(e.target.value);
+
+      if (!typing) {
+        setTyping(true);
+        socket.emit('typing', chat.id);
+      }
+
+      const TYPING_TIMER_LENGTH = 3000;
+
+      clearTimeout(typingTimeoutRef.current);
+
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit('stop-typing', chat.id);
+        setTyping(false);
+      }, TYPING_TIMER_LENGTH);
+    },
+    [chat.id, typing],
+  );
+
+  // Connect to socket room and handle socket listeners
+  const sendMessageSocket = (message) => {
+    socket.emit('send-message', message);
+  };
+
+  const stopTyping = () => {
+    socket.emit('stop-typing', chat.id);
+  };
+
+  useEffect(() => {
+    if (socket) {
+      socket.emit('join-room', chat.id);
+
+      socket.on('receive-message', () => {
+        queryClient.invalidateQueries(['messages']);
+        queryClient.invalidateQueries(['chats']);
+      });
+
+      socket.on('typing', () => setIsTyping(true));
+      socket.on('stop-typing', () => setIsTyping(false));
+    }
+
+    return () => {
+      // Clean up the socket listener when the component unmounts
+      socket.off('receive-message');
+      socket.off('typing');
+      socket.off('stop-typing');
+    };
+  }, [chat, queryClient]);
+
   return (
     <>
-      <div ref={ref} className='relative h-full overflow-y-scroll py-3'>
+      <div
+        ref={chatContentRef}
+        className='relative h-full overflow-y-scroll py-3'
+      >
         {isLoading ? (
           <Loading />
         ) : (

@@ -68,7 +68,7 @@ export default function Home() {
   // connect to socket
   useEffect(() => {
     socket.on('connect', () => {
-      console.log(socket.id);
+      console.log('Socket Connected With ID: ', socket.id);
     });
 
     socket.emit('setup', user);
@@ -81,7 +81,7 @@ export default function Home() {
       socket.off('connect');
       socket.off('receive-message');
     };
-  });
+  }, [dispatch, user]);
 
   return (
     <>

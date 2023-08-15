@@ -1,37 +1,24 @@
 import { Avatar, IconButton } from '@mui/material';
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { ChatThreeDotsDropdown } from 'components/popups/ChatThreeDotsDropdown';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { BiLeftArrowAlt } from 'react-icons/bi';
 import { useSelector } from 'react-redux';
-import { getMessages, sendMessage } from 'services/messageController';
+import ChatAddMember from './ChatAddMember';
+import ChatMember from './ChatMember';
+import ChatMessages from './ChatMessages';
+
+import { getMessages } from 'services/messageController';
+
 import { FormattedDate } from 'utils/helpers/TypographyHelper';
 import socket from 'utils/socket';
-import ChatMessages from './ChatMessages';
-import ChatMember from './ChatMember';
-import ChatAddMember from './ChatAddMember';
 
 const ChatContent = () => {
   const chat = useSelector((state) => state.chat);
   const user = useSelector((state) => state.user);
 
-  const queryClient = useQueryClient();
-
   // ref
-  const typingTimeoutRef = useRef(null);
   const bottomRef = useRef(null);
-  const lastMessageRef = useRef(null);
-  const chatContentRef = useRef(null);
-
-  // Message input
-  const [message, setMessage] = useState('');
-
-  const [typing, setTyping] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
 
   // Chat content options
   const CHAT_CONTENT_OPTIONS = useMemo(
@@ -69,14 +56,6 @@ const ChatContent = () => {
     }
   }, [chat]);
 
-  const sendMessageSocket = (message) => {
-    socket.emit('send-message', message);
-  };
-
-  const stopTyping = () => {
-    socket.emit('stop-typing', chat.id);
-  };
-
   // get messages
   const {
     data: messages,
@@ -107,130 +86,20 @@ const ChatContent = () => {
     return [];
   }, [messages]);
 
-  // get messages if last message
-  const lastElementRef = useCallback(
-    (node) => {
-      if (isLoading) return;
-
-      if (lastMessageRef.current) lastMessageRef.current?.disconnect();
-      lastMessageRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetching) {
-          fetchNextPage();
-        }
-      });
-
-      if (node) lastMessageRef.current.observe(node);
-    },
-    [isLoading, hasNextPage, fetchNextPage, isFetching],
-  );
-
-  // Scroll to the bottom when new messages are added
-  useEffect(() => {
-    if (messagesData.length > 20)
-      if (chatContentRef.current) {
-        chatContentRef.current.scrollTo(
-          0,
-          chatContentRef.current.offsetHeight + 100,
-        );
-        return;
-      }
-    bottomRef.current?.scrollIntoView();
-  }, [messagesData, bottomRef]);
-
-  // Send message
-  const handleSendMessage = useMutation({
-    mutationFn: () => {
-      const newMessage = {
-        receiver: chat?.members,
-        roomId: chat?.id,
-        content: message,
-        sender: { _id: user.id },
-      };
-
-      sendMessageSocket(newMessage);
-
-      stopTyping();
-
-      setMessage('');
-
-      const messageTmp = {
-        sender: { _id: user.id },
-        content: message,
-        _id: Date.now(),
-      };
-
-      messagesData.push(messageTmp);
-
-      bottomRef.current?.scrollIntoView();
-
-      return sendMessage({ id: chat.id, content: message });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['chats']);
-    },
-  });
-
-  // Connect to socket room and handle socket listeners
-  useEffect(() => {
-    if (socket) {
-      socket.emit('join-room', chat.id);
-
-      socket.on('receive-message', () => {
-        queryClient.invalidateQueries(['messages']);
-        queryClient.invalidateQueries(['chats']);
-      });
-
-      socket.on('typing', () => setIsTyping(true));
-      socket.on('stop-typing', () => setIsTyping(false));
-    }
-
-    return () => {
-      // Clean up the socket listener when the component unmounts
-      socket.off('receive-message');
-      socket.off('typing');
-      socket.off('stop-typing');
-    };
-  }, [chat, queryClient]);
-
-  // handle typing
-  const handleTyping = useCallback(
-    (e) => {
-      setMessage(e.target.value);
-
-      if (!typing) {
-        setTyping(true);
-        socket.emit('typing', chat.id);
-      }
-
-      const TYPING_TIMER_LENGTH = 3000;
-
-      clearTimeout(typingTimeoutRef.current);
-
-      typingTimeoutRef.current = setTimeout(() => {
-        socket.emit('stop-typing', chat.id);
-        setTyping(false);
-      }, TYPING_TIMER_LENGTH);
-    },
-    [chat.id, typing],
-  );
-
   // render chat content
   const renderChatContent = useMemo(() => {
     switch (option) {
       case CHAT_CONTENT_OPTIONS.CHAT:
         return (
           <ChatMessages
-            ref={chatContentRef}
             isLoading={isLoading}
             isFetchingNextPage={isFetchingNextPage}
-            isTyping={isTyping}
             messagesData={messagesData}
             bottomRef={bottomRef}
-            lastElementRef={lastElementRef}
             user={user}
-            message={message}
-            handleSendMessage={handleSendMessage}
-            handleTyping={handleTyping}
+            hasNextPage={hasNextPage}
+            isFetching={isFetching}
+            fetchNextPage={fetchNextPage}
           />
         );
 
@@ -246,15 +115,13 @@ const ChatContent = () => {
   }, [
     isLoading,
     isFetchingNextPage,
-    isTyping,
     messagesData,
     option,
     user,
-    message,
-    handleSendMessage,
-    handleTyping,
-    lastElementRef,
     CHAT_CONTENT_OPTIONS,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
   ]);
 
   return (

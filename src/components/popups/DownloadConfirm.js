@@ -14,45 +14,48 @@ import { downloadFolder } from 'services/folderController';
 export const DownloadConfirm = ({ open, handleClose, data }) => {
   const [loading, setLoading] = useState(false);
 
-  const downloadMutation = useCallback(async (fn, data, params) => {
-    setLoading(true);
-    try {
-      const response = await fn(params);
+  const downloadMutation = useCallback(
+    async (fn, data, params) => {
+      setLoading(true);
+      try {
+        const response = await fn(params);
 
-      const contentType =
-        response?.headers?.get('content-type') || 'application/octet-stream';
+        const contentType =
+          response?.headers?.get('content-type') || 'application/octet-stream';
 
-      // Create a blob from the response
-      const blob = new Blob([response], {
-        type: contentType,
-      });
+        // Create a blob from the response
+        const blob = new Blob([response], {
+          type: contentType,
+        });
 
-      const url = window.URL.createObjectURL(blob);
+        const url = window.URL.createObjectURL(blob);
 
-      // Create a temporary anchor element to trigger the download
-      const linkName = data.type
-        ? `${data.name}.${data.type}`
-        : `${data.name}.zip`;
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = linkName;
-      document.body.appendChild(link);
+        // Create a temporary anchor element to trigger the download
+        const linkName = data.type
+          ? `${data.name}.${data.type}`
+          : `${data.name}.zip`;
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = linkName;
+        document.body.appendChild(link);
 
-      link.click();
+        link.click();
 
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
-      setLoading(false);
-      handleClose();
-    } catch (error) {
-      console.log(error);
-      ErrorToast({
-        message:
-          'Data preparation for download failed, or you do not have permission to download. Please contact your manager for more information.',
-      });
-      setLoading(false);
-    }
-  }, []);
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+        setLoading(false);
+        handleClose();
+      } catch (error) {
+        console.log(error);
+        ErrorToast({
+          message:
+            'Data preparation for download failed, or you do not have permission to download. Please contact your manager for more information.',
+        });
+        setLoading(false);
+      }
+    },
+    [handleClose],
+  );
 
   const handleDownloadFile = () => {
     downloadMutation(downloadFile, data, {

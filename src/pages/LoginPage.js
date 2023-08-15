@@ -22,7 +22,7 @@ export default function LoginPage() {
       }
       navigate('/');
     }
-  }, [user.isAuthenticated]);
+  }, [user.isAuthenticated, navigate, from]);
 
   // login data
   const [loginData, setLoginData] = useState({ username: '', password: '' });
@@ -30,32 +30,36 @@ export default function LoginPage() {
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
   };
 
-  const handleLoginSubmit = useCallback(async (loginData) => {
-    if (loginData.username === '' || loginData.password === '') {
-      AlertFail('Username or password is missing !!!');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const response = await dispatch(logIn(loginData));
-
-      if (!response.payload.success) {
-        setIsLoading(false);
-        AlertFail('Username or password is incorrect !!!');
+  const handleLoginSubmit = useCallback(
+    async (loginData) => {
+      if (loginData.username === '' || loginData.password === '') {
+        AlertFail('Username or password is missing !!!');
+        return;
       }
-    } catch (error) {
-      setIsLoading(false);
-      console.log(error);
-    }
-  }, []);
+
+      setIsLoading(true);
+
+      try {
+        const response = await dispatch(logIn(loginData));
+
+        if (!response.payload.success) {
+          setIsLoading(false);
+          AlertFail('Username or password is incorrect !!!');
+        }
+      } catch (error) {
+        setIsLoading(false);
+        console.log(error);
+      }
+    },
+    [dispatch],
+  );
 
   useEffect(() => {
     if (!user.isAuthenticated) {
       dispatch(loadUser());
     }
-  }, []);
+    // eslint-disable-next-line
+  }, [dispatch]);
 
   // loading
   const [isLoading, setIsLoading] = useState(false);

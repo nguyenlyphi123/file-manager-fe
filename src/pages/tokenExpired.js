@@ -10,7 +10,7 @@ export default function TokenExpired() {
   useEffect(() => {
     const from = location.state?.from;
     user.isAuthenticated && navigate(from ? from : '/', { replace: true });
-  }, []);
+  }, [location.state?.from, navigate, user.isAuthenticated]);
 
   return (
     <div className='w-screen h-screen relative'>

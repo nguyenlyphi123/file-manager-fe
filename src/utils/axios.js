@@ -1,11 +1,10 @@
 import axios from 'axios';
-import { apiURL } from 'constants/constants';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = apiURL;
+axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
 export const axiosPrivate = axios.create({
-  baseURL: `${apiURL}`,
+  baseURL: `${process.env.REACT_APP_API_URL}`,
   withCredentials: true,
   headers: {
     'SameSite': 'None',

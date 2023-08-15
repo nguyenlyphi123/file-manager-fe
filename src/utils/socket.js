@@ -1,6 +1,5 @@
-const { host } = require('constants/constants');
 const { io } = require('socket.io-client');
 
-const socket = io(host, { withCredentials: true });
+const socket = io(process.env.REACT_APP_HOST_URL, { withCredentials: true });
 
 export default socket;
