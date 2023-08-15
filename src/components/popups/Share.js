@@ -178,7 +178,9 @@ export const ClassSelect = ({
               />
             )}
           </div>
-          {lecturers?.data.every((item) => memberSelected?.includes(item)) &&
+          {lecturers?.data
+            ?.filter((item) => item.account_id !== user.id)
+            .every((item) => memberSelected?.includes(item)) &&
           memberSelected?.length !== 0 ? (
             <p
               onClick={handleSelectAndUnselectAll}
@@ -245,6 +247,8 @@ export const MemberSelect = ({
   handleSelect,
   handleMutipleMemberSelect,
 }) => {
+  const user = useSelector((state) => state.user);
+
   // fetch class data
   const { data: pupils, isLoading: pupilsLoading } = useQuery({
     queryKey: ['pupils'],
@@ -268,7 +272,9 @@ export const MemberSelect = ({
             className='text-gray-600 font-semibold cursor-pointer'
           />
         </div>
-        {pupils?.data.every((item) => memberSelected?.includes(item)) &&
+        {pupils?.data
+          ?.filter((item) => item.account_id !== user.id)
+          .every((item) => memberSelected?.includes(item)) &&
         memberSelected?.length !== 0 ? (
           <p
             onClick={handleSelectAndUnselectAll}
@@ -368,28 +374,33 @@ export const Share = ({ handleClose, data, open }) => {
     if (selection === MEMBER) return setSelection(CLASS);
   };
 
-  // pupil selected
+  // member selected
   const [memberSelected, setMemberSelected] = useState([]);
 
-  const handleMemberItemSelect = (pupil) => {
+  const handleMemberItemSelect = (member) => {
+    if (member.account_id === user.id) return;
     setMemberSelected((prev) => {
-      const index = prev.findIndex((item) => item._id === pupil._id);
+      const index = prev.findIndex((item) => item._id === member._id);
       if (index !== -1) {
-        return prev.filter((item) => item._id !== pupil._id);
+        return prev.filter((item) => item._id !== member._id);
       }
-      return [...prev, pupil];
+      return [...prev, member];
     });
   };
 
   const handleMutipleMemberSelect = (arr) => {
-    if (arr.every((item) => memberSelected?.includes(item))) {
+    const exceptMe = arr?.filter((item) => item.account_id !== user.id);
+    console.log(exceptMe);
+    if (exceptMe.every((item) => memberSelected?.includes(item))) {
       return setMemberSelected((prev) => {
-        return prev.filter((item) => !arr.includes(item));
+        return prev.filter((item) => !exceptMe.includes(item));
       });
     }
 
-    if (!memberSelected?.includes(arr)) {
-      const newArr = arr?.filter((item) => !memberSelected?.includes(item));
+    if (!memberSelected?.includes(exceptMe)) {
+      const newArr = exceptMe?.filter(
+        (item) => !memberSelected?.includes(item),
+      );
       return setMemberSelected((prev) => [...prev, ...newArr]);
     }
   };

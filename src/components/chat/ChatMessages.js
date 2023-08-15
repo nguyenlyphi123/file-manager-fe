@@ -88,7 +88,7 @@ export default function ChatMessages({
         );
         return;
       }
-    bottomRef.current?.scrollIntoView();
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messagesData, bottomRef]);
 
   // Message input
