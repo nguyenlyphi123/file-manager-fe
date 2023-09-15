@@ -15,13 +15,13 @@ export default function LecturersPage() {
           <div className='bg-white flex justify-between items-center h-[62px] py-3 px-4 border'>
             <div className='flex items-center w-fit'>
               <FiSearch className='text-gray-600 cursor-pointer' />
-              <input
+              {/* <input
                 className='outline-none ml-3 text-[0.85em] h-7 w-[300px]'
                 type=''
                 name=''
                 value=''
                 placeholder='Search files, folders'
-              />
+              /> */}
             </div>
 
             <div className='flex'>

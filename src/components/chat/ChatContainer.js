@@ -1,4 +1,4 @@
-import { Grid } from '@mui/material';
+import { Grid, Hidden } from '@mui/material';
 import Drawer from '@mui/material/Drawer';
 import React, { useState } from 'react';
 
@@ -15,7 +15,6 @@ export default function ChatContainer({ open, handleToggleChat }) {
 
   // selected chat
   const handleSelectChat = (chat) => {
-    console.log(chat);
     dispatch(selectChat(chat));
   };
 
@@ -48,21 +47,23 @@ export default function ChatContainer({ open, handleToggleChat }) {
             container
             sx={{ minWidth: chat?.id ? '70vw' : 350, height: '100vh' }}
           >
-            <Grid
-              item
-              xs={12}
-              md={chat?.id ? 3 : 12}
-              lg={chat?.id ? 4 : 12}
-              sx={{ height: '100%' }}
-            >
-              <ChatList
-                handleSelectChat={handleSelectChat}
-                handleOpenNewGroupChat={handleOpenNewGroupChat}
-              />
-            </Grid>
+            <Hidden lgDown={chat.id ? true : false}>
+              <Grid
+                item
+                xs={12}
+                md={chat?.id ? 3 : 12}
+                lg={chat?.id ? 4 : 12}
+                sx={{ height: '100%' }}
+              >
+                <ChatList
+                  handleSelectChat={handleSelectChat}
+                  handleOpenNewGroupChat={handleOpenNewGroupChat}
+                />
+              </Grid>
+            </Hidden>
 
             {chat.id && (
-              <Grid item xs={12} md={9} lg={8} sx={{ height: '100vh' }}>
+              <Grid item xs={12} md={12} lg={8} sx={{ height: '100vh' }}>
                 <ChatContent />
               </Grid>
             )}

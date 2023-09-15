@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { DangerAlert } from 'parts/AlertPopup';
 import { loadUser, logIn } from 'redux/slices/user';
+import { unwrapResult } from '@reduxjs/toolkit';
 
 export default function LoginPage() {
   // redirect if user logged in
@@ -16,17 +17,18 @@ export default function LoginPage() {
   const user = useSelector((state) => state.user);
 
   useEffect(() => {
-    if (user.isAuthenticated) {
+    if (user.isAuthenticated && location.state?.action !== 'LOGOUT') {
       if (from) {
         navigate(from, { replace: true });
       }
       navigate('/');
     }
-  }, [user.isAuthenticated, navigate, from]);
+  }, [user.isAuthenticated, navigate, from, location.state?.action]);
 
   // login data
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const handleSetLoginData = (e) => {
+    if (e.key === 'Enter') return handleLoginSubmit(loginData);
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
   };
 
@@ -42,20 +44,31 @@ export default function LoginPage() {
       try {
         const response = await dispatch(logIn(loginData));
 
-        if (!response.payload.success) {
+        const unwrappedResponse = unwrapResult(response);
+
+        if (!unwrappedResponse.id) {
           setIsLoading(false);
           AlertFail('Username or password is incorrect !!!');
+          return;
         }
+
+        if (from) {
+          navigate(from, { replace: true });
+        }
+        navigate('/');
       } catch (error) {
         setIsLoading(false);
-        console.log(error);
+        AlertFail('Username or password is incorrect !!!');
       }
     },
-    [dispatch],
+    [dispatch, from, navigate],
   );
 
   useEffect(() => {
-    if (!user.isAuthenticated) {
+    if (location.state?.action === 'LOGOUT') {
+      return;
+    }
+    if (!user.isAuthenticated && !location.state?.action !== 'LOGOUT') {
       dispatch(loadUser());
     }
     // eslint-disable-next-line
@@ -112,6 +125,7 @@ export default function LoginPage() {
                 <div className='border rounded-md px-3 mt-2'>
                   <input
                     onChange={handleSetLoginData}
+                    onKeyDown={handleSetLoginData}
                     type='password'
                     name='password'
                     value={loginData.password}
@@ -133,14 +147,9 @@ export default function LoginPage() {
           <div className='flex justify-center w-full mt-[150px]'>
             <div
               onClick={() => handleLoginSubmit(loginData)}
-              className={`bg-blue-600 text-white py-2 px-10 rounded-md cursor-pointer hover:bg-blue-700 duration-300 relative`}
+              className={`bg-blue-600 text-white py-2 px-2 w-[100px] h-[40px] rounded-md cursor-pointer hover:bg-blue-700 duration-300 flex justify-center items-center`}
             >
-              {isLoading ? (
-                <ImSpinner className='absolute top-3 left-3 animate-spin' />
-              ) : (
-                ''
-              )}
-              Login
+              {isLoading ? <ImSpinner className='animate-spin' /> : 'Login'}
             </div>
           </div>
         </div>

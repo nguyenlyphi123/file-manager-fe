@@ -46,7 +46,6 @@ export const DownloadConfirm = ({ open, handleClose, data }) => {
         setLoading(false);
         handleClose();
       } catch (error) {
-        console.log(error);
         ErrorToast({
           message:
             'Data preparation for download failed, or you do not have permission to download. Please contact your manager for more information.',

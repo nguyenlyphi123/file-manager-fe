@@ -30,12 +30,14 @@ export default function Starred() {
     queryKey: ['folder-starred'],
     queryFn: async () => await getStarredFolder(),
     retry: 3,
+    refetchOnWindowFocus: false,
   });
 
   const { data: files, isLoading: fileLoading } = useQuery({
     queryKey: ['file-starred'],
     queryFn: async () => await getStarredFile(),
     retry: 3,
+    refetchOnWindowFocus: false,
   });
 
   const handleUnStar = useMutation({

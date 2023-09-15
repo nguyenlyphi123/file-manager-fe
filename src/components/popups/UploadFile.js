@@ -4,31 +4,42 @@ import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
 import { PERMISSION_WRITE } from 'constants/constants';
 import { useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
 import { AiOutlineClose, AiOutlineCloudUpload } from 'react-icons/ai';
 import { useSelector } from 'react-redux';
 import { uploadFile } from 'services/gcController';
 import FileIconHelper from 'utils/helpers/FileIconHelper';
-import { hasFFPermission, isAuthor } from 'utils/helpers/Helper';
+import { hasFFPermission, isAuthor, isOwner } from 'utils/helpers/Helper';
 
 export const UploadFile = ({ handleClose, open }) => {
-  const { _id, author, permission } = useSelector(
+  const { _id, author, permission, expired, owner } = useSelector(
     (state) => state.curentFolder,
   );
-
   const user = useSelector((state) => state.user);
 
   const queryClient = useQueryClient();
 
   const [file, setFile] = useState();
+  const [loading, setLoading] = useState(false);
 
+  // handle drop
+  const onDrop = useCallback((acceptedFiles) => {
+    setFile(acceptedFiles[0]);
+  }, []);
+
+  const { getRootProps, getInputProps } = useDropzone({ onDrop });
+
+  // handle select file
   const handleChange = (e) => {
     setFile(e.target.files[0]);
   };
 
-  const [loading, setLoading] = useState(false);
-
+  // handle upload file
   const handleUpload = useCallback(async () => {
-    if (!file) return ErrorToast({ message: 'Please select a file' });
+    if (!file) return ErrorToast({ message: 'Please select file' });
+
+    if (!isOwner(user.id, owner) && expired)
+      return ErrorToast({ message: 'This folder has expired' });
 
     setLoading(true);
 
@@ -49,16 +60,17 @@ export const UploadFile = ({ handleClose, open }) => {
     } catch (error) {
       console.error(error);
       ErrorToast({
-        message: 'Oop! Some thing went wrong! Please try again later',
+        message:
+          error.response?.data?.message ||
+          'Something went wrong, please try again',
       });
       setLoading(false);
       setFile();
     }
-  }, [_id, file, handleClose, queryClient]);
+  }, [_id, file, handleClose, queryClient, user.id, owner, expired]);
 
   return (
     <Modal
-      keepMounted
       open={open}
       onClose={handleClose}
       aria-labelledby='keep-mounted-modal-title'
@@ -85,6 +97,7 @@ export const UploadFile = ({ handleClose, open }) => {
               border: '1px solid #e5e7eb',
             }}
             className='rounded-md p-4 w-full h-[200px] flex flex-col justify-center items-center'
+            {...getRootProps()}
           >
             {(() => {
               if (
@@ -110,7 +123,12 @@ export const UploadFile = ({ handleClose, open }) => {
                     <span className='text-lg text-gray-400'>
                       Drag and drop a file here or click
                     </span>
-                    <input hidden type='file' onChange={handleChange} />
+                    <input
+                      hidden
+                      type='file'
+                      onChange={handleChange}
+                      {...getInputProps()}
+                    />
                   </>
                 );
               }
@@ -124,7 +142,7 @@ export const UploadFile = ({ handleClose, open }) => {
                   <FileIconHelper
                     type={
                       file &&
-                      file.name.substring(file.name.lastIndexOf('.') + 1)
+                      file.name?.substring(file.name?.lastIndexOf('.') + 1)
                     }
                     className='text-2xl'
                   />

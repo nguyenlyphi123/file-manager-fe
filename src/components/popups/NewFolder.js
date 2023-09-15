@@ -10,9 +10,7 @@ import { createFolder } from 'services/folderController';
 import { hasFFPermission, isAuthor } from 'utils/helpers/Helper';
 
 export const NewFolder = ({ handleClose, open }) => {
-  const { _id, author, permission } = useSelector(
-    (state) => state.curentFolder,
-  );
+  const curentFolder = useSelector((state) => state.curentFolder);
   const user = useSelector((state) => state.user);
 
   const queryClient = useQueryClient();
@@ -21,7 +19,11 @@ export const NewFolder = ({ handleClose, open }) => {
   const [folder, setFolder] = useState('Untitled folder');
 
   const handleCreate = useMutation({
-    mutationFn: () => createFolder({ name: folder, parent_folder: _id }),
+    mutationFn: () =>
+      createFolder({
+        name: folder,
+        parent_folder: curentFolder,
+      }),
     onSuccess: () => {
       handleClose();
       setFolder('Untitled folder');
@@ -52,11 +54,11 @@ export const NewFolder = ({ handleClose, open }) => {
         {(() => {
           if (
             !hasFFPermission(
-              permission,
+              curentFolder.permission,
               PERMISSION_WRITE,
-              isAuthor(user.id, author),
+              isAuthor(user.id, curentFolder.author),
             ) &&
-            _id !== null
+            curentFolder._id !== null
           ) {
             return (
               <>
@@ -88,7 +90,7 @@ export const NewFolder = ({ handleClose, open }) => {
                   <input
                     onChange={(e) => setFolder(e.target.value)}
                     type='text'
-                    value={folder}
+                    value={folder ? folder : ''}
                     placeholder='Untitled folder'
                     className='w-full outline-none text-gray-700 font-medium'
                     autoFocus

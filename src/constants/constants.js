@@ -21,3 +21,9 @@ export const PERMISSION_READ_WRITE = 'READ_WRITE';
 export const PERMISSION_DOWNLOAD = 'DOWNLOAD';
 export const PERMISSION_SHARE = 'SHARE';
 export const PERMISSION_EDIT = 'EDIT';
+
+// require status
+export const REQ_STATUS_WAITING = 'waiting';
+export const REQ_STATUS_PROCESSING = 'processing';
+export const REQ_STATUS_DONE = 'done';
+export const REQ_STATUS_CANCEL = 'cancel';

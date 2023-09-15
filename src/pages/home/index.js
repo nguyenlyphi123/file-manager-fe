@@ -21,12 +21,14 @@ export default function Home() {
   const { data: folders, isLoading: folderLoading } = useQuery({
     queryKey: ['folders'],
     queryFn: () => getFolderList(),
+    refetchOnWindowFocus: false,
   });
 
   // fetch file data
   const { data: files, isLoading: fileLoading } = useQuery({
     queryKey: ['files'],
     queryFn: () => getFileList(),
+    refetchOnWindowFocus: false,
   });
 
   // open/close new folder

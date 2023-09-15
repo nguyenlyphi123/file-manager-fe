@@ -1,12 +1,13 @@
-import React from 'react';
+import { useDispatch } from 'react-redux';
+
+import { resetCurrentFolder } from 'redux/slices/curentFolder';
+import { removeLocation } from 'redux/slices/location';
 
 import { AiOutlineHome, AiOutlineShareAlt } from 'react-icons/ai';
 import { FiFile, FiFolder, FiSettings, FiStar, FiTrash } from 'react-icons/fi';
-import { useDispatch } from 'react-redux';
 
-import { removeLocation } from 'redux/slices/location';
-import { resetCurrentFolder } from 'redux/slices/curentFolder';
 import SideMenuItem from 'parts/SideMenuItem';
+import { FaTasks } from 'react-icons/fa';
 
 export default function SideMenu() {
   // dispatch action redux
@@ -18,7 +19,7 @@ export default function SideMenu() {
   };
 
   return (
-    <div className='p-3 w-2/12 bg-white border-r border-gray-300 border-solid sticky top-16'>
+    <div className='p-3 sm:w-[80px] lg:w-2/12 bg-white border-r border-gray-300 border-solid sticky top-16'>
       <SideMenuItem
         onClick={handleClick}
         to=''
@@ -28,7 +29,9 @@ export default function SideMenu() {
           <AiOutlineHome />
         </div>
 
-        <div className='text-[#526484] text-md font-medium'>Home</div>
+        <div className='text-[#526484] text-md font-medium hidden lg:block'>
+          Home
+        </div>
       </SideMenuItem>
 
       <SideMenuItem
@@ -40,7 +43,9 @@ export default function SideMenu() {
           <FiFile />
         </div>
 
-        <div className='text-[#526484] text-md font-medium'>Files</div>
+        <div className='text-[#526484] text-md font-medium hidden lg:block'>
+          Files
+        </div>
       </SideMenuItem>
 
       <SideMenuItem
@@ -52,7 +57,9 @@ export default function SideMenu() {
           <FiFolder />
         </div>
 
-        <div className='text-[#526484] text-md font-medium'>Folders</div>
+        <div className='text-[#526484] text-md font-medium hidden lg:block'>
+          Folders
+        </div>
       </SideMenuItem>
 
       <SideMenuItem
@@ -64,7 +71,9 @@ export default function SideMenu() {
           <FiStar />
         </div>
 
-        <div className='text-[#526484] text-md font-medium'>Starred</div>
+        <div className='text-[#526484] text-md font-medium hidden lg:block'>
+          Starred
+        </div>
       </SideMenuItem>
 
       <SideMenuItem
@@ -76,7 +85,9 @@ export default function SideMenu() {
           <AiOutlineShareAlt />
         </div>
 
-        <div className='text-[#526484] text-md font-medium'>Shared with me</div>
+        <div className='text-[#526484] text-md font-medium hidden lg:block'>
+          Shared
+        </div>
       </SideMenuItem>
 
       <SideMenuItem
@@ -88,7 +99,23 @@ export default function SideMenu() {
           <FiTrash />
         </div>
 
-        <div className='text-[#526484] text-md font-medium'>Recovery</div>
+        <div className='text-[#526484] text-md font-medium hidden lg:block'>
+          Recovery
+        </div>
+      </SideMenuItem>
+
+      <SideMenuItem
+        onClick={handleClick}
+        to='require'
+        className='cursor-pointer flex items-center p-2 pl-4 my-2 rounded-md hover:bg-[#EFF1FF] duration-200'
+      >
+        <div className='text-[#8094AE] text-xl font-bold mr-4'>
+          <FaTasks />
+        </div>
+
+        <div className='text-[#526484] text-md font-medium hidden lg:block'>
+          Require
+        </div>
       </SideMenuItem>
 
       <SideMenuItem
@@ -100,7 +127,9 @@ export default function SideMenu() {
           <FiSettings />
         </div>
 
-        <div className='text-[#526484] text-md font-medium'>Settings</div>
+        <div className='text-[#526484] text-md font-medium hidden lg:block'>
+          Settings
+        </div>
       </SideMenuItem>
     </div>
   );

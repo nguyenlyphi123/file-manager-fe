@@ -1,8 +1,8 @@
+import { axiosPrivate } from 'utils/axios';
+import history from 'utils/lib/history';
+import refreshToken from 'utils/refreshToken';
 import { useDispatch } from 'react-redux';
 import { logOut } from 'redux/slices/user';
-import { axiosPrivate } from 'utils/axios';
-import refreshToken from 'utils/refreshToken';
-import history from 'utils/lib/history';
 
 export default function AxiosInterceptor() {
   const dispatch = useDispatch();
@@ -18,20 +18,15 @@ export default function AxiosInterceptor() {
       if (error?.response?.status === 403 && !config?.sent) {
         config.sent = true;
 
-        // Check if a refresh is already in progress
         if (!isRefreshing) {
           isRefreshing = true;
           refreshPromise = refreshToken()
             .then(() => {
-              // Once the token is refreshed, reset the isRefreshing flag
               isRefreshing = false;
               refreshPromise = null;
-
-              // Retry the original request
               return axiosPrivate(config);
             })
             .catch((error) => {
-              // If the token refresh fails, redirect to an error page
               dispatch(logOut());
               history.push('/expired');
               isRefreshing = false;
@@ -40,7 +35,6 @@ export default function AxiosInterceptor() {
             });
         }
 
-        // If a refresh is already in progress, return the promise of the ongoing refresh
         return refreshPromise;
       }
 

@@ -18,11 +18,13 @@ function Shared() {
   const { data: folders, isLoading: folderLoading } = useQuery({
     queryKey: ['folder-shared'],
     queryFn: () => getSharedFolder(),
+    refetchOnWindowFocus: false,
   });
 
   const { data: files, isLoading: fileLoading } = useQuery({
     queryKey: ['file-shared'],
     queryFn: () => getSharedFile(),
+    refetchOnWindowFocus: false,
   });
 
   // dispatch action redux

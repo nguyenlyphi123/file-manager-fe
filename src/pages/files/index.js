@@ -14,6 +14,7 @@ export default function Files() {
     queryKey: ['files'],
     queryFn: () => getFileList(),
     retry: 3,
+    refetchOnWindowFocus: false,
   });
 
   if (isLoading) return <Loading />;

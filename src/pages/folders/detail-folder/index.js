@@ -23,11 +23,13 @@ export default function DetailFolder() {
   const { data: folders, isLoading: folderLoading } = useQuery({
     queryKey: ['folder', { id: folder._id }],
     queryFn: () => getFolderDetail({ id: folder._id }),
+    refetchOnWindowFocus: false,
   });
 
   const { data: files, isLoading: fileLoading } = useQuery({
     queryKey: ['file', { id: folder._id }],
     queryFn: () => getFileByFolder({ id: folder._id }),
+    refetchOnWindowFocus: false,
   });
 
   // dispatch action redux

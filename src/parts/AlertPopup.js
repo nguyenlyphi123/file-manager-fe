@@ -7,12 +7,12 @@ export const DangerAlert = ({ message, className }) => {
       className={`bg-[#FFF5F5] border-t-4 border-[#F56565] rounded-b text-[#D03030] px-4 py-3 shadow-sm ${className}`}
       role='alert'
     >
-      <div className='flex'>
+      <div className='flex items-center'>
         <div className='py-1'>
           <TiWarningOutline className='text-3xl mr-3' />
         </div>
         <div>
-          <p className='font-bold'>Opp! Some thing gone wrong !!!</p>
+          {/* <p className='font-bold'>Opp! Some thing gone wrong !!!</p> */}
           <p className='text-sm'>{message}</p>
         </div>
       </div>

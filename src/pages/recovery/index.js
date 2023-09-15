@@ -40,12 +40,14 @@ export default function Recovery() {
     queryKey: ['folder-recovery'],
     queryFn: () => getRemovedFolder(),
     retry: 3,
+    refetchOnWindowFocus: false,
   });
 
   const { data: files, isLoading: fileLoading } = useQuery({
     queryKey: ['file-recovery'],
     queryFn: () => getRemovedFile(),
     retry: 3,
+    refetchOnWindowFocus: false,
   });
 
   const isItems = useMemo(() => {

@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function TokenExpired() {
   const user = useSelector((state) => state.user);
@@ -11,6 +11,10 @@ export default function TokenExpired() {
     const from = location.state?.from;
     user.isAuthenticated && navigate(from ? from : '/', { replace: true });
   }, [location.state?.from, navigate, user.isAuthenticated]);
+
+  const handleClick = () => {
+    navigate('/login', { state: { action: 'LOGOUT' } });
+  };
 
   return (
     <div className='w-screen h-screen relative'>
@@ -25,12 +29,12 @@ export default function TokenExpired() {
           in place
         </p>
 
-        <Link
-          to='/login'
+        <button
+          onClick={handleClick}
           className='bg-gray-400 rounded py-2 px-10 text-white uppercase mt-5 cursor-pointer hover:bg-gray-700 duration-200'
         >
           Login
-        </Link>
+        </button>
       </div>
     </div>
   );

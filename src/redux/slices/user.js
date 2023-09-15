@@ -14,6 +14,7 @@ export const logIn = createAsyncThunk(
       dispatch(Authenticate(response.data.data));
       return response.data.data;
     } catch (error) {
+      localStorage.removeItem('isAuthenticated');
       throw error;
     }
   },
@@ -28,6 +29,7 @@ export const loadUser = createAsyncThunk(
       dispatch(Authenticate(response.data.data));
       return response.data.data;
     } catch (error) {
+      localStorage.removeItem('isAuthenticated');
       throw error;
     }
   },
@@ -36,6 +38,8 @@ export const loadUser = createAsyncThunk(
 export const logOut = createAsyncThunk(
   'user/logOut',
   async (_, { dispatch }) => {
+    localStorage.removeItem('isAuthenticated');
+
     try {
       await axiosPrivate.post('/authentication/logout');
       dispatch(Logout());
@@ -58,6 +62,7 @@ const user = createSlice({
   initialState: initializeState,
   reducers: {
     Authenticate: (state, { payload }) => {
+      localStorage.setItem('isAuthenticated', true);
       return {
         ...state,
         id: payload?.id,
@@ -67,7 +72,10 @@ const user = createSlice({
         isAuthenticated: true,
       };
     },
-    Logout: (state) => (state = initializeState),
+    Logout: (state) => {
+      localStorage.removeItem('isAuthenticated');
+      state = initializeState;
+    },
   },
   extraReducers: (builder) => {
     builder

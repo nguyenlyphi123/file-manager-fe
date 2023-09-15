@@ -6,6 +6,7 @@ import {
   FormGroup,
   Grid,
   Modal,
+  Paper,
   Tooltip,
 } from '@mui/material';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -25,11 +26,12 @@ import {
   PUPIL,
   SPECIALIZATION,
 } from 'constants/constants';
+import useDebounce from 'hooks/useDebounce';
 import Loading from 'parts/Loading';
 import { useMemo, useState } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import { BiUpArrow } from 'react-icons/bi';
-import { BsCheckCircle, BsCheckCircleFill, BsPlusCircle } from 'react-icons/bs';
+import { BsCheckCircle, BsCheckCircleFill } from 'react-icons/bs';
 import { ImSpinner } from 'react-icons/im';
 import { useSelector } from 'react-redux';
 import { getClasses } from 'services/classController';
@@ -38,10 +40,11 @@ import { shareFolder } from 'services/folderController';
 import { getLecturersBySpecialize } from 'services/lecturersController';
 import { getPupils } from 'services/pupilController';
 import { getSpecialization } from 'services/specializationController';
+import { searchUser } from 'services/userController';
 import FileIconHelper from 'utils/helpers/FileIconHelper';
 import { isAuthor } from 'utils/helpers/Helper';
 import ShareRenderHelper from 'utils/helpers/ShareRenderHelper';
-import { Truncate, validateEmail } from 'utils/helpers/TypographyHelper';
+import { Truncate } from 'utils/helpers/TypographyHelper';
 
 export const SpecializeSelect = ({ handleSelect, handleReturn }) => {
   // fetch data
@@ -49,6 +52,7 @@ export const SpecializeSelect = ({ handleSelect, handleReturn }) => {
     queryKey: ['specializes'],
     queryFn: getSpecialization,
     retry: 3,
+    refetchOnWindowFocus: false,
   });
   return (
     <div className='min-h-[150px] relative mb-5'>
@@ -100,15 +104,21 @@ export const ClassSelect = ({
 
   // fetch class data
   const { data: classes, isLoading: classesLoading } = useQuery({
-    queryKey: ['classes'],
-    queryFn: () => getClasses(data?._id),
+    queryKey: ['classes', { id: data?._id }],
+    queryFn: (params) => {
+      const id = params.queryKey[1].id;
+      if (!id) return;
+      return getClasses(id);
+    },
     retry: 3,
+    refetchOnWindowFocus: false,
   });
 
   const { data: lecturers, isLoading: lecturersLoading } = useQuery({
     queryKey: ['lecturers'],
     queryFn: () => getLecturersBySpecialize(data?._id),
     retry: 3,
+    refetchOnWindowFocus: false,
   });
 
   // select all
@@ -223,7 +233,7 @@ export const ClassSelect = ({
                       icon={<BsCheckCircle />}
                       checkedIcon={<BsCheckCircleFill />}
                       sx={{ padding: '3px' }}
-                      color='primary'
+                      color='success'
                       checked={
                         memberSelected?.findIndex(
                           (item) => item._id === lecturer._id,
@@ -253,7 +263,7 @@ export const MemberSelect = ({
   const { data: pupils, isLoading: pupilsLoading } = useQuery({
     queryKey: ['pupils'],
     queryFn: () => getPupils(data?._id),
-    retry: 3,
+    retry: 1,
   });
 
   // select all
@@ -267,10 +277,12 @@ export const MemberSelect = ({
         <div className='flex items-center'>
           <p className='text-sm text-gray-600 font-semibold mr-2'>Pupils</p>
 
-          <BiUpArrow
-            onClick={handleReturn}
-            className='text-gray-600 font-semibold cursor-pointer'
-          />
+          {user?.permission !== PUPIL && (
+            <BiUpArrow
+              onClick={handleReturn}
+              className='text-gray-600 font-semibold cursor-pointer'
+            />
+          )}
         </div>
         {pupils?.data
           ?.filter((item) => item.account_id !== user.id)
@@ -299,30 +311,32 @@ export const MemberSelect = ({
         {pupilsLoading ? (
           <Loading />
         ) : (
-          pupils?.data?.map((pupil) => (
-            <Grid key={pupil._id} item xs={3} md={3} lg={3}>
-              <div
-                onClick={() => handleSelect(pupil)}
-                className='border rounded-md py-1 px-2 flex items-center justify-between cursor-pointer'
-              >
-                <p className='m-b-0 text-[0.85em] text-gray-700 mr-3'>
-                  {pupil?.name}
-                </p>
+          pupils?.data
+            ?.filter((item) => item.account_id !== user.id)
+            .map((pupil) => (
+              <Grid key={pupil._id} item xs={3} md={3} lg={3}>
+                <div
+                  onClick={() => handleSelect(pupil)}
+                  className='border rounded-md py-1 px-2 flex items-center justify-between cursor-pointer'
+                >
+                  <p className='m-b-0 text-[0.85em] text-gray-700 mr-3'>
+                    {pupil?.name}
+                  </p>
 
-                <Checkbox
-                  icon={<BsCheckCircle />}
-                  checkedIcon={<BsCheckCircleFill />}
-                  sx={{ padding: '3px' }}
-                  color='success'
-                  checked={
-                    memberSelected?.findIndex(
-                      (item) => item._id === pupil._id,
-                    ) !== -1
-                  }
-                />
-              </div>
-            </Grid>
-          ))
+                  <Checkbox
+                    icon={<BsCheckCircle />}
+                    checkedIcon={<BsCheckCircleFill />}
+                    sx={{ padding: '3px' }}
+                    color='success'
+                    checked={
+                      memberSelected?.findIndex(
+                        (item) => item._id === pupil._id,
+                      ) !== -1
+                    }
+                  />
+                </div>
+              </Grid>
+            ))
         )}
       </Grid>
     </div>
@@ -390,7 +404,6 @@ export const Share = ({ handleClose, data, open }) => {
 
   const handleMutipleMemberSelect = (arr) => {
     const exceptMe = arr?.filter((item) => item.account_id !== user.id);
-    console.log(exceptMe);
     if (exceptMe.every((item) => memberSelected?.includes(item))) {
       return setMemberSelected((prev) => {
         return prev.filter((item) => !exceptMe.includes(item));
@@ -405,19 +418,20 @@ export const Share = ({ handleClose, data, open }) => {
     }
   };
 
-  // email input
-  const [email, setEmail] = useState();
+  // search
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-  };
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
 
-  const handleAddEmail = () => {
-    setMemberSelected((prev) => {
-      return [...prev, { email: email }];
-    });
-    setEmail();
-  };
+  const searchDebounce = useDebounce(search, 500);
+
+  const { data: searchResult } = useQuery({
+    queryKey: ['user-search', searchDebounce],
+    queryFn: () => searchUser(searchDebounce),
+    enabled: Boolean(searchDebounce),
+    retry: 3,
+    retryDelay: 2000,
+  });
 
   // permission
   const [permission, setPermission] = useState([
@@ -507,23 +521,61 @@ export const Share = ({ handleClose, data, open }) => {
 
         <div className='py-2 px-8 border-b'>
           <div className='flex flex-col py-2'>
-            <div className='flex items-center'>
+            <div className='flex items-center relative'>
               <span className='text-[0.9em] text-gray-400 font-medium mr-4'>
                 To
               </span>
               <input
                 type='text'
-                value={email ? email : ''}
                 placeholder='Email or Name'
                 autoFocus
                 className='p-1 w-full outline-none'
-                onChange={handleEmailChange}
+                value={searchInput}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setSearchInput(e.target.value);
+                }}
               />
-              {email && validateEmail(email) && (
-                <BsPlusCircle
-                  className='text-lg text-gray-500 hover:text-gray-700'
-                  onClick={handleAddEmail}
-                />
+              {search && searchResult?.data?.length > 0 && (
+                <Paper
+                  sx={{
+                    position: 'absolute',
+                    top: 40,
+                    left: 0,
+                    width: '100%',
+                    zIndex: 10,
+                    minHeight: '100px',
+                  }}
+                  className='border'
+                >
+                  <Grid container spacing={1} sx={{ padding: 1 }}>
+                    {searchResult?.data?.map((user) => (
+                      <Grid key={user._id} item xs={4} md={4} lg={4}>
+                        <Tooltip title={user.email} placement='top'>
+                          <div
+                            onClick={() => {
+                              handleMemberItemSelect(user);
+                              setSearchInput('');
+                              setSearch('');
+                            }}
+                            className='flex  items-center text-gray-700 border rounded-md px-2 py-1 cursor-pointer'
+                          >
+                            <Avatar
+                              sx={{
+                                height: '20px',
+                                width: '20px',
+                                marginRight: 2,
+                              }}
+                            />
+                            <p className='text-[13px] font-semibold'>
+                              {Truncate(user.email, 20)}
+                            </p>
+                          </div>
+                        </Tooltip>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Paper>
               )}
             </div>
 
@@ -553,19 +605,18 @@ export const Share = ({ handleClose, data, open }) => {
         </div>
 
         <div className='px-8 py-4'>
-          {
-            <ShareRenderHelper
-              selection={selection}
-              handleSpecSelect={handleSpecializeItemSelect}
-              handleClassSelect={handleClassItemSelect}
-              handleMemberSelect={handleMemberItemSelect}
-              handleMutipleMemberSelect={handleMutipleMemberSelect}
-              handleReturn={handleReturn}
-              specData={specSelected}
-              classData={classSelected}
-              memberData={memberSelected}
-            />
-          }
+          <ShareRenderHelper
+            selection={selection}
+            handleSpecSelect={handleSpecializeItemSelect}
+            handleClassSelect={handleClassItemSelect}
+            handleMemberSelect={handleMemberItemSelect}
+            handleMutipleMemberSelect={handleMutipleMemberSelect}
+            handleReturn={handleReturn}
+            specData={specSelected}
+            classData={classSelected}
+            memberData={memberSelected}
+          />
+
           {isAuthor(user.id, data.author) && memberSelected?.length > 0 && (
             <div className='mt-5'>
               <p className='text-sm text-gray-600 font-semibold'>Permission</p>

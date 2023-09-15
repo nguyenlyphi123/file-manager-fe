@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react';
+import { memo, useLayoutEffect, useState } from 'react';
 import { Router } from 'react-router-dom';
 import AxiosInterceptor from 'utils/lib/AxiosInterceptor';
 
@@ -22,4 +22,4 @@ const CustomRouter = ({ history, ...props }) => {
   );
 };
 
-export default CustomRouter;
+export default memo(CustomRouter);

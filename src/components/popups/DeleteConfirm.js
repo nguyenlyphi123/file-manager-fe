@@ -8,16 +8,35 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
+import { memo } from 'react';
 import { ImSpinner } from 'react-icons/im';
-import { removeFileToTrash } from 'services/fileController';
+import { deleteFile, removeFileToTrash } from 'services/fileController';
 import { removeFolderToTrash } from 'services/folderController';
 
-export const DeleteConfirm = ({ open, handleClose, data }) => {
+const DeleteConfirm = ({ open, handleClose, data }) => {
   const queryClient = useQueryClient();
 
-  const deleteMutation = data.type ? removeFileToTrash : removeFolderToTrash;
+  const deleteMutation = data.parent_folder.isRequireFolder
+    ? deleteFile
+    : data.type
+    ? removeFileToTrash
+    : removeFolderToTrash;
   const handleDelete = useMutation({
-    mutationFn: (data) => deleteMutation({ id: data._id }),
+    mutationFn: (data) => {
+      let params = {
+        id: data._id,
+      };
+
+      if (data.parent_folder.isRequireFolder) {
+        params = {
+          data: {
+            ...data,
+          },
+        };
+      }
+
+      return deleteMutation(params);
+    },
     onSuccess: () => {
       handleClose();
       SuccessToast({
@@ -37,7 +56,6 @@ export const DeleteConfirm = ({ open, handleClose, data }) => {
       queryClient.invalidateQueries(['folder-shared']);
     },
     onError: (err) => {
-      console.log(err);
       handleClose();
       ErrorToast({
         message: err.response.data.message,
@@ -56,8 +74,10 @@ export const DeleteConfirm = ({ open, handleClose, data }) => {
       }?`}</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          {data.type
-            ? 'If you delete this file, you can restore it recovery!'
+          {data.parent_folder.isRequireFolder
+            ? 'If you delete this file, you could not restore it in recovery'
+            : data.type
+            ? 'If you delete this file, you could restore it in recovery!'
             : 'If you delete this folder, all files and sub folders in this folder will be deleted!'}
         </DialogContentText>
       </DialogContent>
@@ -82,3 +102,5 @@ export const DeleteConfirm = ({ open, handleClose, data }) => {
     </Dialog>
   );
 };
+
+export default memo(DeleteConfirm);

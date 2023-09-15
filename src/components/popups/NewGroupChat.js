@@ -160,19 +160,17 @@ function NewGroupChat({ handleClose, open }) {
         <div className='border-b'>
           <div className='flex justify-between items-center py-4 px-8'>
             <div className='flex items-center'>
-              <p className='text-[0.9em] text-gray-700 font-medium'>
-                <TextField
-                  label='Group name'
-                  required
-                  variant='standard'
-                  value={groupName}
-                  onChange={handleGroupNameChange}
-                  placeholder='Enter group name'
-                  sx={{ width: '300px' }}
-                  size='small'
-                  error={groupName.length === 0}
-                />
-              </p>
+              <TextField
+                label='Group name'
+                required
+                variant='standard'
+                value={groupName}
+                onChange={handleGroupNameChange}
+                placeholder='Enter group name'
+                sx={{ width: '300px' }}
+                size='small'
+                error={groupName.length === 0}
+              />
             </div>
 
             <div onClick={handleClose} className='cursor-pointer'>

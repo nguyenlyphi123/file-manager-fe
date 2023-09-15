@@ -1,12 +1,16 @@
 import { Box, Modal } from '@mui/material';
 import { AiOutlineClose } from 'react-icons/ai';
+import { useSelector } from 'react-redux';
 import FileIconHelper from 'utils/helpers/FileIconHelper';
+import { isAuthor, isOwner } from 'utils/helpers/Helper';
 import {
   FormattedDateTime,
   convertBytesToReadableSize,
 } from 'utils/helpers/TypographyHelper';
 
 export const Detail = ({ handleClose, data, open }) => {
+  const userId = useSelector((state) => state.user.id);
+
   return (
     <Modal
       keepMounted
@@ -61,9 +65,20 @@ export const Detail = ({ handleClose, data, open }) => {
 
           <div className='flex items-center py-2'>
             <span className='w-[100px] text-[0.9em] text-gray-400 font-medium'>
+              Author
+            </span>
+            <p className='text-gray-500 text-[0.9em] font-medium'>
+              {data?.author?.info?.name}
+            </p>
+          </div>
+
+          <div className='flex items-center py-2'>
+            <span className='w-[100px] text-[0.9em] text-gray-400 font-medium'>
               Owner
             </span>
-            <p className='text-gray-500 text-[0.9em] font-medium'>Me</p>
+            <p className='text-gray-500 text-[0.9em] font-medium'>
+              {data?.owner?.info?.name}
+            </p>
           </div>
 
           <div className='flex items-center py-2'>
@@ -94,18 +109,21 @@ export const Detail = ({ handleClose, data, open }) => {
           </div>
         </div>
 
-        <div className='flex justify-end items-center py-3 px-8 bg-[#E5E9F2]'>
-          <div className='bg-white py-2 px-5 rounded-md text-gray-500 text-[0.9em] font-medium mr-4 shadow-sm cursor-pointer hover:text-white hover:bg-gray-600 duration-200'>
-            Share
-          </div>
+        {(isOwner(userId, data?.owner?._id) ||
+          isAuthor(userId, data?.author?._id)) && (
+          <div className='flex justify-end items-center py-3 px-8 bg-[#E5E9F2]'>
+            <div className='bg-white py-2 px-5 rounded-md text-gray-500 text-[0.9em] font-medium mr-4 shadow-sm cursor-pointer hover:text-white hover:bg-gray-600 duration-200'>
+              Share
+            </div>
 
-          <div
-            onClick={() => window.open(data.link, '_blank')}
-            className='bg-blue-700/60 py-2 px-5 rounded-md text-white font-medium cursor-pointer hover:bg-blue-700/80 duration-200'
-          >
-            Download
+            <div
+              onClick={() => window.open(data.link, '_blank')}
+              className='bg-blue-700/60 py-2 px-5 rounded-md text-white font-medium cursor-pointer hover:bg-blue-700/80 duration-200'
+            >
+              Download
+            </div>
           </div>
-        </div>
+        )}
       </Box>
     </Modal>
   );

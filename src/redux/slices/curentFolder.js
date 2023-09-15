@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+// import { calcTimeRemain } from 'utils/helpers/TypographyHelper';
 
 const initialState = {
   _id: null,
@@ -13,6 +14,7 @@ const currentFolder = createSlice({
       return {
         ...state,
         ...action.payload,
+        expired: false,
       };
     },
     resetCurrentFolder: (state) => {

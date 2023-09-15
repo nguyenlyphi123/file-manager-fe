@@ -6,9 +6,10 @@ import { Share } from 'components/popups/Share';
 import { Copy } from 'components/popups/Copy';
 import { Move } from 'components/popups/Move';
 import { Rename } from 'components/popups/Rename';
-import { DeleteConfirm } from 'components/popups/DeleteConfirm';
+import DeleteConfirm from 'components/popups/DeleteConfirm';
 import { RemovedThreeDotsDropdown } from 'components/popups/RemovedThreeDotsDropdown';
 import { DownloadConfirm } from 'components/popups/DownloadConfirm';
+import RequireModal from './Require';
 
 export {
   NewFolder,
@@ -22,4 +23,5 @@ export {
   DeleteConfirm,
   RemovedThreeDotsDropdown,
   DownloadConfirm,
+  RequireModal,
 };

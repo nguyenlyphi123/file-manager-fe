@@ -1,15 +1,7 @@
-import { useSelector } from 'react-redux';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 
-const RestrictedRoute = ({ ...rest }) => {
-  const { isAuthenticated } = useSelector((state) => state.user);
-  const location = useLocation();
-
-  return isAuthenticated ? (
-    <Outlet {...rest} />
-  ) : (
-    <Navigate to='/login' state={{ from: { pathname: location } }} replace />
-  );
+const RestrictedRoute = ({ show = true, ...rest }) => {
+  return show ? <Outlet {...rest} /> : 'Unauthorized access !!!';
 };
 
 export default RestrictedRoute;

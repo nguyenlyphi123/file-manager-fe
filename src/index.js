@@ -10,35 +10,41 @@ import store from './redux/store';
 import reportWebVitals from './reportWebVitals';
 import CustomRouter from './utils/CustomRouter';
 import history from './utils/lib/history';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const queryClient = new QueryClient();
 
 root.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <CustomRouter history={history}>
-        <QueryClientProvider client={queryClient}>
-          <ToastContainer
-            position='top-right'
-            autoClose={3000}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            pauseOnHover={false}
-            draggable
-            theme='light'
-            style={{ width: 'fit-content' }}
-            toastStyle={{
-              padding: 0,
-              boxShadow: 'rgba(0, 0, 0, 0.16) 0px 1px 4px',
-            }}
-          />
+  // <React.StrictMode>
+  <Provider store={store}>
+    <CustomRouter history={history}>
+      <QueryClientProvider client={queryClient}>
+        <ToastContainer
+          position='top-right'
+          autoClose={2000}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          pauseOnHover={false}
+          draggable
+          theme='light'
+          style={{ width: 'fit-content' }}
+          toastStyle={{
+            padding: 0,
+            boxShadow: 'rgba(0, 0, 0, 0.16) 0px 1px 4px',
+          }}
+        />
+        <LocalizationProvider dateAdapter={AdapterMoment}>
           <App />
-        </QueryClientProvider>
-      </CustomRouter>
-    </Provider>
-  </React.StrictMode>,
+        </LocalizationProvider>
+      </QueryClientProvider>
+    </CustomRouter>
+  </Provider>,
+  {
+    /* </React.StrictMode>, */
+  },
 );
 
 // If you want to start measuring performance in your app, pass a function

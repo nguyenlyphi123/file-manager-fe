@@ -27,7 +27,7 @@ import {
   BsTrash,
 } from 'react-icons/bs';
 import { useSelector } from 'react-redux';
-import { hasFFPermission, isAuthor } from 'utils/helpers/Helper';
+import { hasFFPermission, isAuthor, isOwner } from 'utils/helpers/Helper';
 
 export const ThreeDotsDropdownItem = ({ children, option, onClick, show }) => {
   if (!show)
@@ -131,7 +131,8 @@ export const ThreeDotsDropdown = ({
             show={hasFFPermission(
               data.permission,
               PERMISSION_SHARE,
-              isAuthor(user.id, data.author),
+              isAuthor(user.id, data.author?._id),
+              isOwner(user.id, data.owner?._id),
             )}
           >
             <AiOutlineShareAlt className='mr-4 text-xl text-blue-300 group-hover/drop-items:text-blue-400' />
@@ -146,7 +147,8 @@ export const ThreeDotsDropdown = ({
             show={hasFFPermission(
               data.permission,
               PERMISSION_EDIT,
-              isAuthor(user.id, data.author),
+              isAuthor(user.id, data.author?._id),
+              isOwner(user.id, data.owner?._id),
             )}
           >
             <AiOutlineCopy className='mr-4 text-xl text-blue-300 group-hover/drop-items:text-blue-400' />
@@ -158,7 +160,12 @@ export const ThreeDotsDropdown = ({
           <ThreeDotsDropdownItem
             option={MOVE}
             onClick={handleSelectOption}
-            show={data?.author === user.id}
+            show={hasFFPermission(
+              data.permission,
+              PERMISSION_EDIT,
+              isAuthor(user.id, data.author?._id),
+              isOwner(user.id, data.owner?._id),
+            )}
           >
             <BsBoxArrowRight className='mr-4 text-xl text-blue-300 group-hover/drop-items:text-blue-400' />
             <p className='text-gray-500 text-[0.9em] font-medium group-hover/drop-items:text-gray-600'>
@@ -172,7 +179,8 @@ export const ThreeDotsDropdown = ({
             show={hasFFPermission(
               data.permission,
               PERMISSION_DOWNLOAD,
-              isAuthor(user.id, data.author),
+              isAuthor(user.id, data.author?._id),
+              isOwner(user.id, data.owner?._id),
             )}
           >
             <AiOutlineDownload className='mr-4 text-xl text-blue-300 group-hover/drop-items:text-blue-400' />
@@ -185,7 +193,8 @@ export const ThreeDotsDropdown = ({
             show={hasFFPermission(
               data.permission,
               PERMISSION_EDIT,
-              isAuthor(user.id, data.author),
+              isAuthor(user.id, data.author?._id),
+              isOwner(user.id, data.owner?._id),
             )}
             option={RENAME}
             onClick={handleSelectOption}
@@ -196,18 +205,24 @@ export const ThreeDotsDropdown = ({
             </p>
           </ThreeDotsDropdownItem>
 
-          <MenuItem
-            onClick={() => {
+          <ThreeDotsDropdownItem
+            show={hasFFPermission(
+              data.permission,
+              PERMISSION_EDIT,
+              isAuthor(user.id, data.author?._id),
+              isOwner(user.id, data.owner?._id),
+            )}
+            option={DELETE}
+            onClick={(DELETE) => {
               handleSelectOption(DELETE);
               handleShowDelete();
             }}
-            className='group/drop-items flex items-center px-4 py-3 hover:bg-blue-100/30'
           >
             <BsTrash className='mr-4 text-xl text-blue-300 group-hover/drop-items:text-blue-400' />
             <p className='text-gray-500 text-[0.9em] font-medium group-hover/drop-items:text-gray-600'>
               Delete
             </p>
-          </MenuItem>
+          </ThreeDotsDropdownItem>
         </Menu>
       </div>
     </>

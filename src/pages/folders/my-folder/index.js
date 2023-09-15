@@ -36,6 +36,7 @@ export default function MyFolder() {
     queryKey: ['folders'],
     queryFn: async () => await getFolderList(),
     retry: 3,
+    refetchOnWindowFocus: false,
   });
 
   if (folders?.data?.length === 0)
