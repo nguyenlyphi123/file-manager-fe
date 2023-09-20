@@ -1,16 +1,11 @@
 import { Grid } from '@mui/material';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import RequireModal from 'components/popups/Require';
-import {
-  PUPIL,
-  REQ_STATUS_DONE,
-  REQ_STATUS_PROCESSING,
-  REQ_STATUS_WAITING,
-} from 'constants/constants';
+import { REQ_STATUS_DONE } from 'constants/constants';
 import Loading from 'parts/Loading';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { setCurrentFolder } from 'redux/slices/curentFolder';
 import { getRequire, updateStatus } from 'services/requireController';
 import Details from './Details';
@@ -20,7 +15,6 @@ import Todo from './Todo';
 
 function Require() {
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user);
 
   const [open, setOpen] = useState(false);
   const [openDetail, setOpenDetail] = useState(false);
@@ -53,12 +47,18 @@ function Require() {
 
   const handleDrop = (result) => {
     const { source, destination, type, draggableId } = result;
-    console.log(result);
+
     if (!destination) return;
 
     if (
       source.droppableId === destination.droppableId &&
       source.index === destination.index
+    )
+      return;
+
+    if (
+      source.droppableId === REQ_STATUS_DONE &&
+      destination.droppableId !== REQ_STATUS_DONE
     )
       return;
 
@@ -114,63 +114,19 @@ function Require() {
 
       const { data } = res;
 
+      console.log(data);
+
       setRequireData((prev) => ({
         ...prev,
-        waiting: getRequireWaiting(data.requires, data.requireOrder.waiting),
-        processing: getRequireInProgress(
-          data.requires,
-          data.requireOrder.processing,
-        ),
-        done: getRequireDone(data.requires, data.requireOrder.done),
+        waiting: data.waiting,
+        processing: data.processing,
+        done: data.done,
       }));
       return res;
     },
     retry: 1,
     refetchOnWindowFocus: false,
   });
-
-  const filterRequiresByStatus = useCallback(
-    (requires, user, status, order) => {
-      if (!requires) return [];
-
-      let filteredData;
-
-      if (user.permission !== PUPIL) {
-        filteredData = requires.filter((require) => require?.status === status);
-      } else {
-        filteredData = requires.data.filter((require) =>
-          require.to.some(
-            (item) => item.info._id === user.id && item.status === status,
-          ),
-        );
-      }
-
-      if (order && order.length > 0) {
-        return order.map((id) => filteredData.find((item) => item._id === id));
-      }
-
-      return filteredData;
-    },
-    [],
-  );
-
-  const getRequireWaiting = useCallback(
-    (requires, order) =>
-      filterRequiresByStatus(requires, user, REQ_STATUS_WAITING, order),
-    [user, filterRequiresByStatus],
-  );
-
-  const getRequireInProgress = useCallback(
-    (requires, order) =>
-      filterRequiresByStatus(requires, user, REQ_STATUS_PROCESSING, order),
-    [user, filterRequiresByStatus],
-  );
-
-  const getRequireDone = useCallback(
-    (requires, order) =>
-      filterRequiresByStatus(requires, user, REQ_STATUS_DONE, order),
-    [user, filterRequiresByStatus],
-  );
 
   if (isLoading) {
     return <Loading />;
