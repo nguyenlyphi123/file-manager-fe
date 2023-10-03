@@ -183,12 +183,12 @@ function NewGroupChat({ handleClose, open }) {
           <div className='flex flex-col py-2'>
             <div className='flex items-center relative'>
               <span className='text-[0.9em] text-gray-400 font-medium mr-4'>
-                To
+                Member
               </span>
               <input
                 type='text'
                 value={searchInput}
-                placeholder='Email or Name'
+                placeholder='Enter email to find member'
                 autoFocus
                 className='p-1 w-full outline-none'
                 onChange={(e) => {

@@ -27,3 +27,4 @@ export const REQ_STATUS_WAITING = 'waiting';
 export const REQ_STATUS_PROCESSING = 'processing';
 export const REQ_STATUS_DONE = 'done';
 export const REQ_STATUS_CANCEL = 'cancel';
+export const REQ_STATUS_EXPIRED = 'expired';

@@ -5,6 +5,7 @@ import location from './slices/location';
 import curentFolder from './slices/curentFolder';
 import chat from './slices/chat';
 import chatNotification from './slices/chatNotification';
+import notifiSlice from './slices/notification';
 
 const reducers = combineReducers({
   user: user,
@@ -13,6 +14,7 @@ const reducers = combineReducers({
   curentFolder: curentFolder,
   chat: chat,
   chatNotification: chatNotification,
+  notification: notifiSlice,
 });
 
 const store = configureStore({

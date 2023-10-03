@@ -1,9 +1,8 @@
-import { Badge, IconButton } from '@mui/material';
 import { FiFolder } from 'react-icons/fi';
-import { IoMdNotificationsOutline } from 'react-icons/io';
 import { Link } from 'react-router-dom';
 
 import HeaderDropdown from './HeaderDropdown';
+import Notification from './Notification';
 
 export default function Header() {
   return (
@@ -17,16 +16,7 @@ export default function Header() {
       </Link>
 
       <div className='flex items-center'>
-        <IconButton>
-          <Badge
-            color='primary'
-            badgeContent='1'
-            overlap='circular'
-            variant='dot'
-          >
-            <IoMdNotificationsOutline />
-          </Badge>
-        </IconButton>
+        <Notification />
         <HeaderDropdown />
       </div>
     </div>

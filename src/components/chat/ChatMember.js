@@ -25,7 +25,9 @@ const PermissionGroup = ({
             <div className='flex items-center justify-between border rounded-md mt-3 p-2 group min-h-[47px]'>
               <div className='flex items-center'>
                 <Avatar sx={{ width: 25, height: 25 }} />
-                <p className='text-sm ml-3'>{Truncate(member.name, 20)}</p>
+                <p className='text-sm ml-3'>
+                  {Truncate(member?.info.name, 20)}
+                </p>
               </div>
               {chat?.isGroupChat && chat?.author?._id === user.id && (
                 <IconButton

@@ -10,6 +10,7 @@ export default function ShareRenderHelper({
   specData,
   classData,
   memberData,
+  type,
   handleReturn,
   handleSpecSelect,
   handleClassSelect,
@@ -34,6 +35,7 @@ export default function ShareRenderHelper({
           handleReturn={handleReturn}
           handleMemberSelect={handleMemberSelect}
           handleMutipleMemberSelect={handleMutipleMemberSelect}
+          type={type}
         />
       );
 
@@ -45,6 +47,7 @@ export default function ShareRenderHelper({
           memberSelected={memberData}
           handleSelect={handleMemberSelect}
           handleMutipleMemberSelect={handleMutipleMemberSelect}
+          type={type}
         />
       );
     default:

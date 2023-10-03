@@ -1,13 +1,17 @@
-import { Grid } from '@mui/material';
+import { Button, Grid } from '@mui/material';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import RequireModal from 'components/popups/Require';
-import { REQ_STATUS_DONE } from 'constants/constants';
-import Loading from 'parts/Loading';
 import { useState } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setCurrentFolder } from 'redux/slices/curentFolder';
 import { getRequire, updateStatus } from 'services/requireController';
+
+import { CiSquarePlus } from 'react-icons/ci';
+
+import { PUPIL, REQ_STATUS_DONE } from 'constants/constants';
+
+import Loading from 'parts/Loading';
+import RequireModal from 'components/popups/Require';
 import Details from './Details';
 import Done from './Done';
 import InProgress from './InProgress';
@@ -16,12 +20,11 @@ import Todo from './Todo';
 function Require() {
   const dispatch = useDispatch();
 
+  const user = useSelector((state) => state.user);
+
   const [open, setOpen] = useState(false);
   const [openDetail, setOpenDetail] = useState(false);
   const [selectedRequire, setSelectedRequire] = useState(null);
-  // const [requireWaiting, setRequireWaiting] = useState([]);
-  // const [requireInProgress, setRequireInProgress] = useState([]);
-  // const [requireDone, setRequireDone] = useState([]);
 
   const [requireData, setRequireData] = useState({
     waiting: [],
@@ -114,8 +117,6 @@ function Require() {
 
       const { data } = res;
 
-      console.log(data);
-
       setRequireData((prev) => ({
         ...prev,
         waiting: data.waiting,
@@ -135,18 +136,29 @@ function Require() {
   return (
     <>
       {open && <RequireModal open={open} handleClose={handleCloseRequire} />}
-      <Details
-        open={openDetail}
-        handleClose={handleCloseDetail}
-        data={selectedRequire}
-      />
+      {selectedRequire && openDetail && (
+        <Details
+          open={openDetail}
+          handleClose={handleCloseDetail}
+          data={selectedRequire}
+        />
+      )}
 
       <div className='h-[200vh] py-5 px-7 tracking-wide'>
-        <div
-          className='text-[20px] text-gray-600 font-bold'
-          onClick={handleOpenRequire}
-        >
-          Require
+        <div className='flex justify-between items-center'>
+          <div className='text-[20px] text-gray-600 font-bold'>Require</div>
+
+          {user.permission !== PUPIL && (
+            <Button
+              color='primary'
+              variant='outlined'
+              startIcon={<CiSquarePlus />}
+              onClick={handleOpenRequire}
+              sx={{ textTransform: 'none', fontSize: '12px' }}
+            >
+              New Requirement
+            </Button>
+          )}
         </div>
 
         <div className='mt-5'>

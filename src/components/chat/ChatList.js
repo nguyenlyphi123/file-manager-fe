@@ -9,14 +9,14 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import ErrorToast from 'components/toasts/ErrorToast';
 import useDebounce from 'hooks/useDebounce';
-import Loading from 'parts/Loading';
 import { useCallback, useState } from 'react';
 import { BsPencil, BsPlus, BsSearch } from 'react-icons/bs';
 import { useDispatch, useSelector } from 'react-redux';
+import { selectChat } from 'redux/slices/chat';
 import { createSingleChat, getChatList } from 'services/chatController';
 import { searchUser } from 'services/userController';
 import ChatListItem from './ChatListItem';
-import { selectChat } from 'redux/slices/chat';
+import ChatListLoading from './ChatListLoading';
 
 export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
   const user = useSelector((state) => state.user);
@@ -30,6 +30,7 @@ export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
     queryKey: ['chats'],
     queryFn: () => getChatList(),
     retry: 3,
+    refetchOnWindowFocus: false,
   });
 
   // search user
@@ -86,23 +87,25 @@ export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
         (member) => member._id !== user.id,
       )[0];
 
-      return memberInfo?.name;
+      console.log(memberInfo);
+
+      return memberInfo?.info?.name;
     },
     [user.id],
   );
 
   return (
-    <div className='py-5 h-full bg-[#F5F6FA] relative'>
+    <div className='py-5 h-full bg-[#323439] relative'>
       <div className='px-5 flex items-center justify-between w-full'>
         <div className='flex items-center'>
           <Avatar sx={{ height: 50, width: 50 }} />
-          <p className='ml-3 font-semibold text-[#5145E5] text-lg'>
+          <p className='ml-3 font-semibold text-[#ffffff] text-lg'>
             {user.name}
           </p>
         </div>
 
         <IconButton size='small'>
-          <BsPencil className='text-sm' />
+          <BsPencil className='text-sm text-[#fff]' />
         </IconButton>
       </div>
 
@@ -154,13 +157,12 @@ export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
           )}
         </Paper>
       </div>
-
       {isLoading ? (
-        <Loading />
+        <ChatListLoading repeat={5} />
       ) : (
         <div className='mt-[1rem]'>
           {chats?.data
-            ?.sort((a, b) => new Date(b.createAt) - new Date(a.createAt))
+            ?.sort((a, b) => new Date(b.modifiedAt) - new Date(a.modifiedAt))
             .map((chat) => (
               <ChatListItem
                 key={chat._id}
@@ -173,8 +175,13 @@ export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
 
       <Fab
         size='small'
-        color='info'
-        sx={{ position: 'absolute', bottom: 16, right: 16 }}
+        color='error'
+        sx={{
+          position: 'absolute',
+          bottom: 16,
+          right: 16,
+        }}
+        back
         onClick={handleOpenNewGroupChat}
       >
         <BsPlus className='text-3xl' />

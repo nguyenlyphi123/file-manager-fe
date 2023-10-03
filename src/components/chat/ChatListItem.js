@@ -21,14 +21,14 @@ function ChatListItem({ data, handleSelectChat }) {
   const queryClient = useQueryClient();
 
   const chatTitle = useMemo(() => {
-    if (data?.name) return data.name;
+    if (data?.name && data?.isGroupChat) return data.name;
 
     const memberInfo = data?.member?.filter(
       (member) => member._id !== user.id,
     )[0];
 
-    return memberInfo?.name;
-  }, [data.member, data.name, user.id]);
+    return memberInfo?.info?.name;
+  }, [data, user.id]);
 
   // confirm delete chat
   const [isChatDeleteOpen, setIsChatDeleteOpen] = useState(false);
@@ -112,17 +112,29 @@ function ChatListItem({ data, handleSelectChat }) {
         <Avatar />
         <div className='ml-2 w-full'>
           <div className='flex items-center justify-between translate-y-1'>
-            <p className='font-semibold text-[#5145E5] text-[0.9em]'>
+            <p
+              className={`font-semibold text-[#ffffff] text-[0.9em] group-hover/chat-item:text-[#323439] ${
+                data._id === chat.id && 'text-[#323439]'
+              }`}
+            >
               {chatTitle}
             </p>
-            <p className='text-[0.8em] text-gray-500'>
+            <p
+              className={`text-[0.8em] text-[#ffffff] group-hover/chat-item:text-[#323439] ${
+                data._id === chat.id && 'text-[#323439]'
+              }`}
+            >
               {FormattedChatDate(data?.lastMessage?.createAt)}
             </p>
           </div>
 
           <div className='flex items-center justify-between min-h-[30px]'>
             <div className='flex items-center'>
-              <p className='text-gray-600 text-[0.8em]'>
+              <p
+                className={`text-[#ffffff] group-hover/chat-item:text-[#5a5a5a] text-[0.8em] ${
+                  data._id === chat.id && 'text-[#5a5a5a]'
+                }`}
+              >
                 {Truncate(data?.lastMessage?.content, 25)}
               </p>
               {!isSender(user.id, data?.lastMessage?.sender) &&

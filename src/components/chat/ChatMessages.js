@@ -26,7 +26,7 @@ const Message = React.forwardRef(
         {isCurrentUser
           ? null
           : (isLastMessage || isSameSender) && (
-              <Tooltip title={message?.sender?.name}>
+              <Tooltip title={message?.sender?.info?.name}>
                 <Avatar sx={{ marginRight: '0.5rem', height: 30, width: 30 }} />
               </Tooltip>
             )}
@@ -199,7 +199,11 @@ export default function ChatMessages({
             )}
             {messagesData?.map((msg, index) => (
               <Message
-                ref={index === 0 ? lastElementRef : null}
+                ref={
+                  index === 0 && messagesData.length >= 20
+                    ? lastElementRef
+                    : null
+                }
                 key={index}
                 message={msg}
                 isCurrentUser={isSender(user.id, msg.sender?._id)}

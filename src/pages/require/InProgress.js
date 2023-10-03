@@ -19,9 +19,9 @@ function InProgress({ data, handleClick, isFetching }) {
 
   const processStatus = useCallback(
     (arr) => {
-      if (isExpired(arr.endDate)) return REQ_STATUS_CANCEL;
+      if (isExpired(arr?.endDate)) return REQ_STATUS_CANCEL;
 
-      if (user.id === arr.author._id) return REQ_STATUS_PROCESSING;
+      if (user.id === arr?.author._id) return REQ_STATUS_PROCESSING;
 
       const mem = arr?.to?.find((mem) => mem.info._id === user.id);
       return mem?.status;
@@ -75,7 +75,7 @@ function InProgress({ data, handleClick, isFetching }) {
                           sx={{ fontSize: '14px' }}
                           color='text.secondary'
                         >
-                          {require.message}
+                          {require?.message}
                         </Typography>
                         {require?.note && (
                           <Typography

@@ -66,22 +66,24 @@ const ChatContent = () => {
     isFetchingNextPage,
   } = useInfiniteQuery({
     queryKey: ['messages', { id: chat.id }],
-    queryFn: ({ pageParam = 1 }) =>
-      getMessages({ id: chat.id, page: pageParam }),
+    queryFn: (params) => {
+      const { id } = params.queryKey[1];
+      const { pageParam } = params;
+
+      return getMessages({ id, page: params.pageParam ? pageParam : 1 });
+    },
     getNextPageParam: (lastPage, pages) => {
       const nextPage = pages?.length + 1;
       return lastPage.data?.length !== 0 ? nextPage : undefined;
     },
     retry: 3,
     retryDelay: 3000,
+    refetchOnWindowFocus: false,
   });
 
   const messagesData = useMemo(() => {
     if (messages?.pages) {
-      return messages.pages
-        .map((page) => page.data)
-        .flat()
-        .reverse();
+      return messages.pages.map((page) => page.data).flat();
     }
     return [];
   }, [messages]);

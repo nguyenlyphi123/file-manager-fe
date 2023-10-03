@@ -1,6 +1,7 @@
 import {
   REQ_STATUS_CANCEL,
   REQ_STATUS_DONE,
+  REQ_STATUS_EXPIRED,
   REQ_STATUS_PROCESSING,
   REQ_STATUS_WAITING,
 } from 'constants/constants';
@@ -41,18 +42,21 @@ export const hasFFPermission = (
 export const renderBottomColor = (status) => {
   switch (status) {
     case REQ_STATUS_WAITING:
-      return 'gray';
+      return '#FFE569';
 
     case REQ_STATUS_PROCESSING:
-      return 'blue';
+      return '#6499E9';
 
     case REQ_STATUS_DONE:
-      return 'green';
+      return '#54B435';
 
     case REQ_STATUS_CANCEL:
-      return 'red';
+      return '#F55050';
+
+    case REQ_STATUS_EXPIRED:
+      return '#F55050';
 
     default:
-      return 'gray';
+      return '#FFE569';
   }
 };

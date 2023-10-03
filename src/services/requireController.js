@@ -10,6 +10,26 @@ export const createRequire = async (data) => {
   }
 };
 
+export const updateStatus = async (posData) => {
+  try {
+    const res = await axiosPrivate.put(`/require/status`, posData);
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateRequire = async (data) => {
+  try {
+    const res = await axiosPrivate.put(`/require/${data._id}`, data);
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getRequire = async () => {
   try {
     const res = await axiosPrivate.get(`/require`);
@@ -20,9 +40,9 @@ export const getRequire = async () => {
   }
 };
 
-export const updateStatus = async (posData) => {
+export const getRequireDetails = async (id) => {
   try {
-    const res = await axiosPrivate.put(`/require/status`, posData);
+    const res = await axiosPrivate.get(`/require/${id}`);
 
     return res.data;
   } catch (error) {

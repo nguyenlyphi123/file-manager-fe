@@ -20,6 +20,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { removeChat } from 'redux/slices/chat';
 import { getUnseenMessages } from 'redux/slices/chatNotification';
 import { loadUser } from 'redux/slices/user';
+import { getNewRequire } from 'redux/slices/notification';
 
 export default function Home() {
   const user = useSelector((state) => state.user);
@@ -66,6 +67,7 @@ export default function Home() {
   useEffect(() => {
     dispatch(getUnseenMessages());
     dispatch(loadUser());
+    dispatch(getNewRequire());
   }, [dispatch]);
 
   // connect to socket
@@ -80,9 +82,15 @@ export default function Home() {
       dispatch(getUnseenMessages());
     });
 
+    socket.on('receive-require', (data) => {
+      console.log(data);
+      dispatch(getNewRequire());
+    });
+
     return () => {
       socket.off('connect');
       socket.off('receive-message');
+      socket.off('receive-require');
     };
   }, [dispatch, user]);
 

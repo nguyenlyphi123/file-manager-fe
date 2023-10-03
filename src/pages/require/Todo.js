@@ -19,7 +19,7 @@ function Todo({ data, handleClick, isFetching }) {
 
   const processStatus = useCallback(
     (arr) => {
-      if (isExpired(arr.endDate)) return REQ_STATUS_CANCEL;
+      if (isExpired(arr?.endDate)) return REQ_STATUS_CANCEL;
       const mem = arr?.to?.find((mem) => mem.info._id === user.id);
       return mem?.status;
     },
@@ -73,7 +73,7 @@ function Todo({ data, handleClick, isFetching }) {
                         >
                           {require?.message}
                         </Typography>
-                        {require.note && (
+                        {require?.note && (
                           <Typography
                             sx={{ fontSize: '13px', mt: 1 }}
                             color='text.secondary'

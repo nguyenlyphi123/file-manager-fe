@@ -95,6 +95,7 @@ export const SpecializeSelect = ({ handleSelect, handleReturn }) => {
 export const ClassSelect = ({
   data,
   memberSelected,
+  type = 'create',
   handleSelect,
   handleReturn,
   handleMemberSelect,
@@ -125,6 +126,30 @@ export const ClassSelect = ({
   const handleSelectAndUnselectAll = () => {
     handleMutipleMemberSelect(lecturers?.data);
   };
+
+  const isAllMemberSelected = useMemo(() => {
+    if (!lecturers?.data) return true;
+
+    if (memberSelected.length === 0) return false;
+
+    const exceptMe = lecturers?.data?.filter(
+      (item) => item.account_id !== user.id,
+    );
+
+    if (type !== 'create') {
+      const members = lecturers?.data?.filter(
+        (item) =>
+          item.account_id !== user.id &&
+          memberSelected?.every(
+            (member) => member.info._id !== item.account_id,
+          ),
+      );
+
+      return members.length === 0;
+    }
+
+    return exceptMe.every((item) => memberSelected?.includes(item));
+  }, [memberSelected, type, lecturers?.data, user.id]);
 
   if (classesLoading || lecturersLoading)
     return (
@@ -188,10 +213,7 @@ export const ClassSelect = ({
               />
             )}
           </div>
-          {lecturers?.data
-            ?.filter((item) => item.account_id !== user.id)
-            .every((item) => memberSelected?.includes(item)) &&
-          memberSelected?.length !== 0 ? (
+          {isAllMemberSelected ? (
             <p
               onClick={handleSelectAndUnselectAll}
               className='text-gray-600 text-sm font-semibold cursor-pointer'
@@ -235,9 +257,11 @@ export const ClassSelect = ({
                       sx={{ padding: '3px' }}
                       color='success'
                       checked={
-                        memberSelected?.findIndex(
-                          (item) => item._id === lecturer._id,
-                        ) !== -1
+                        memberSelected?.findIndex((item) => {
+                          if (type === 'create')
+                            return item._id === lecturer._id;
+                          return item.info._id === lecturer.account_id;
+                        }) !== -1
                       }
                     />
                   </div>
@@ -254,6 +278,7 @@ export const MemberSelect = ({
   data,
   handleReturn,
   memberSelected,
+  type = 'create',
   handleSelect,
   handleMutipleMemberSelect,
 }) => {
@@ -264,12 +289,37 @@ export const MemberSelect = ({
     queryKey: ['pupils'],
     queryFn: () => getPupils(data?._id),
     retry: 1,
+    refetchOnWindowFocus: false,
   });
 
   // select all
   const handleSelectAndUnselectAll = () => {
     handleMutipleMemberSelect(pupils?.data);
   };
+
+  const isAllMemberSelected = useMemo(() => {
+    if (!pupils?.data) return true;
+
+    if (memberSelected.length === 0) return false;
+
+    const exceptMe = pupils?.data?.filter(
+      (item) => item.account_id !== user.id,
+    );
+
+    if (type !== 'create') {
+      const members = pupils?.data?.filter(
+        (item) =>
+          item.account_id !== user.id &&
+          memberSelected?.every(
+            (member) => member.info._id !== item.account_id,
+          ),
+      );
+
+      return members.length === 0;
+    }
+
+    return exceptMe.every((item) => memberSelected?.includes(item));
+  }, [memberSelected, type, pupils?.data, user.id]);
 
   return (
     <div className='min-h-[150px] max-h-[300px] overflow-y-scroll relative'>
@@ -284,10 +334,7 @@ export const MemberSelect = ({
             />
           )}
         </div>
-        {pupils?.data
-          ?.filter((item) => item.account_id !== user.id)
-          .every((item) => memberSelected?.includes(item)) &&
-        memberSelected?.length !== 0 ? (
+        {isAllMemberSelected ? (
           <p
             onClick={handleSelectAndUnselectAll}
             className='text-gray-600 text-sm font-semibold cursor-pointer'
@@ -329,9 +376,10 @@ export const MemberSelect = ({
                     sx={{ padding: '3px' }}
                     color='success'
                     checked={
-                      memberSelected?.findIndex(
-                        (item) => item._id === pupil._id,
-                      ) !== -1
+                      memberSelected?.findIndex((item) => {
+                        if (type === 'create') return item._id === pupil._id;
+                        return item.info._id === pupil.account_id;
+                      }) !== -1
                     }
                   />
                 </div>

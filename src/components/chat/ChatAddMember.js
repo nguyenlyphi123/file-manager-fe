@@ -38,7 +38,7 @@ export default function ChatAddMember() {
       queryClient.invalidateQueries(['chats']);
     },
     onError: (error) => {
-      ErrorToast({ message: error.message });
+      ErrorToast({ message: error?.response?.data?.message });
     },
   });
 
