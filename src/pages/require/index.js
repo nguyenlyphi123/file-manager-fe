@@ -1,6 +1,6 @@
 import { Button, Grid } from '@mui/material';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { useDispatch, useSelector } from 'react-redux';
 import { setCurrentFolder } from 'redux/slices/curentFolder';
@@ -10,12 +10,10 @@ import { CiSquarePlus } from 'react-icons/ci';
 
 import { PUPIL, REQ_STATUS_DONE } from 'constants/constants';
 
-import Loading from 'parts/Loading';
 import RequireModal from 'components/popups/Require';
+import Loading from 'parts/Loading';
 import Details from './Details';
-import Done from './Done';
-import InProgress from './InProgress';
-import Todo from './Todo';
+import RequireList from './RequireList';
 
 function Require() {
   const dispatch = useDispatch();
@@ -38,11 +36,14 @@ function Require() {
   const handleOpenDetail = () => setOpenDetail(true);
   const handleCloseDetail = () => setOpenDetail(false);
 
-  const handleRequireClick = (require) => {
-    setSelectedRequire(require);
-    handleOpenDetail();
-    dispatch(setCurrentFolder(require.folder));
-  };
+  const handleRequireClick = useCallback(
+    (require) => {
+      setSelectedRequire(require);
+      handleOpenDetail();
+      dispatch(setCurrentFolder(require.folder));
+    },
+    [dispatch],
+  );
 
   const handleUpdateStatus = useMutation({
     mutationFn: (data) => updateStatus(data),
@@ -129,6 +130,33 @@ function Require() {
     refetchOnWindowFocus: false,
   });
 
+  const renderRequirements = useMemo(
+    () => [
+      {
+        title: 'Todo',
+        data: requireData.waiting,
+        droppableId: 'waiting',
+        isFetching: isFetching,
+        handleClick: handleRequireClick,
+      },
+      {
+        title: 'In Progress',
+        data: requireData.processing,
+        droppableId: 'processing',
+        isFetching: isFetching,
+        handleClick: handleRequireClick,
+      },
+      {
+        title: 'Done',
+        data: requireData.done,
+        droppableId: 'done',
+        isFetching: isFetching,
+        handleClick: handleRequireClick,
+      },
+    ],
+    [requireData, handleRequireClick, isFetching],
+  );
+
   if (isLoading) {
     return <Loading />;
   }
@@ -164,7 +192,18 @@ function Require() {
         <div className='mt-5'>
           <Grid container spacing={2}>
             <DragDropContext onDragEnd={handleDrop}>
-              <Grid item xs={12} sm={6} md={4}>
+              {renderRequirements.map((require) => (
+                <Grid item xs={12} sm={6} md={4} key={require.droppableId}>
+                  <RequireList
+                    data={require.data}
+                    title={require.title}
+                    isFetching={require.isFetching}
+                    droppableId={require.droppableId}
+                    handleClick={require.handleClick}
+                  />
+                </Grid>
+              ))}
+              {/* <Grid item xs={12} sm={6} md={4}>
                 <Todo
                   data={requireData.waiting}
                   handleClick={handleRequireClick}
@@ -184,7 +223,7 @@ function Require() {
                   handleClick={handleRequireClick}
                   isFetching={isFetching}
                 />
-              </Grid>
+              </Grid> */}
             </DragDropContext>
           </Grid>
         </div>

@@ -1,8 +1,8 @@
-import { Avatar, IconButton } from '@mui/material';
+import { IconButton } from '@mui/material';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { ChatThreeDotsDropdown } from 'components/popups/ChatThreeDotsDropdown';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { BiLeftArrowAlt } from 'react-icons/bi';
+import { BiLeftArrowAlt, BiRightArrowAlt } from 'react-icons/bi';
 import { useSelector } from 'react-redux';
 import ChatAddMember from './ChatAddMember';
 import ChatMember from './ChatMember';
@@ -10,10 +10,15 @@ import ChatMessages from './ChatMessages';
 
 import { getMessages } from 'services/messageController';
 
+import CustomAvatar from 'components/CustomAvatar';
 import { FormattedDate } from 'utils/helpers/TypographyHelper';
 import socket from 'utils/socket';
+import { useDispatch } from 'react-redux';
+import { removeChat } from 'redux/slices/chat';
 
 const ChatContent = () => {
+  const dispatch = useDispatch();
+
   const chat = useSelector((state) => state.chat);
   const user = useSelector((state) => state.user);
 
@@ -130,7 +135,12 @@ const ChatContent = () => {
     <div className='py-5 px-3 h-full flex flex-col justify-between bg-white relative'>
       <div className='pb-4 mb-1 flex justify-between items-center border-b'>
         <div className='flex items-center'>
-          <Avatar />
+          <CustomAvatar
+            height={40}
+            width={40}
+            text={chat?.name}
+            color='#323449'
+          />
           <div className='flex flex-col'>
             <p className='text-md text-gray-500 font-semibold ml-3'>
               {chat?.name}
@@ -141,19 +151,28 @@ const ChatContent = () => {
             </p>
           </div>
         </div>
-        {chat?.isGroupChat &&
-          (option === CHAT_CONTENT_OPTIONS.CHAT ? (
+        {chat?.isGroupChat ? (
+          option === CHAT_CONTENT_OPTIONS.CHAT ? (
             <ChatThreeDotsDropdown
               data={chat}
               onSelect={handleSelectChatOption}
             />
           ) : (
-            <IconButton
-              onClick={() => handleSelectChatOption(CHAT_CONTENT_OPTIONS.CHAT)}
-            >
-              <BiLeftArrowAlt />
-            </IconButton>
-          ))}
+            <>
+              <IconButton
+                onClick={() =>
+                  handleSelectChatOption(CHAT_CONTENT_OPTIONS.CHAT)
+                }
+              >
+                <BiLeftArrowAlt />
+              </IconButton>
+            </>
+          )
+        ) : (
+          <IconButton onClick={() => dispatch(removeChat())}>
+            <BiRightArrowAlt />
+          </IconButton>
+        )}
       </div>
 
       {renderChatContent}

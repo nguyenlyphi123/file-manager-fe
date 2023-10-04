@@ -22,7 +22,6 @@ import SuccessToast from 'components/toasts/SuccessToast';
 import { Tooltip } from '@mui/material';
 
 const LargeCard = ({ data, onClick, isFolder = true }) => {
-  console.log(data);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 

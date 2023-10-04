@@ -1,15 +1,9 @@
-import {
-  Avatar,
-  Fab,
-  IconButton,
-  MenuItem,
-  MenuList,
-  Paper,
-} from '@mui/material';
+import { Fab, IconButton, MenuItem, MenuList, Paper } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import CustomAvatar from 'components/CustomAvatar';
 import ErrorToast from 'components/toasts/ErrorToast';
 import useDebounce from 'hooks/useDebounce';
-import { useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { BsPencil, BsPlus, BsSearch } from 'react-icons/bs';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectChat } from 'redux/slices/chat';
@@ -18,7 +12,7 @@ import { searchUser } from 'services/userController';
 import ChatListItem from './ChatListItem';
 import ChatListLoading from './ChatListLoading';
 
-export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
+const ChatList = memo(({ handleOpenNewGroupChat }) => {
   const user = useSelector((state) => state.user);
 
   const dispatch = useDispatch();
@@ -46,6 +40,11 @@ export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
     retry: 3,
     retryDelay: 2000,
   });
+
+  // select chat
+  const handleSelectChat = (chat) => {
+    dispatch(selectChat(chat));
+  };
 
   // create chat
   const handleCreateChat = useMutation({
@@ -87,8 +86,6 @@ export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
         (member) => member._id !== user.id,
       )[0];
 
-      console.log(memberInfo);
-
       return memberInfo?.info?.name;
     },
     [user.id],
@@ -98,7 +95,7 @@ export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
     <div className='py-5 h-full bg-[#323439] relative'>
       <div className='px-5 flex items-center justify-between w-full'>
         <div className='flex items-center'>
-          <Avatar sx={{ height: 50, width: 50 }} />
+          <CustomAvatar width={50} height={50} text={user.name} fontSize={20} />
           <p className='ml-3 font-semibold text-[#ffffff] text-lg'>
             {user.name}
           </p>
@@ -164,11 +161,7 @@ export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
           {chats?.data
             ?.sort((a, b) => new Date(b.modifiedAt) - new Date(a.modifiedAt))
             .map((chat) => (
-              <ChatListItem
-                key={chat._id}
-                data={chat}
-                handleSelectChat={handleSelectChat}
-              />
+              <ChatListItem key={chat._id} data={chat} />
             ))}
         </div>
       )}
@@ -188,4 +181,6 @@ export default function ChatList({ handleSelectChat, handleOpenNewGroupChat }) {
       </Fab>
     </div>
   );
-}
+});
+
+export default ChatList;

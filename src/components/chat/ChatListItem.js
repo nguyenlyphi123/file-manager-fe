@@ -1,18 +1,19 @@
-import { Avatar, Box, IconButton, Modal, Paper } from '@mui/material';
+import { Box, IconButton, Modal, Paper } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import CustomAvatar from 'components/CustomAvatar';
 import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import { BsTrash } from 'react-icons/bs';
 import { ImSpinner } from 'react-icons/im';
 import { useDispatch, useSelector } from 'react-redux';
-import { removeChat } from 'redux/slices/chat';
+import { removeChat, selectChat } from 'redux/slices/chat';
 import { leaveChat } from 'services/chatController';
 import { FormattedChatDate, Truncate } from 'utils/helpers/TypographyHelper';
 import { isSameChatRoom, isSender } from './helpers/chatHelpers';
 
-function ChatListItem({ data, handleSelectChat }) {
+const ChatListItem = memo(({ data }) => {
   const user = useSelector((state) => state.user);
   const chat = useSelector((state) => state.chat);
 
@@ -29,6 +30,11 @@ function ChatListItem({ data, handleSelectChat }) {
 
     return memberInfo?.info?.name;
   }, [data, user.id]);
+
+  // select chat
+  const handleSelectChat = (chat) => {
+    dispatch(selectChat(chat));
+  };
 
   // confirm delete chat
   const [isChatDeleteOpen, setIsChatDeleteOpen] = useState(false);
@@ -109,19 +115,19 @@ function ChatListItem({ data, handleSelectChat }) {
           data._id === chat.id && 'bg-white shadow-sm'
         } hover:bg-white duration-200`}
       >
-        <Avatar />
+        <CustomAvatar height={40} width={40} text={chatTitle} />
         <div className='ml-2 w-full'>
           <div className='flex items-center justify-between translate-y-1'>
             <p
-              className={`font-semibold text-[#ffffff] text-[0.9em] group-hover/chat-item:text-[#323439] ${
-                data._id === chat.id && 'text-[#323439]'
+              className={`font-semibold text-[0.9em] group-hover/chat-item:text-[#323439] ${
+                data._id === chat.id ? 'text-[#323439]' : 'text-[#ffffff]'
               }`}
             >
               {chatTitle}
             </p>
             <p
-              className={`text-[0.8em] text-[#ffffff] group-hover/chat-item:text-[#323439] ${
-                data._id === chat.id && 'text-[#323439]'
+              className={`text-[0.8em] group-hover/chat-item:text-[#323439] ${
+                data._id === chat.id ? 'text-[#323439]' : 'text-[#ffffff]'
               }`}
             >
               {FormattedChatDate(data?.lastMessage?.createAt)}
@@ -131,8 +137,8 @@ function ChatListItem({ data, handleSelectChat }) {
           <div className='flex items-center justify-between min-h-[30px]'>
             <div className='flex items-center'>
               <p
-                className={`text-[#ffffff] group-hover/chat-item:text-[#5a5a5a] text-[0.8em] ${
-                  data._id === chat.id && 'text-[#5a5a5a]'
+                className={` group-hover/chat-item:text-[#5a5a5a] text-[0.8em] ${
+                  data._id === chat.id ? 'text-[#5a5a5a]' : 'text-[#ffffff]'
                 }`}
               >
                 {Truncate(data?.lastMessage?.content, 25)}
@@ -171,6 +177,6 @@ function ChatListItem({ data, handleSelectChat }) {
       </div>
     </>
   );
-}
+});
 
 export default ChatListItem;

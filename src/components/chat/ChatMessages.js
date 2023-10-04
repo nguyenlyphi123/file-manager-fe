@@ -1,15 +1,16 @@
+import { IconButton, Paper, Tooltip } from '@mui/material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Avatar, IconButton, Paper, Tooltip } from '@mui/material';
 import { BiSend } from 'react-icons/bi';
 
 import TypingLoading from 'components/TypingLoading';
 import Loading from 'parts/Loading';
 
-import { isLastMessage, isSameSender, isSender } from './helpers/chatHelpers';
-import socket from 'utils/socket';
-import { useSelector } from 'react-redux';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import CustomAvatar from 'components/CustomAvatar';
+import { useSelector } from 'react-redux';
 import { sendMessage } from 'services/messageController';
+import socket from 'utils/socket';
+import { isLastMessage, isSameSender, isSender } from './helpers/chatHelpers';
 
 // Message Component for rendering individual messages
 const Message = React.forwardRef(
@@ -27,11 +28,17 @@ const Message = React.forwardRef(
           ? null
           : (isLastMessage || isSameSender) && (
               <Tooltip title={message?.sender?.info?.name}>
-                <Avatar sx={{ marginRight: '0.5rem', height: 30, width: 30 }} />
+                <CustomAvatar
+                  text={message?.sender?.info?.name}
+                  height={30}
+                  width={30}
+                  color='#323439'
+                  fontSize={12}
+                />
               </Tooltip>
             )}
         <div
-          className={`${messageClass} items-center rounded-lg pt-[5px] pb-[7px] px-3 ${
+          className={`${messageClass} items-center rounded-lg pt-[5px] pb-[7px] px-3 ml-[0.5rem] ${
             !isLastMessage && !isSameSender && 'ml-[2.4rem]'
           } mt-1 w-max max-w-[50%]`}
         >

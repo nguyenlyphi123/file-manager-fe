@@ -29,11 +29,6 @@ export const UploadFile = ({ handleClose, open }) => {
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
-  // handle select file
-  const handleChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
   // handle upload file
   const handleUpload = useCallback(async () => {
     if (!file) return ErrorToast({ message: 'Please select file' });
@@ -123,17 +118,12 @@ export const UploadFile = ({ handleClose, open }) => {
                     <span className='text-lg text-gray-400'>
                       Drag and drop a file here or click
                     </span>
-                    <input
-                      hidden
-                      type='file'
-                      onChange={handleChange}
-                      {...getInputProps()}
-                    />
                   </>
                 );
               }
             })()}
           </Button>
+          <input hidden type='file' {...getInputProps()} />
 
           {file && (
             <div>

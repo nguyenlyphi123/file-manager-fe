@@ -60,3 +60,46 @@ export const renderBottomColor = (status) => {
       return '#FFE569';
   }
 };
+
+export const renderAvatarName = (name) => {
+  if (!name) return '';
+
+  const parsedName = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  const splitName = parsedName.split(' ');
+
+  if (splitName.length === 1) return splitName[0][0];
+
+  return splitName[splitName.length - 1][0];
+};
+
+export const renderAvatarColor = (color) => {
+  if (color) return color;
+
+  const colorPalettes = [
+    '#f0ad4e', // Mango
+    '#ffc0cb', // Pink
+    '#87cefa', // Sky Blue
+    '#ff6347', // Tomato
+    '#00fa9a', // Medium Spring Green
+    '#ff4500', // Orange Red
+    '#48d1cc', // Medium Turquoise
+    '#ff69b4', // Hot Pink
+    '#ffd700', // Gold
+    '#00ced1', // Dark Turquoise
+    '#ff8c00', // Dark Orange
+    '#20b2aa', // Light Sea Green
+    '#ff1493', // Deep Pink
+    '#32cd32', // Lime Green
+    '#ff7f50', // Coral
+    '#00ff7f', // Spring Green
+    '#ff6347', // Tomato
+    '#00bfff', // Deep Sky Blue
+    '#ff4500', // Orange Red
+    '#98fb98', // Pale Green
+  ];
+
+  const randomColor = colorPalettes[Math.floor(Math.random() * 6)];
+
+  return randomColor;
+};

@@ -18,7 +18,7 @@ import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
 import { REQ_STATUS_DONE, REQ_STATUS_EXPIRED } from 'constants/constants';
 import moment from 'moment';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { AiOutlineClose, AiOutlineCloudUpload } from 'react-icons/ai';
 import { MdKeyboardArrowDown } from 'react-icons/md';
@@ -32,6 +32,7 @@ import DetailsSkeleton from './DetailsSkeleton';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { pushLocation } from 'redux/slices/location';
+import CustomAvatar from 'components/CustomAvatar';
 
 // const RenderRows = ({ label, value, folderData, clickable = false }) => {
 //   const dispatch = useDispatch();
@@ -113,6 +114,14 @@ function Details({ open, handleClose, data }) {
     [user.id, isExpired],
   );
 
+  const isDone = useMemo(() => {
+    const isMember = data?.to?.find((mem) => mem.info._id === user.id);
+
+    if (!isMember) return false;
+
+    return isMember.sent;
+  }, [data, user]);
+
   // handle upload file
   const handleUpload = useCallback(
     async (file) => {
@@ -151,6 +160,7 @@ function Details({ open, handleClose, data }) {
     [_id, handleClose, queryClient, user.id, owner, expired],
   );
 
+  // handle folder click
   const handleFolderClick = (val) => {
     const data = {
       parent: val.parent_folder ? val.parent_folder._id : '',
@@ -295,12 +305,18 @@ function Details({ open, handleClose, data }) {
                         {require?.data?.to?.map((mem) => (
                           <Chip
                             key={mem.info._id}
-                            avatar={<Avatar />}
+                            avatar={
+                              <CustomAvatar
+                                height={25}
+                                width={25}
+                                text={mem?.info?.name}
+                              />
+                            }
                             label={mem.info.name}
                             className='my-1 mr-1'
                             color={mem.sent ? 'success' : 'error'}
                             variant='outlined'
-                            sx={{ cursor: 'pointer' }}
+                            sx={{ cursor: 'pointer', pl: 0.5 }}
                           />
                         ))}
                       </Box>
@@ -362,10 +378,15 @@ function Details({ open, handleClose, data }) {
                           <Grid item xs={12} sm={8}>
                             {require?.data?.to?.map((mem) => (
                               <div className='flex items-center my-2'>
-                                <Avatar sx={{ height: 25, width: 25, mr: 1 }} />
+                                <CustomAvatar
+                                  height={25}
+                                  width={25}
+                                  text={mem?.info?.name}
+                                />
                                 <Typography
                                   variant='p'
                                   className='text-gray-700 text-[14px]'
+                                  sx={{ ml: 1 }}
                                 >
                                   {mem?.info?.name}
                                 </Typography>
@@ -455,66 +476,70 @@ function Details({ open, handleClose, data }) {
                     </Typography>
                   </div>
 
-                  {!isExpired(require?.data?.endDate) && (
-                    <div className='py-3'>
-                      <Button
-                        component='label'
-                        sx={{
-                          backgroundColor: '#fff',
-                          border: '2px dotted #ababab',
-                          px: 4,
-                        }}
-                        className='rounded-md w-full h-[150px] flex flex-col justify-center items-center'
-                        {...getRootProps()}
-                      >
-                        <AiOutlineCloudUpload className='text-[3em] text-gray-400 mb-3' />
+                  {!isExpired(require?.data?.endDate) &&
+                    (!isDone ||
+                      isOwner(user.id, require?.owner?.info?._id)) && (
+                      <div className='py-3'>
+                        <Button
+                          component='label'
+                          sx={{
+                            backgroundColor: '#fff',
+                            border: '2px dotted #ababab',
+                            px: 4,
+                          }}
+                          className='rounded-md w-full h-[150px] flex flex-col justify-center items-center'
+                          {...getRootProps()}
+                        >
+                          <AiOutlineCloudUpload className='text-[3em] text-gray-400 mb-3' />
 
-                        <span className='text-center text-md text-gray-400'>
-                          Drag and drop a file here or click
-                        </span>
-                      </Button>
-                      <input
-                        hidden
-                        type='file'
-                        accept={`.${require?.data?.file_type}`}
-                        {...getInputProps()}
-                      />
-                      {file && (
-                        <>
-                          <div className='flex justify-between items-center mt-5 relative'>
-                            <div className='flex items-center w-full'>
-                              <FileIconHelper
-                                type={
-                                  file &&
-                                  file.name?.substring(
-                                    file.name?.lastIndexOf('.') + 1,
-                                  )
-                                }
-                                className='text-2xl'
-                              />
-                              <p className='text-[0.9em] text-gray-600 ml-3 whitespace-pre-wrap'>
-                                {Truncate(file.name, 35)}
-                              </p>
+                          <span className='text-center text-md text-gray-400'>
+                            Drag and drop a file here or click
+                          </span>
+                        </Button>
+                        <input
+                          hidden
+                          type='file'
+                          accept={`.${require?.data?.file_type}`}
+                          {...getInputProps()}
+                        />
+                        {file && (
+                          <>
+                            <div className='flex justify-between items-center mt-5 relative'>
+                              <div className='flex items-center w-full'>
+                                <FileIconHelper
+                                  type={
+                                    file &&
+                                    file.name?.substring(
+                                      file.name?.lastIndexOf('.') + 1,
+                                    )
+                                  }
+                                  className='text-2xl'
+                                />
+                                <p className='text-[0.9em] text-gray-600 ml-3 whitespace-pre-wrap'>
+                                  {Truncate(file.name, 35)}
+                                </p>
+                              </div>
+                              <div
+                                onClick={() => setFile(null)}
+                                className='cursor-pointer'
+                              >
+                                <AiOutlineClose className='text-md text-orange-700' />
+                              </div>
                             </div>
-                            <div
-                              onClick={() => setFile(null)}
-                              className='cursor-pointer'
-                            >
-                              <AiOutlineClose className='text-md text-orange-700' />
-                            </div>
-                          </div>
 
-                          {loading && (
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <Box sx={{ width: '100%', mr: 1, mt: 2 }}>
-                                <LinearProgress />
+                            {loading && (
+                              <Box
+                                sx={{ display: 'flex', alignItems: 'center' }}
+                              >
+                                <Box sx={{ width: '100%', mr: 1, mt: 2 }}>
+                                  <LinearProgress />
+                                </Box>
                               </Box>
-                            </Box>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
                 </Grid>
               </Grid>
 

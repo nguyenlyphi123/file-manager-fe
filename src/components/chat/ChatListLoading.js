@@ -6,7 +6,7 @@ export default function ChatListLoading({ repeat }) {
     const items = [];
     for (let i = 0; i < repeat; i++) {
       items.push(
-        <Card key={i} sx={{ my: 0.2, boxShadow: 'none' }}>
+        <Card key={i} sx={{ my: 0.2, boxShadow: 'none', bgcolor: '#323439' }}>
           <CardHeader
             avatar={
               <Skeleton
@@ -14,10 +14,23 @@ export default function ChatListLoading({ repeat }) {
                 variant='circular'
                 height={50}
                 width={50}
+                sx={{ bgcolor: '#ffffff' }}
               />
             }
-            title={<Skeleton animation='wave' height={20} />}
-            subheader={<Skeleton animation='wave' height={10} />}
+            title={
+              <Skeleton
+                animation='wave'
+                height={20}
+                sx={{ bgcolor: '#ffffff' }}
+              />
+            }
+            subheader={
+              <Skeleton
+                animation='wave'
+                height={10}
+                sx={{ bgcolor: '#ffffff' }}
+              />
+            }
             sx={{ my: 0.5 }}
           />
         </Card>,

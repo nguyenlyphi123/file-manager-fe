@@ -42,7 +42,7 @@ export const getRequire = async () => {
 
 export const getRequireDetails = async (id) => {
   try {
-    const res = await axiosPrivate.get(`/require/${id}`);
+    const res = await axiosPrivate.get(`/require/details/${id}`);
 
     return res.data;
   } catch (error) {

@@ -1,29 +1,21 @@
 import { Grid, Hidden } from '@mui/material';
 import Drawer from '@mui/material/Drawer';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
+import NewGroupChat from 'components/popups/NewGroupChat';
+import { useSelector } from 'react-redux';
 import ChatContent from './ChatContent';
 import ChatList from './ChatList';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectChat } from 'redux/slices/chat';
-import NewGroupChat from 'components/popups/NewGroupChat';
 
 export default function ChatContainer({ open, handleToggleChat }) {
   const chat = useSelector((state) => state.chat);
 
-  const dispatch = useDispatch();
-
-  // selected chat
-  const handleSelectChat = (chat) => {
-    dispatch(selectChat(chat));
-  };
-
   // new group chat
   const [openNewGroupChat, setOpenNewGroupChat] = useState(false);
 
-  const handleOpenNewGroupChat = () => {
+  const handleOpenNewGroupChat = useCallback(() => {
     setOpenNewGroupChat(true);
-  };
+  }, []);
 
   const handleCloseNewGroupChat = () => {
     setOpenNewGroupChat(false);
@@ -31,10 +23,12 @@ export default function ChatContainer({ open, handleToggleChat }) {
 
   return (
     <div>
-      <NewGroupChat
-        open={openNewGroupChat}
-        handleClose={handleCloseNewGroupChat}
-      />
+      {openNewGroupChat && (
+        <NewGroupChat
+          open={openNewGroupChat}
+          handleClose={handleCloseNewGroupChat}
+        />
+      )}
       <React.Fragment>
         <Drawer
           anchor={'right'}
@@ -55,10 +49,7 @@ export default function ChatContainer({ open, handleToggleChat }) {
                 lg={chat?.id ? 4 : 12}
                 sx={{ height: '100%' }}
               >
-                <ChatList
-                  handleSelectChat={handleSelectChat}
-                  handleOpenNewGroupChat={handleOpenNewGroupChat}
-                />
+                <ChatList handleOpenNewGroupChat={handleOpenNewGroupChat} />
               </Grid>
             </Hidden>
 

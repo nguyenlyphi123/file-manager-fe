@@ -4,7 +4,7 @@ import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
 import { useState } from 'react';
 import { AiOutlineClose, AiOutlineUsergroupAdd } from 'react-icons/ai';
-import { BiExit } from 'react-icons/bi';
+import { BiExit, BiRightArrowAlt } from 'react-icons/bi';
 import { BsThreeDots, BsTrash } from 'react-icons/bs';
 import { HiOutlineUserGroup } from 'react-icons/hi';
 import { ImSpinner } from 'react-icons/im';
@@ -182,6 +182,15 @@ export const ChatThreeDotsDropdown = ({ className, data, onSelect }) => {
             </p>
           </MenuItem>
           <Divider />
+          <MenuItem
+            onClick={() => dispatch(removeChat())}
+            className='group/drop-items flex items-center px-4 py-3 hover:bg-blue-100/30'
+          >
+            <BiRightArrowAlt className='mr-4 text-lg text-blue-300 group-hover/drop-items:text-blue-400' />
+            <p className='text-gray-500 text-[0.9em] font-medium group-hover/drop-items:text-gray-600'>
+              Return
+            </p>
+          </MenuItem>
           <MenuItem
             onClick={() => handleLeaveGroupChat.mutate()}
             className='group/drop-items flex items-center px-4 py-3 hover:bg-blue-100/30'
