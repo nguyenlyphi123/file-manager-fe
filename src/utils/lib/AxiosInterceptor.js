@@ -28,7 +28,7 @@ export default function AxiosInterceptor() {
             })
             .catch((error) => {
               dispatch(logOut());
-              history.push('/expired');
+              history.push('/expired', { from: history.location });
               isRefreshing = false;
               refreshPromise = null;
               return Promise.reject(error);

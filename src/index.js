@@ -19,28 +19,28 @@ const queryClient = new QueryClient();
 root.render(
   // <React.StrictMode>
   <Provider store={store}>
-    <CustomRouter history={history}>
-      <QueryClientProvider client={queryClient}>
-        <ToastContainer
-          position='top-right'
-          autoClose={2000}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          pauseOnHover={false}
-          draggable
-          theme='light'
-          style={{ width: 'fit-content' }}
-          toastStyle={{
-            padding: 0,
-            boxShadow: 'rgba(0, 0, 0, 0.16) 0px 1px 4px',
-          }}
-        />
-        <LocalizationProvider dateAdapter={AdapterMoment}>
+    <QueryClientProvider client={queryClient}>
+      <LocalizationProvider dateAdapter={AdapterMoment}>
+        <CustomRouter history={history}>
+          <ToastContainer
+            position='top-right'
+            autoClose={2000}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            pauseOnHover={false}
+            draggable
+            theme='light'
+            style={{ width: 'fit-content' }}
+            toastStyle={{
+              padding: 0,
+              boxShadow: 'rgba(0, 0, 0, 0.16) 0px 1px 4px',
+            }}
+          />
           <App />
-        </LocalizationProvider>
-      </QueryClientProvider>
-    </CustomRouter>
+        </CustomRouter>
+      </LocalizationProvider>
+    </QueryClientProvider>
   </Provider>,
   {
     /* </React.StrictMode>, */

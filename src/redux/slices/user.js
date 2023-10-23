@@ -1,6 +1,12 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { axiosPrivate } from '../../utils/axios';
 import axios from 'axios';
+import CryptoJS from 'crypto-js';
+import {
+  LOCAL_STORAGE_ACCESS_TOKEN,
+  LOCAL_STORAGE_REFRESH_TOKEN,
+  REACT_KEY,
+} from 'constants/constants';
 
 export const logIn = createAsyncThunk(
   'user/logIn',
@@ -11,10 +17,17 @@ export const logIn = createAsyncThunk(
         payload,
       );
 
-      dispatch(Authenticate(response.data.data));
+      const jsonToken = JSON.stringify({
+        [LOCAL_STORAGE_ACCESS_TOKEN]: response.data?.accessToken,
+        [LOCAL_STORAGE_REFRESH_TOKEN]: response.data?.refreshToken,
+      });
+
+      const hashedToken = CryptoJS.AES.encrypt(jsonToken, REACT_KEY).toString();
+
+      dispatch(Authenticate({ ...response.data.data, token: hashedToken }));
       return response.data.data;
     } catch (error) {
-      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('fm-token');
       throw error;
     }
   },
@@ -26,10 +39,17 @@ export const loadUser = createAsyncThunk(
     try {
       const response = await axios.get('/authentication/');
 
-      dispatch(Authenticate(response.data.data));
+      const jsonToken = JSON.stringify({
+        [LOCAL_STORAGE_ACCESS_TOKEN]: response.data?.accessToken,
+        [LOCAL_STORAGE_REFRESH_TOKEN]: response.data?.refreshToken,
+      });
+
+      const hashedToken = CryptoJS.AES.encrypt(jsonToken, REACT_KEY).toString();
+
+      dispatch(Authenticate({ ...response.data.data, token: hashedToken }));
       return response.data.data;
     } catch (error) {
-      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('fm-token');
       throw error;
     }
   },
@@ -38,7 +58,7 @@ export const loadUser = createAsyncThunk(
 export const logOut = createAsyncThunk(
   'user/logOut',
   async (_, { dispatch }) => {
-    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('fm-token');
 
     try {
       await axiosPrivate.post('/authentication/logout');
@@ -55,6 +75,8 @@ const initializeState = {
   email: null,
   permission: null,
   isAuthenticated: false,
+  token: null,
+  loading: false,
 };
 
 const user = createSlice({
@@ -62,7 +84,8 @@ const user = createSlice({
   initialState: initializeState,
   reducers: {
     Authenticate: (state, { payload }) => {
-      localStorage.setItem('isAuthenticated', true);
+      localStorage.setItem('fm-token', payload?.token);
+
       return {
         ...state,
         id: payload?.id,
@@ -73,12 +96,15 @@ const user = createSlice({
       };
     },
     Logout: (state) => {
-      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('fm-token');
       state = initializeState;
     },
   },
   extraReducers: (builder) => {
     builder
+      .addCase(loadUser.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(loadUser.fulfilled, (state, { payload }) => {
         return {
           ...state,
@@ -87,7 +113,11 @@ const user = createSlice({
           email: payload?.email,
           permission: payload?.permission,
           isAuthenticated: payload?.id ? true : false,
+          loading: false,
         };
+      })
+      .addCase(loadUser.rejected, (state) => {
+        state = initializeState;
       })
       .addCase(logOut.fulfilled, (state) => (state = initializeState));
   },

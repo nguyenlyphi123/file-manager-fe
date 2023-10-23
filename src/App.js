@@ -5,10 +5,10 @@ import ErrorBoundary from './pages/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
 import RestrictedRoute from './utils/RestrictedRoute';
 
+import TokenExpired from 'pages/tokenExpired';
 import PrivateRoute from 'utils/PrivateRoute';
 import HomePage from './pages';
 import BlankPage from './pages/BlankPage';
-import TokenExpired from 'pages/tokenExpired';
 import PageLoading from './parts/PageLoading';
 
 const Files = React.lazy(() => import('./pages/files'));

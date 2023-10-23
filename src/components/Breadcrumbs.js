@@ -1,28 +1,33 @@
-import { Link as StyledLink } from '@mui/material';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import { useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { resetCurrentFolder } from 'redux/slices/curentFolder';
 import { pushLocation } from 'redux/slices/location';
 
 export const CustomedBreadcrumbs = ({ location }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleToFolders = () => {
+    navigate('/folders');
+    dispatch(resetCurrentFolder());
+  };
 
   return (
     <div role='presentation'>
-      <Breadcrumbs aria-label='breadcrumb' separator='›' maxItems={3}>
-        <Link to=''>
-          <StyledLink
-            underline='hover'
-            color='inherit'
-            fontSize={20}
-            fontWeight='bold'
-            onClick={() => dispatch(resetCurrentFolder())}
-          >
-            {location.tab}
-          </StyledLink>
-        </Link>
+      <Breadcrumbs
+        aria-label='breadcrumb'
+        separator='›'
+        maxItems={3}
+        sx={{ alignItems: 'baseline' }}
+      >
+        <p
+          className='text-[20px] font-bold hover:cursor-pointer hover:underline'
+          onClick={handleToFolders}
+        >
+          {location.tab}
+        </p>
         {location.items.map((item) => {
           return (
             <Link
@@ -31,14 +36,9 @@ export const CustomedBreadcrumbs = ({ location }) => {
               onClick={() => dispatch(pushLocation({ _id: item._id }))}
               state={{ folder: item }}
             >
-              <StyledLink
-                underline='hover'
-                color='inherit'
-                fontSize={14}
-                fontWeight='bold'
-              >
+              <p className='text-[14px] font-bold hover:cursor-pointer hover:underline'>
                 {item.name}
-              </StyledLink>
+              </p>
             </Link>
           );
         })}

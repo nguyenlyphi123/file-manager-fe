@@ -7,13 +7,14 @@ export default function TokenExpired() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const from = location.state?.from;
+
   useEffect(() => {
-    const from = location.state?.from;
     user.isAuthenticated && navigate(from ? from : '/', { replace: true });
-  }, [location.state?.from, navigate, user.isAuthenticated]);
+  }, [from, location.state.from, navigate, user.isAuthenticated]);
 
   const handleClick = () => {
-    navigate('/login', { state: { action: 'LOGOUT' } });
+    navigate('/login', { state: { action: 'LOGOUT', from: from } });
   };
 
   return (

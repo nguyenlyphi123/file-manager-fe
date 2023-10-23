@@ -49,3 +49,13 @@ export const getRequireDetails = async (id) => {
     throw error;
   }
 };
+
+export const deleteRequire = async (id) => {
+  try {
+    const res = await axiosPrivate.delete(`/require/${id}`);
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};

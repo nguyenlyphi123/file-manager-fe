@@ -1,23 +1,15 @@
-import { useEffect } from 'react';
-import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
 const PrivateRoute = ({ ...rest }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated');
-
   const location = useLocation();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!isAuthenticated || location.state?.action === 'LOGOUT') {
-      navigate('/login', { state: { action: 'LOGOUT' } });
-      return;
-    }
-  }, [isAuthenticated, location.state?.action, navigate]);
+  const user = useSelector((state) => state.user);
 
-  return isAuthenticated ? (
+  return user.isAuthenticated ? (
     <Outlet {...rest} />
   ) : (
-    <Navigate to='/login' state={{ from: { pathname: location } }} replace />
+    <Navigate to='/login' state={{ from: location }} replace />
   );
 };
 

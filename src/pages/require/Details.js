@@ -12,7 +12,7 @@ import {
   Modal,
   Typography,
 } from '@mui/material';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import RequireModal from 'components/popups/Require';
 import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
@@ -24,7 +24,7 @@ import { AiOutlineClose, AiOutlineCloudUpload } from 'react-icons/ai';
 import { MdKeyboardArrowDown } from 'react-icons/md';
 import { useSelector } from 'react-redux';
 import { uploadFile } from 'services/gcController';
-import { getRequireDetails } from 'services/requireController';
+import { deleteRequire, getRequireDetails } from 'services/requireController';
 import FileIconHelper from 'utils/helpers/FileIconHelper';
 import { isAuthor, isOwner, renderBottomColor } from 'utils/helpers/Helper';
 import { Truncate, calcTimeRemain } from 'utils/helpers/TypographyHelper';
@@ -171,6 +171,22 @@ function Details({ open, handleClose, data }) {
     dispatch(pushLocation(data));
     navigate(val.href, { state: { folder: val } });
   };
+
+  const deleteRequireMutation = useMutation({
+    mutationFn: () => deleteRequire(data?._id),
+    onSuccess: () => {
+      handleClose();
+      queryClient.invalidateQueries('requires');
+      SuccessToast({ message: 'Delete require successfully' });
+    },
+    onError: (error) => {
+      ErrorToast({
+        message:
+          error.response?.data?.message ||
+          'Something went wrong, please try again',
+      });
+    },
+  });
 
   // handle drop
   const onDrop = useCallback(
@@ -543,14 +559,28 @@ function Details({ open, handleClose, data }) {
                 </Grid>
               </Grid>
 
-              <div className='flex justify-end items-center mt-5'>
+              <div className='flex justify-end items-center gap-2 mt-5'>
                 {isAuthor(user.id, require?.data?.author?._id) && (
-                  <div
-                    onClick={handleOpenEditRequire}
-                    className='bg-gray-700/60 py-2 px-5 rounded-md text-white text-[13px] font-medium cursor-pointer hover:bg-gray-700/80'
-                  >
-                    Edit
-                  </div>
+                  <>
+                    <Button
+                      variant='contained'
+                      color='error'
+                      size='small'
+                      sx={{ textTransform: 'none' }}
+                      disabled={deleteRequireMutation.isLoading}
+                      onClick={() => deleteRequireMutation.mutate()}
+                    >
+                      Delete
+                    </Button>
+                    <Button
+                      variant='contained'
+                      size='small'
+                      sx={{ textTransform: 'none' }}
+                      onClick={handleOpenEditRequire}
+                    >
+                      Edit
+                    </Button>
+                  </>
                 )}
 
                 {openEditRequire && (

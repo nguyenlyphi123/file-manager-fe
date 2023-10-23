@@ -19,7 +19,6 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { removeChat } from 'redux/slices/chat';
 import { getUnseenMessages } from 'redux/slices/chatNotification';
-import { loadUser } from 'redux/slices/user';
 import { getNewRequire } from 'redux/slices/notification';
 
 export default function Home() {
@@ -66,7 +65,6 @@ export default function Home() {
 
   useEffect(() => {
     dispatch(getUnseenMessages());
-    dispatch(loadUser());
     dispatch(getNewRequire());
   }, [dispatch]);
 

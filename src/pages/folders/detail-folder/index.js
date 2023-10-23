@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 import Loading from 'parts/Loading';
 
@@ -18,18 +18,29 @@ import { TiArrowSortedDown } from 'react-icons/ti';
 export default function DetailFolder() {
   // fetch folder and file data
   const location = useLocation();
-  const folder = location.state.folder;
+  const folder = location.state?.folder;
+  const { folderId } = useParams();
 
-  const { data: folders, isLoading: folderLoading } = useQuery({
-    queryKey: ['folder', { id: folder._id }],
-    queryFn: () => getFolderDetail({ id: folder._id }),
+  const {
+    data: folders,
+    isLoading: folderLoading,
+    isLoadingError: folderErr,
+  } = useQuery({
+    queryKey: ['folder', { id: folderId }],
+    queryFn: () => getFolderDetail({ id: folderId }),
     refetchOnWindowFocus: false,
+    retry: 0,
   });
 
-  const { data: files, isLoading: fileLoading } = useQuery({
-    queryKey: ['file', { id: folder._id }],
-    queryFn: () => getFileByFolder({ id: folder._id }),
+  const {
+    data: files,
+    isLoading: fileLoading,
+    isLoadingError: fileErr,
+  } = useQuery({
+    queryKey: ['file', { id: folderId }],
+    queryFn: () => getFileByFolder({ id: folderId }),
     refetchOnWindowFocus: false,
+    retry: 0,
   });
 
   // dispatch action redux
@@ -46,8 +57,20 @@ export default function DetailFolder() {
   };
 
   useEffect(() => {
-    dispatch(setCurrentFolder(folder));
-  }, [location, dispatch, folder]);
+    !folder &&
+      folders?.location &&
+      folders.location.map((item) =>
+        dispatch(pushLocation({ ...item, href: `/folders/${item._id}` })),
+      );
+
+    dispatch(
+      setCurrentFolder(
+        folder ? folder : folders?.location[folders?.location.length - 1],
+      ),
+    );
+  }, [dispatch, folder, folders]);
+
+  if (folderErr || fileErr) return <Navigate to='/folders' replace />;
 
   if (folderLoading || fileLoading) return <Loading />;
 
