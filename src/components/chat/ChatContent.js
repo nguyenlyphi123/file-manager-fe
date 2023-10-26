@@ -139,6 +139,7 @@ const ChatContent = () => {
             height={40}
             width={40}
             text={chat?.name}
+            image={chat?.image}
             color='#323449'
           />
           <div className='flex flex-col'>

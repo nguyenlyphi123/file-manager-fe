@@ -95,7 +95,13 @@ const ChatList = memo(({ handleOpenNewGroupChat }) => {
     <div className='py-5 h-full bg-[#323439] relative'>
       <div className='px-5 flex items-center justify-between w-full'>
         <div className='flex items-center'>
-          <CustomAvatar width={50} height={50} text={user.name} fontSize={20} />
+          <CustomAvatar
+            width={50}
+            height={50}
+            text={user.name}
+            fontSize={20}
+            image={user.image}
+          />
           <p className='ml-3 font-semibold text-[#ffffff] text-lg'>
             {user.name}
           </p>

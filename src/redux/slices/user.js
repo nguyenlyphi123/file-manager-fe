@@ -74,6 +74,7 @@ const initializeState = {
   name: null,
   email: null,
   permission: null,
+  image: null,
   isAuthenticated: false,
   token: null,
   loading: false,
@@ -92,6 +93,7 @@ const user = createSlice({
         name: payload?.name,
         email: payload?.email,
         permission: payload?.permission,
+        image: payload?.image,
         isAuthenticated: true,
       };
     },
@@ -112,6 +114,7 @@ const user = createSlice({
           name: payload?.name,
           email: payload?.email,
           permission: payload?.permission,
+          image: payload?.image,
           isAuthenticated: payload?.id ? true : false,
           loading: false,
         };

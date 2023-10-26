@@ -1,4 +1,3 @@
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
@@ -6,9 +5,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
+import CustomAvatar from 'components/CustomAvatar';
 import * as React from 'react';
 import { MdLogout, MdSettings } from 'react-icons/md';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { logOut } from 'redux/slices/user';
 
@@ -17,6 +17,8 @@ export default function HeaderDropdown() {
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  const user = useSelector((state) => state.user);
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -42,12 +44,17 @@ export default function HeaderDropdown() {
           <IconButton
             onClick={handleClick}
             size='small'
-            sx={{ ml: 2 }}
+            sx={{ ml: 1 }}
             aria-controls={open ? 'account-menu' : undefined}
             aria-haspopup='true'
             aria-expanded={open ? 'true' : undefined}
           >
-            <Avatar sx={{ width: 32, height: 32 }}></Avatar>
+            <CustomAvatar
+              width={32}
+              height={32}
+              image={user.image}
+              text={user.name}
+            />
           </IconButton>
         </Tooltip>
       </Box>
@@ -87,21 +94,24 @@ export default function HeaderDropdown() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem onClick={handleClose}>
-          <Avatar /> Profile
-        </MenuItem>
-        <MenuItem onClick={handleClose}>
-          <Avatar /> My account
+          <CustomAvatar
+            width={32}
+            height={32}
+            image={user.image}
+            text={user.name}
+          />{' '}
+          My Profile
         </MenuItem>
         <Divider />
         <MenuItem onClick={handleClose}>
           <ListItemIcon>
-            <MdSettings fontSize='small' />
+            <MdSettings fontSize='large' />
           </ListItemIcon>
           Settings
         </MenuItem>
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
-            <MdLogout fontSize='small' />
+            <MdLogout fontSize='large' />
           </ListItemIcon>
           Logout
         </MenuItem>

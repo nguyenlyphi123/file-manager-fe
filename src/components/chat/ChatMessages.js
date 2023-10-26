@@ -34,6 +34,7 @@ const Message = React.forwardRef(
                   width={30}
                   color='#323439'
                   fontSize={12}
+                  image={message?.sender?.info?.image}
                 />
               </Tooltip>
             )}

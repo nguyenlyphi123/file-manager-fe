@@ -31,6 +31,16 @@ const ChatListItem = memo(({ data }) => {
     return memberInfo?.info?.name;
   }, [data, user.id]);
 
+  const chatImage = useMemo(() => {
+    if (data?.name && data?.isGroupChat) return;
+
+    const memberInfo = data?.member?.filter(
+      (member) => member._id !== user.id,
+    )[0];
+
+    return memberInfo?.info?.image;
+  }, [data, user.id]);
+
   // select chat
   const handleSelectChat = (chat) => {
     dispatch(selectChat(chat));
@@ -110,12 +120,19 @@ const ChatListItem = memo(({ data }) => {
         </Box>
       </Modal>
       <div
-        onClick={() => handleSelectChat({ ...data, name: chatTitle })}
+        onClick={() =>
+          handleSelectChat({ ...data, name: chatTitle, image: chatImage })
+        }
         className={`flex items-center cursor-pointer py-3 px-5 group/chat-item ${
           data._id === chat.id && 'bg-white shadow-sm'
         } hover:bg-white duration-200`}
       >
-        <CustomAvatar height={40} width={40} text={chatTitle} />
+        <CustomAvatar
+          height={40}
+          width={40}
+          text={chatTitle}
+          image={chatImage}
+        />
         <div className='ml-2 w-full'>
           <div className='flex items-center justify-between translate-y-1'>
             <p

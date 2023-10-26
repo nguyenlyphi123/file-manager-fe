@@ -11,7 +11,7 @@ function CustomAvatar({ width, height, fontSize, text, color, image }) {
         bgcolor: renderAvatarColor(color),
         fontSize: fontSize || '14px',
       }}
-      src={image}
+      src={image ? image : null}
     >
       {renderAvatarName(text)}
     </Avatar>

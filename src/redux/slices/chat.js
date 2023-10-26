@@ -8,6 +8,7 @@ const initialState = {
   lastMessage: {},
   lastActive: null,
   author: null,
+  image: null,
 };
 
 const chat = createSlice({
@@ -29,6 +30,7 @@ const chat = createSlice({
         lastMessage: action.payload.lastMessage,
         lastActive: action.payload.lastOpened,
         author: action.payload.author,
+        image: action.payload.image,
       };
     },
     removeChat: (state) => {
