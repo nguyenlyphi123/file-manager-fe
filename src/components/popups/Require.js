@@ -744,6 +744,7 @@ const RequireModal = ({ open, handleClose, data, type = 'create' }) => {
         member = [
           ...require.to.map((item) => ({
             _id: item.account_id,
+            name: item.name,
             email: item.email,
           })),
         ];
