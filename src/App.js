@@ -6,10 +6,13 @@ import LoginPage from './pages/LoginPage';
 import RestrictedRoute from './utils/RestrictedRoute';
 
 import TokenExpired from 'pages/tokenExpired';
+import { useDispatch } from 'react-redux';
+import { loadUser } from 'redux/slices/user';
 import PrivateRoute from 'utils/PrivateRoute';
 import HomePage from './pages';
 import BlankPage from './pages/BlankPage';
 import PageLoading from './parts/PageLoading';
+import StartPage from 'pages/StartPage';
 
 const Files = React.lazy(() => import('./pages/files'));
 const Folders = React.lazy(() => import('./pages/folders'));
@@ -24,7 +27,20 @@ const MyFolder = React.lazy(() => import('./pages/folders/my-folder'));
 const DetailFolder = React.lazy(() => import('./pages/folders/detail-folder'));
 
 function App() {
+  const dispatch = useDispatch();
   const location = useLocation();
+
+  const [appLoading, setAppLoading] = React.useState(true);
+
+  useEffect(() => {
+    const getUser = async () => {
+      await dispatch(loadUser());
+
+      setAppLoading(false);
+    };
+
+    getUser();
+  }, [dispatch]);
 
   useEffect(() => {
     window.scrollTo({
@@ -33,6 +49,10 @@ function App() {
       behavior: 'smooth',
     });
   }, [location.pathname]);
+
+  if (appLoading) {
+    return <StartPage />;
+  }
 
   return (
     <ErrorBoundary>

@@ -1,12 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { axiosPrivate } from '../../utils/axios';
 import axios from 'axios';
-import CryptoJS from 'crypto-js';
-import {
-  LOCAL_STORAGE_ACCESS_TOKEN,
-  LOCAL_STORAGE_REFRESH_TOKEN,
-  REACT_KEY,
-} from 'constants/constants';
 
 export const logIn = createAsyncThunk(
   'user/logIn',
@@ -17,14 +11,7 @@ export const logIn = createAsyncThunk(
         payload,
       );
 
-      const jsonToken = JSON.stringify({
-        [LOCAL_STORAGE_ACCESS_TOKEN]: response.data?.accessToken,
-        [LOCAL_STORAGE_REFRESH_TOKEN]: response.data?.refreshToken,
-      });
-
-      const hashedToken = CryptoJS.AES.encrypt(jsonToken, REACT_KEY).toString();
-
-      dispatch(Authenticate({ ...response.data.data, token: hashedToken }));
+      dispatch(Authenticate({ ...response.data.data }));
       return response.data.data;
     } catch (error) {
       localStorage.removeItem('fm-token');
@@ -39,14 +26,7 @@ export const loadUser = createAsyncThunk(
     try {
       const response = await axios.get('/authentication/');
 
-      const jsonToken = JSON.stringify({
-        [LOCAL_STORAGE_ACCESS_TOKEN]: response.data?.accessToken,
-        [LOCAL_STORAGE_REFRESH_TOKEN]: response.data?.refreshToken,
-      });
-
-      const hashedToken = CryptoJS.AES.encrypt(jsonToken, REACT_KEY).toString();
-
-      dispatch(Authenticate({ ...response.data.data, token: hashedToken }));
+      dispatch(Authenticate({ ...response.data.data }));
       return response.data.data;
     } catch (error) {
       localStorage.removeItem('fm-token');
@@ -85,8 +65,6 @@ const user = createSlice({
   initialState: initializeState,
   reducers: {
     Authenticate: (state, { payload }) => {
-      localStorage.setItem('fm-token', payload?.token);
-
       return {
         ...state,
         id: payload?.id,
@@ -98,7 +76,6 @@ const user = createSlice({
       };
     },
     Logout: (state) => {
-      localStorage.removeItem('fm-token');
       state = initializeState;
     },
   },
