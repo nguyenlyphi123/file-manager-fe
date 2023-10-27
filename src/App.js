@@ -13,6 +13,7 @@ import HomePage from './pages';
 import BlankPage from './pages/BlankPage';
 import PageLoading from './parts/PageLoading';
 import StartPage from 'pages/StartPage';
+import SearchPage from 'pages/SearchPage';
 
 const Files = React.lazy(() => import('./pages/files'));
 const Folders = React.lazy(() => import('./pages/folders'));
@@ -141,6 +142,9 @@ function App() {
                   </Suspense>
                 }
               />
+            </Route>
+            <Route element={<RestrictedRoute />}>
+              <Route path='search' element={<SearchPage />} />
             </Route>
           </Route>
         </Route>

@@ -13,6 +13,7 @@ import { NewFolder, UploadFile } from 'components/popups/ModelPopups';
 
 import { Badge, Fab } from '@mui/material';
 import ChatContainer from 'components/chat/ChatContainer';
+import useNavigateParams from 'hooks/useNavigateParams';
 import Header from 'parts/Header';
 import SideMenu from 'parts/SideMenu';
 import { useEffect } from 'react';
@@ -24,6 +25,8 @@ import { getNewRequire } from 'redux/slices/notification';
 export default function Home() {
   const user = useSelector((state) => state.user);
   const curentFolder = useSelector((state) => state.curentFolder);
+
+  const navigate = useNavigateParams();
 
   // open/close new folder
   const [isNewFolderOpen, setIsNewFolderOpen] = useState(false);
@@ -58,6 +61,18 @@ export default function Home() {
       dispatch(removeChat());
       dispatch(getUnseenMessages());
     }
+  };
+
+  // search
+  const [search, setSearch] = useState('');
+
+  const handleSearch = (e) => {
+    if (e.keyCode === 'enter' || e.keyCode === 13) {
+      navigate('/search', { name: search });
+      setSearch('');
+      return;
+    }
+    setSearch(e.target.value);
   };
 
   // get unseen messages
@@ -102,7 +117,6 @@ export default function Home() {
             open={isNewFolderOpen}
             handleClose={handleCloseNewFolder}
           />
-
           <UploadFile
             handleClose={handleCloseUploadFile}
             open={isUploadFileOpen}
@@ -112,10 +126,11 @@ export default function Home() {
               <FiSearch className='text-gray-600 cursor-pointer' />
               <input
                 className='outline-none ml-3 text-[0.85em] h-7 w-[100%]'
-                type=''
-                name=''
-                value=''
-                placeholder='Search files, folders'
+                type='text'
+                placeholder='Enter file or folder'
+                value={search}
+                onChange={handleSearch}
+                onKeyDown={handleSearch}
               />
             </div>
 

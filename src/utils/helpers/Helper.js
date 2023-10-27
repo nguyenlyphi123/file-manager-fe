@@ -103,3 +103,24 @@ export const renderAvatarColor = (color) => {
 
   return randomColor;
 };
+
+export const renderFileTypes = () => {
+  const fileTypes = [
+    'folder',
+    'doc',
+    'docx',
+    'zip',
+    'exe',
+    'jpg',
+    'png',
+    'mp3',
+    'mp4',
+    'ppt',
+    'pdf',
+    'svg',
+    'txt',
+    'xlsx',
+  ];
+
+  return fileTypes;
+};
