@@ -99,7 +99,7 @@ export default function LoginPage() {
   return (
     <div>
       <div className='w-screen h-screen flex items-center justify-center'>
-        <div className='border rounded-md bg-white flex justify-between flex-col w-[40%] py-12 px-8'>
+        <div className='border rounded-md bg-white flex justify-between flex-col lg:w-[40%] md:w-[50%] sm:w-[60%] py-12 px-8'>
           <div>
             <div className='text-3xl text-center tracking-wider'>
               Welcome to BanaFile
