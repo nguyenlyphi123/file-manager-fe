@@ -1,3 +1,4 @@
+import { FILE_LIMIT_PER_PAGE } from 'constants/constants';
 import { axiosPrivate } from 'utils/axios';
 
 export const uploadSingleFile = async ({
@@ -22,9 +23,13 @@ export const uploadSingleFile = async ({
   }
 };
 
-export const getFileList = async () => {
+export const getFileList = async ({ page, sortKey }) => {
   try {
-    const res = await axiosPrivate.get(`/file`);
+    const res = await axiosPrivate.get(
+      `/file?limit=${FILE_LIMIT_PER_PAGE}&page=${page || 1}&sortKey=${
+        sortKey || 'lastOpened'
+      }`,
+    );
 
     return res.data;
   } catch (error) {

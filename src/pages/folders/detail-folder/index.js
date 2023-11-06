@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import React, { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 
@@ -10,16 +10,22 @@ import MediumCard from 'components/cards/MediumCard';
 import { setCurrentFolder } from 'redux/slices/curentFolder';
 import { pushLocation } from 'redux/slices/location';
 
+import EmptyData from 'components/EmptyData';
+import Sort from 'components/Sort';
 import { getFileByFolder } from 'services/fileController';
 import { getFolderDetail } from 'services/folderController';
-import EmptyData from 'components/EmptyData';
-import { TiArrowSortedDown } from 'react-icons/ti';
 
 export default function DetailFolder() {
   // fetch folder and file data
   const location = useLocation();
   const folder = location.state?.folder;
   const { folderId } = useParams();
+
+  const [sortKey, setSortKey] = useState('lastOpened');
+
+  const handleSort = (val) => {
+    setSortKey(val);
+  };
 
   const {
     data: folders,
@@ -79,24 +85,27 @@ export default function DetailFolder() {
 
   return (
     <>
-      <div className='flex items-center mb-4 h-5'>
-        <p className='text-sm text-gray-500 font-semibold mr-2'>Last Opened</p>
-        <TiArrowSortedDown className='text-gray-500' />
+      <div className='mb-4'>
+        <Sort onSort={handleSort} />
       </div>
       <div>
         {folders && folders?.data?.length > 0 && (
           <>
             <p className='text-gray-700 font-medium'>Folders</p>
             <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4 mt-2'>
-              {folders?.data?.map((folder) => {
-                return (
-                  <MediumCard
-                    onClick={handleCardSelect}
-                    key={folder._id}
-                    data={folder}
-                  />
-                );
-              })}
+              {folders?.data
+                ?.sort(
+                  (a, b) => Date.parse(b[sortKey]) - Date.parse(a[sortKey]),
+                )
+                .map((folder) => {
+                  return (
+                    <MediumCard
+                      onClick={handleCardSelect}
+                      key={folder._id}
+                      data={folder}
+                    />
+                  );
+                })}
             </div>
           </>
         )}
@@ -106,16 +115,20 @@ export default function DetailFolder() {
             <>
               <p className='text-gray-700 font-medium'>Files</p>
               <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4 mt-2'>
-                {files?.data?.map((file) => {
-                  return (
-                    <MediumCard
-                      onClick={handleCardSelect}
-                      key={file._id}
-                      data={file}
-                      isFolder={false}
-                    />
-                  );
-                })}
+                {files?.data
+                  ?.sort(
+                    (a, b) => Date.parse(b[sortKey]) - Date.parse(a[sortKey]),
+                  )
+                  .map((file) => {
+                    return (
+                      <MediumCard
+                        onClick={handleCardSelect}
+                        key={file._id}
+                        data={file}
+                        isFolder={false}
+                      />
+                    );
+                  })}
               </div>
             </>
           )}

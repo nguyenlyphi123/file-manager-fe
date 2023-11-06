@@ -20,14 +20,14 @@ export default function Home() {
   // fetch folder data
   const { data: folders, isLoading: folderLoading } = useQuery({
     queryKey: ['folders'],
-    queryFn: () => getFolderList(),
+    queryFn: () => getFolderList({ page: 1, sortKey: 'lastOpened' }),
     refetchOnWindowFocus: false,
   });
 
   // fetch file data
   const { data: files, isLoading: fileLoading } = useQuery({
     queryKey: ['files'],
-    queryFn: () => getFileList(),
+    queryFn: () => getFileList({ page: 1, sortKey: 'lastOpened' }),
     refetchOnWindowFocus: false,
   });
 

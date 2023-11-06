@@ -1,3 +1,4 @@
+import { FOLDER_LIMIT_PER_PAGE } from 'constants/constants';
 import { axiosPrivate } from 'utils/axios';
 
 export const createFolder = async ({ name, parent_folder }) => {
@@ -13,9 +14,13 @@ export const createFolder = async ({ name, parent_folder }) => {
   }
 };
 
-export const getFolderList = async () => {
+export const getFolderList = async ({ page, sortKey }) => {
   try {
-    const res = await axiosPrivate.get(`/folder`);
+    const res = await axiosPrivate.get(
+      `/folder?limit=${FOLDER_LIMIT_PER_PAGE}&page=${page || 1}&sortKey=${
+        sortKey || 'lastOpened'
+      }`,
+    );
 
     return res.data;
   } catch (error) {

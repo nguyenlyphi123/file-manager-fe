@@ -29,3 +29,8 @@ export const REQ_STATUS_PROCESSING = 'processing';
 export const REQ_STATUS_DONE = 'done';
 export const REQ_STATUS_CANCEL = 'cancel';
 export const REQ_STATUS_EXPIRED = 'expired';
+
+// limit per page
+export const FOLDER_LIMIT_PER_PAGE = 50;
+export const FILE_LIMIT_PER_PAGE = 50;
+export const MESSAGE_LIMIT_PER_PAGE = 20;

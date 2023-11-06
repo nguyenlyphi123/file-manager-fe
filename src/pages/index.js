@@ -68,7 +68,7 @@ export default function Home() {
 
   const handleSearch = (e) => {
     if (e.keyCode === 'enter' || e.keyCode === 13) {
-      navigate('/search', { name: search });
+      navigate('/search', { name: search, type: 'all', action: 'lastOpened' });
       setSearch('');
       return;
     }
