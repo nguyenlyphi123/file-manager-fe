@@ -822,7 +822,6 @@ const RequireModal = ({ open, handleClose, data, type = 'create' }) => {
             <Button
               size='small'
               variant='contained'
-              className='w-[100px] h-[40px] py-2 ml-2'
               onClick={() => handleSubmit.mutate()}
             >
               {handleSubmit.isLoading ? (

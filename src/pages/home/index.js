@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { AiOutlinePlusCircle } from 'react-icons/ai';
-import { TiArrowSortedDown } from 'react-icons/ti';
 import { useDispatch } from 'react-redux';
 
 import Loading from 'parts/Loading';
@@ -15,19 +14,32 @@ import { getFolderList } from 'services/folderController';
 import LargeCard from 'components/cards/LargeCard';
 import MediumCard from 'components/cards/MediumCard';
 import { NewFolder, UploadFile } from 'components/popups/ModelPopups';
+import Sort from 'components/Sort';
+import { Link } from 'react-router-dom';
 
 export default function Home() {
+  // sort
+  const [sortKey, setSortKey] = useState('lastOpened');
+
+  const handleSort = (val) => {
+    setSortKey(val);
+  };
+
   // fetch folder data
   const { data: folders, isLoading: folderLoading } = useQuery({
-    queryKey: ['folders'],
-    queryFn: () => getFolderList({ page: 1, sortKey: 'lastOpened' }),
+    queryKey: ['folders', { sortKey }],
+    queryFn: async ({ queryKey }) => {
+      return await getFolderList({ page: 1, sortKey: queryKey[1].sortKey });
+    },
     refetchOnWindowFocus: false,
   });
 
   // fetch file data
   const { data: files, isLoading: fileLoading } = useQuery({
-    queryKey: ['files'],
-    queryFn: () => getFileList({ page: 1, sortKey: 'lastOpened' }),
+    queryKey: ['files', { sortKey }],
+    queryFn: async ({ queryKey }) => {
+      return await getFileList({ page: 1, sortKey: queryKey[1].sortKey });
+    },
     refetchOnWindowFocus: false,
   });
 
@@ -67,11 +79,9 @@ export default function Home() {
     dispatch(pushLocation(data));
   };
 
-  if (folderLoading || fileLoading) return <Loading />;
-
   return (
     <>
-      <div className='h-[200vh] py-5 px-7 tracking-wide'>
+      <div className='py-5 px-7 tracking-wide'>
         <NewFolder handleClose={handleCloseNewFolder} open={isNewFolderOpen} />
         <UploadFile
           handleClose={handleCloseUploadFile}
@@ -84,7 +94,7 @@ export default function Home() {
           <div className='mt-5'>
             <p className='text-md text-gray-600 font-bold mb-2'>Quick Access</p>
             <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4'>
-              {folders?.data.map((folder) => {
+              {folders?.data?.map((folder) => {
                 return (
                   <LargeCard
                     onClick={handleCardSelect}
@@ -93,61 +103,76 @@ export default function Home() {
                   />
                 );
               })}
+              <div
+                onClick={handleOpenNewFolder}
+                className='group bg-white border rounded-md p-4 h-[179px] flex justify-center items-center cursor-pointer hover:shadow-sm hover:scale-105 duration-200'
+              >
+                <AiOutlinePlusCircle className='text-4xl text-gray-400 group-hover:text-gray-500 duration-200' />
+              </div>
             </div>
           </div>
         )}
 
         <div className='mt-5'>
-          <p className='text-md text-gray-600 font-bold mb-2'>Recent Files</p>
+          <p className='text-md text-gray-600 font-bold mb-2'>Recent</p>
           <div className='mt-4'>
-            <div className='flex items-center mb-4'>
-              <p className='text-sm text-gray-500 font-semibold mr-2'>
-                Last Opened
-              </p>
-              <TiArrowSortedDown className='text-gray-500' />
+            <div className='mb-7'>
+              <Sort onSort={handleSort} />
             </div>
 
-            <div className='border-t pt-3'>
-              <p className='text-[0.8em] text-gray-600 font-bold uppercase tracking-wide'>
-                Folder
-              </p>
-              <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4 mt-3 '>
-                {folders?.data.map((folder) => {
-                  return (
-                    <MediumCard
-                      onClick={handleCardSelect}
-                      key={folder._id}
-                      data={folder}
-                    />
-                  );
-                })}
+            {folderLoading || fileLoading ? (
+              <Loading />
+            ) : (
+              <>
+                <div className='border-t pt-3'>
+                  <Link
+                    to='/folders'
+                    className='text-[0.8em] text-gray-600 font-bold uppercase tracking-wide'
+                  >
+                    Folder
+                  </Link>
+                  <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4 mt-3'>
+                    {folders?.data?.map((folder) => {
+                      return (
+                        <MediumCard
+                          onClick={handleCardSelect}
+                          key={folder._id}
+                          data={folder}
+                        />
+                      );
+                    })}
 
-                <div
-                  onClick={handleOpenNewFolder}
-                  className='group bg-white border rounded-md p-4 h-[90px] flex justify-center items-center cursor-pointer hover:shadow-sm hover:scale-105 duration-200'
-                >
-                  <AiOutlinePlusCircle className='text-3xl text-gray-400 group-hover:text-gray-500 duration-200' />
+                    <div
+                      onClick={handleOpenNewFolder}
+                      className='group bg-white border rounded-md p-4 h-[90px] flex justify-center items-center cursor-pointer hover:shadow-sm hover:scale-105 duration-200'
+                    >
+                      <AiOutlinePlusCircle className='text-3xl text-gray-400 group-hover:text-gray-500 duration-200' />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div className='border-t pt-3 mt-10'>
-              <p className='text-[0.8em] text-gray-600 font-bold uppercase'>
-                Files
-              </p>
-              <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4 mt-3 '>
-                {files?.data?.map((file) => (
-                  <MediumCard key={file._id} data={file} isFolder={false} />
-                ))}
+                <div className='border-t pt-3 mt-7'>
+                  <Link
+                    to='/files'
+                    className='text-[0.8em] text-gray-600 font-bold uppercase'
+                  >
+                    Files
+                  </Link>
+                  <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4 mt-3'>
+                    {files?.data?.map((file) => (
+                      <MediumCard key={file._id} data={file} isFolder={false} />
+                    ))}
 
-                <div
-                  onClick={handleOpenUploadFile}
-                  className='group bg-white border rounded-md p-4 h-[90px] flex justify-center items-center cursor-pointer hover:shadow-sm hover:scale-105 duration-200'
-                >
-                  <AiOutlinePlusCircle className='text-3xl text-gray-400 group-hover:text-gray-500 duration-200' />
+                    <div
+                      onClick={handleOpenUploadFile}
+                      className='group bg-white border rounded-md p-4 h-[90px] flex justify-center items-center cursor-pointer hover:shadow-sm hover:scale-105 duration-200'
+                    >
+                      <AiOutlinePlusCircle className='text-3xl text-gray-400 group-hover:text-gray-500 duration-200' />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </div>
       </div>
