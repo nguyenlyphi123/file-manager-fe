@@ -28,17 +28,6 @@ export default function Home() {
 
   const navigate = useNavigateParams();
 
-  // open/close new folder
-  const [isNewFolderOpen, setIsNewFolderOpen] = useState(false);
-
-  const handleOpenNewFolder = () => {
-    setIsNewFolderOpen(true);
-  };
-
-  const handleCloseNewFolder = () => {
-    setIsNewFolderOpen(false);
-  };
-
   // open/close upload file
   const [isUploadFileOpen, setIsUploadFileOpen] = useState(false);
 
@@ -113,10 +102,6 @@ export default function Home() {
       <div className='flex h-[calc(100vh-80px)]'>
         <SideMenu />
         <div className='sm:w-[100%] lg:w-10/12 relative'>
-          <NewFolder
-            open={isNewFolderOpen}
-            handleClose={handleCloseNewFolder}
-          />
           <UploadFile
             handleClose={handleCloseUploadFile}
             open={isUploadFileOpen}
@@ -135,15 +120,17 @@ export default function Home() {
             </div>
 
             <div className='flex'>
-              <button
-                className='bg-[#d3d9e7] py-2 px-3 rounded-sm mx-2 flex items-center hover:bg-[#C3C6CE] hover:text-white hover:scale-105 duration-100'
-                type='button'
-                onClick={handleOpenNewFolder}
-                disabled={curentFolder.isRequireFolder}
-              >
-                <AiOutlinePlus className='mr-3 font-bold' />
-                <p className='text-xs font-semibold '>New Folder</p>
-              </button>
+              <NewFolder title='New Folder'>
+                <button
+                  className='bg-[#d3d9e7] py-2 px-3 rounded-sm mx-2 flex items-center hover:bg-[#C3C6CE] hover:text-white hover:scale-105 duration-100'
+                  type='button'
+                  disabled={curentFolder.isRequireFolder}
+                >
+                  <AiOutlinePlus className='mr-3 font-bold' />
+                  <p className='text-xs font-semibold '>New Folder</p>
+                </button>
+              </NewFolder>
+
               <button
                 className='bg-[#5664D9] py-2 px-3 rounded-sm mx-2 text-white flex items-center hover:bg-[#2f40dd] hover:scale-105 duration-100'
                 type='button'

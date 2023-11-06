@@ -9,7 +9,7 @@ import { setCurrentFolder } from 'redux/slices/curentFolder';
 import { pushLocation } from 'redux/slices/location';
 
 import { getFileList } from 'services/fileController';
-import { getFolderList } from 'services/folderController';
+import { getFolderList, getQuickAccessFolder } from 'services/folderController';
 
 import LargeCard from 'components/cards/LargeCard';
 import MediumCard from 'components/cards/MediumCard';
@@ -24,6 +24,17 @@ export default function Home() {
   const handleSort = (val) => {
     setSortKey(val);
   };
+
+  // fetch quick access folder
+  const { data: quickAccess } = useQuery({
+    queryKey: ['quickAccess'],
+    queryFn: async () => {
+      return await getQuickAccessFolder({
+        page: 1,
+      });
+    },
+    refetchOnWindowFocus: false,
+  });
 
   // fetch folder data
   const { data: folders, isLoading: folderLoading } = useQuery({
@@ -42,17 +53,6 @@ export default function Home() {
     },
     refetchOnWindowFocus: false,
   });
-
-  // open/close new folder
-  const [isNewFolderOpen, setIsNewFolderOpen] = useState(false);
-
-  const handleOpenNewFolder = () => {
-    setIsNewFolderOpen(true);
-  };
-
-  const handleCloseNewFolder = () => {
-    setIsNewFolderOpen(false);
-  };
 
   // open/close upload file
   const [isUploadFileOpen, setIsUploadFileOpen] = useState(false);
@@ -82,7 +82,6 @@ export default function Home() {
   return (
     <>
       <div className='py-5 px-7 tracking-wide'>
-        <NewFolder handleClose={handleCloseNewFolder} open={isNewFolderOpen} />
         <UploadFile
           handleClose={handleCloseUploadFile}
           open={isUploadFileOpen}
@@ -90,32 +89,29 @@ export default function Home() {
 
         <div className='text-[20px] text-gray-600 font-bold'>Home</div>
 
-        {folders?.data?.length > 0 && (
-          <div className='mt-5'>
-            <p className='text-md text-gray-600 font-bold mb-2'>Quick Access</p>
-            <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4'>
-              {folders?.data?.map((folder) => {
-                return (
-                  <LargeCard
-                    onClick={handleCardSelect}
-                    key={folder._id}
-                    data={folder}
-                  />
-                );
-              })}
-              <div
-                onClick={handleOpenNewFolder}
-                className='group bg-white border rounded-md p-4 h-[179px] flex justify-center items-center cursor-pointer hover:shadow-sm hover:scale-105 duration-200'
-              >
+        <div className='mt-5'>
+          <p className='text-md text-gray-600 font-bold mb-3'>Quick Access</p>
+          <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4'>
+            {quickAccess?.data?.map((folder) => {
+              return (
+                <LargeCard
+                  onClick={handleCardSelect}
+                  key={folder._id}
+                  data={folder}
+                />
+              );
+            })}
+            <NewFolder title='New Quick Access' quickAccess>
+              <div className='group bg-white border rounded-md p-4 h-[179px] flex justify-center items-center cursor-pointer hover:shadow-sm hover:scale-105 duration-200'>
                 <AiOutlinePlusCircle className='text-4xl text-gray-400 group-hover:text-gray-500 duration-200' />
               </div>
-            </div>
+            </NewFolder>
           </div>
-        )}
+        </div>
 
         <div className='mt-5'>
           <p className='text-md text-gray-600 font-bold mb-2'>Recent</p>
-          <div className='mt-4'>
+          <div className='mt-4 relative'>
             <div className='mb-7'>
               <Sort onSort={handleSort} />
             </div>
@@ -142,12 +138,11 @@ export default function Home() {
                       );
                     })}
 
-                    <div
-                      onClick={handleOpenNewFolder}
-                      className='group bg-white border rounded-md p-4 h-[90px] flex justify-center items-center cursor-pointer hover:shadow-sm hover:scale-105 duration-200'
-                    >
-                      <AiOutlinePlusCircle className='text-3xl text-gray-400 group-hover:text-gray-500 duration-200' />
-                    </div>
+                    <NewFolder title='New Folder'>
+                      <div className='group bg-white border rounded-md p-4 h-[90px] flex justify-center items-center cursor-pointer hover:shadow-sm hover:scale-105 duration-200'>
+                        <AiOutlinePlusCircle className='text-3xl text-gray-400 group-hover:text-gray-500 duration-200' />
+                      </div>
+                    </NewFolder>
                   </div>
                 </div>
 

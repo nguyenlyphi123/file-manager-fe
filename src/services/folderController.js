@@ -14,12 +14,37 @@ export const createFolder = async ({ name, parent_folder }) => {
   }
 };
 
+export const createQuickAccessFolder = async ({ name, parent_folder }) => {
+  try {
+    const res = await axiosPrivate.post(`/folder/quick-access`, {
+      name,
+      parent_folder,
+    });
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getFolderList = async ({ page, sortKey }) => {
   try {
     const res = await axiosPrivate.get(
       `/folder?limit=${FOLDER_LIMIT_PER_PAGE}&page=${page || 1}&sortKey=${
         sortKey || 'lastOpened'
       }`,
+    );
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getQuickAccessFolder = async ({ page }) => {
+  try {
+    const res = await axiosPrivate.get(
+      `/folder/quick-access?limit=${FOLDER_LIMIT_PER_PAGE}&page=${page || 1}`,
     );
 
     return res.data;
