@@ -393,7 +393,10 @@ function Details({ open, handleClose, data }) {
                           </Grid>
                           <Grid item xs={12} sm={8}>
                             {require?.data?.to?.map((mem) => (
-                              <div className='flex items-center my-2'>
+                              <div
+                                key={mem._id}
+                                className='flex items-center my-2'
+                              >
                                 <CustomAvatar
                                   height={25}
                                   width={25}

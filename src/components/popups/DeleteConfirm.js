@@ -16,18 +16,19 @@ import { removeFolderToTrash } from 'services/folderController';
 const DeleteConfirm = ({ open, handleClose, data }) => {
   const queryClient = useQueryClient();
 
-  const deleteMutation = data.parent_folder.isRequireFolder
-    ? deleteFile
-    : data.type
-    ? removeFileToTrash
-    : removeFolderToTrash;
+  const deleteMutation =
+    data.parent_folder && data.parent_folder.isRequireFolder
+      ? deleteFile
+      : data.type
+      ? removeFileToTrash
+      : removeFolderToTrash;
   const handleDelete = useMutation({
     mutationFn: (data) => {
       let params = {
         id: data._id,
       };
 
-      if (data.parent_folder.isRequireFolder) {
+      if (data.parent_folder && data.parent_folder.isRequireFolder) {
         params = {
           data: {
             ...data,
@@ -74,7 +75,7 @@ const DeleteConfirm = ({ open, handleClose, data }) => {
       }?`}</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          {data.parent_folder.isRequireFolder
+          {data.parent_folder && data.parent_folder.isRequireFolder
             ? 'If you delete this file, you could not restore it in recovery'
             : data.type
             ? 'If you delete this file, you could restore it in recovery!'
