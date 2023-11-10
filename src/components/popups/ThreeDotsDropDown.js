@@ -1,4 +1,7 @@
 import { IconButton, Menu, MenuItem } from '@mui/material';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import ErrorToast from 'components/toasts/ErrorToast';
+import SuccessToast from 'components/toasts/SuccessToast';
 import {
   PERMISSION_DOWNLOAD,
   PERMISSION_EDIT,
@@ -25,8 +28,10 @@ import {
   BsPencil,
   BsThreeDots,
   BsTrash,
+  BsPinAngleFill,
 } from 'react-icons/bs';
 import { useSelector } from 'react-redux';
+import { pinFolder } from 'services/folderController';
 import { hasFFPermission, isAuthor, isOwner } from 'utils/helpers/Helper';
 
 export const ThreeDotsDropdownItem = ({ children, option, onClick, show }) => {
@@ -58,6 +63,8 @@ export const ThreeDotsDropdown = ({
 }) => {
   const user = useSelector((state) => state.user);
 
+  const queryClient = useQueryClient();
+
   // menu
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -67,6 +74,22 @@ export const ThreeDotsDropdown = ({
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  // handle pin
+  const handlePin = useMutation({
+    mutationFn: ({ folderId, quickAccess }) => {
+      console.log(data.quickAccess);
+      console.log(folderId, quickAccess);
+      return pinFolder({ folderId, quickAccess });
+    },
+    onSuccess: () => {
+      SuccessToast({ message: 'Folder has been updated successfully' });
+      queryClient.invalidateQueries('quickAccess');
+    },
+    onError: (error) => {
+      ErrorToast({ message: error.message });
+    },
+  });
 
   return (
     <>
@@ -124,6 +147,40 @@ export const ThreeDotsDropdown = ({
               Details
             </p>
           </MenuItem>
+
+          {!data.type && !data.quickAccess && (
+            <MenuItem
+              onClick={() =>
+                handlePin.mutate({
+                  folderId: data._id,
+                  quickAccess: data.quickAccess,
+                })
+              }
+              className='group/drop-items flex items-center px-4 py-3 hover:bg-blue-100/30 '
+            >
+              <BsPinAngleFill className='mr-4 text-xl text-blue-300 group-hover/drop-items:text-blue-400' />
+              <p className='text-gray-500 text-[0.9em] font-medium group-hover/drop-items:text-gray-600'>
+                Pin
+              </p>
+            </MenuItem>
+          )}
+
+          {data.quickAccess && (
+            <MenuItem
+              onClick={() =>
+                handlePin.mutate({
+                  folderId: data._id,
+                  quickAccess: data.quickAccess,
+                })
+              }
+              className='group/drop-items flex items-center px-4 py-3 hover:bg-blue-100/30 '
+            >
+              <BsPinAngleFill className='mr-4 text-xl text-blue-300 group-hover/drop-items:text-blue-400' />
+              <p className='text-gray-500 text-[0.9em] font-medium group-hover/drop-items:text-gray-600'>
+                Unpin
+              </p>
+            </MenuItem>
+          )}
 
           <ThreeDotsDropdownItem
             option={SHARE}

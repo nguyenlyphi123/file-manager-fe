@@ -244,3 +244,15 @@ export const getSharedFolder = async () => {
     throw error;
   }
 };
+
+export const pinFolder = async ({ folderId, quickAccess }) => {
+  try {
+    const res = await axiosPrivate.put(`/folder/${folderId}/pin`, {
+      quickAccess,
+    });
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
