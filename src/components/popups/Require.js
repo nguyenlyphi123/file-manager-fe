@@ -284,7 +284,11 @@ const DesAndMem = memo(
 
     const { data: folders, isLoading: folderLoading } = useQuery({
       queryKey: ['folders'],
-      queryFn: async () => await getFolderList(),
+      queryFn: async () =>
+        await getFolderList({
+          limit: 50,
+          page: 1,
+        }),
       retry: 3,
       retryDelay: 3000,
       refetchOnWindowFocus: false,
@@ -491,7 +495,7 @@ const DesAndMem = memo(
                 ) : (
                   <Grid container spacing={1} flexWrap='wrap'>
                     {selectedFolder.length === 0 &&
-                      folders.data?.map((folder) => (
+                      folders?.data?.map((folder) => (
                         <Grid item xs={12} sm={6} md={4} key={folder._id}>
                           <SmallFolderCard
                             key={folder._id}

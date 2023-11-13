@@ -20,7 +20,7 @@ export const CustomedBreadcrumbs = ({ location }) => {
         aria-label='breadcrumb'
         separator='›'
         maxItems={3}
-        sx={{ alignItems: 'baseline' }}
+        sx={{ alignItems: 'center' }}
       >
         <p
           className='text-[20px] font-bold hover:cursor-pointer hover:underline'

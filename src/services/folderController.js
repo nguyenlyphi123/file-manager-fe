@@ -27,12 +27,12 @@ export const createQuickAccessFolder = async ({ name, parent_folder }) => {
   }
 };
 
-export const getFolderList = async ({ page, sortKey }) => {
+export const getFolderList = async ({ limit, page, sortKey }) => {
   try {
     const res = await axiosPrivate.get(
-      `/folder?limit=${FOLDER_LIMIT_PER_PAGE}&page=${page || 1}&sortKey=${
-        sortKey || 'lastOpened'
-      }`,
+      `/folder?limit=${limit || FOLDER_LIMIT_PER_PAGE}&page=${
+        page || 1
+      }&sortKey=${sortKey || 'lastOpened'}`,
     );
 
     return res.data;

@@ -30,7 +30,7 @@ import { isAuthor, isOwner, renderBottomColor } from 'utils/helpers/Helper';
 import { Truncate, calcTimeRemain } from 'utils/helpers/TypographyHelper';
 import DetailsSkeleton from './DetailsSkeleton';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { pushLocation } from 'redux/slices/location';
 import CustomAvatar from 'components/CustomAvatar';
 
@@ -279,6 +279,20 @@ function Details({ open, handleClose, data }) {
                   >
                     File Requiments
                   </Divider>
+                  <div className='mb-3 flex items-center'>
+                    <Typography
+                      variant='p'
+                      className='text-sm text-gray-800 font-semibold w-[60px]'
+                    >
+                      Folder
+                    </Typography>
+                    <Link
+                      to={`/folders/${require?.data?.folder?._id}`}
+                      className='text-blue-600 text-[14px] mt-1'
+                    >
+                      {require?.data?.folder?.name}
+                    </Link>
+                  </div>
                   <div className='mb-2 flex'>
                     <Typography
                       variant='p'

@@ -53,7 +53,10 @@ export const Copy = ({ handleClose, data, open }) => {
         setIsLoading(true);
         const res = expandFolder
           ? await getFolderDetail({ id: expandFolder._id })
-          : await getFolderList();
+          : await getFolderList({
+              limit: 50,
+              page: 1,
+            });
         setFolders(res.data);
         setIsLoading(false);
       } catch (error) {
