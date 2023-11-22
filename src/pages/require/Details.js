@@ -284,11 +284,11 @@ function Details({ open, handleClose, data }) {
                       variant='p'
                       className='text-sm text-gray-800 font-semibold w-[60px]'
                     >
-                      Folder
+                      Location
                     </Typography>
                     <Link
                       to={`/folders/${require?.data?.folder?._id}`}
-                      className='text-blue-600 text-[14px] mt-1'
+                      className='text-blue-600 text-[14px] mt-1 ml-1'
                     >
                       {require?.data?.folder?.name}
                     </Link>

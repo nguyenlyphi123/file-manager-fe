@@ -12,6 +12,7 @@ function CustomAvatar({ width, height, fontSize, text, color, image }) {
         fontSize: fontSize || '14px',
       }}
       src={image ? image : null}
+      referrerPolicy='no-referrer'
     >
       {renderAvatarName(text)}
     </Avatar>

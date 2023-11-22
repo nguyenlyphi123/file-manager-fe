@@ -124,3 +124,18 @@ export const renderFileTypes = () => {
 
   return fileTypes;
 };
+
+export const renderPermission = {
+  MANAGER: {
+    color: 'error',
+    label: 'Quản lý',
+  },
+  LECTURERS: {
+    color: 'warning',
+    label: 'Trưởng phòng',
+  },
+  PUPIL: {
+    color: 'success',
+    label: 'Nhân viên',
+  },
+};
