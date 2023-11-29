@@ -33,7 +33,29 @@ export default function DetailFolder() {
     isLoadingError: folderErr,
   } = useQuery({
     queryKey: ['folder', { id: folderId }],
-    queryFn: () => getFolderDetail({ id: folderId }),
+    queryFn: async (params) => {
+      const { id } = params.queryKey[1];
+
+      const { data, location } = await getFolderDetail({ id });
+
+      const uniqueLoc = [];
+
+      location.map((loc) => {
+        const found = uniqueLoc.find((item) => item._id === loc._id);
+        if (!found) uniqueLoc.push(loc);
+        return null;
+      });
+
+      if (uniqueLoc.length > 0) {
+        uniqueLoc.map((loc) =>
+          dispatch(pushLocation({ ...loc, href: `/folders/${loc._id}` })),
+        );
+      }
+
+      return {
+        data,
+      };
+    },
     refetchOnWindowFocus: false,
     retry: 0,
   });
