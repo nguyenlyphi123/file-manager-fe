@@ -181,11 +181,11 @@ export const restoreMultipleFolder = async (folderList) => {
   }
 };
 
-export const copyFolder = async ({ data, folderId }) => {
+export const copyFolder = async ({ data, desData }) => {
   try {
     const res = await axiosPrivate.post(`/folder/copy`, {
       data,
-      folderId,
+      desData,
     });
 
     return res.data;
@@ -194,11 +194,11 @@ export const copyFolder = async ({ data, folderId }) => {
   }
 };
 
-export const moveFolder = async ({ data, folderId }) => {
+export const moveFolder = async ({ data, desData }) => {
   try {
     const res = await axiosPrivate.post(`/folder/move`, {
       data,
-      folderId,
+      desData,
     });
 
     return res.data;

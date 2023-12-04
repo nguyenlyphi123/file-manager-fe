@@ -95,7 +95,7 @@ export const Copy = ({ handleClose, data, open }) => {
     mutationFn: () =>
       copyMutation({
         data,
-        folderId: selectedFolder ? selectedFolder._id : null,
+        desData: selectedFolder ?? null,
       }),
     onSuccess: () => {
       handleClose();

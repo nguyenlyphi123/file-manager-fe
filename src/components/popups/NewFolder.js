@@ -33,7 +33,7 @@ export const NewFolder = ({ title, children, quickAccess = false }) => {
   const [folder, setFolder] = useState('Untitled folder');
 
   const createMutation = useCallback(
-    async (name, parent_folder) => {
+    async ({ name, parent_folder }) => {
       return quickAccess
         ? await createQuickAccessFolder({ name, parent_folder })
         : await createFolder({ name, parent_folder });
@@ -51,8 +51,8 @@ export const NewFolder = ({ title, children, quickAccess = false }) => {
       handleClose();
       setFolder('Untitled folder');
       SuccessToast({ message: 'Folder was created successfully' });
-      queryClient.invalidateQueries('folders');
-      queryClient.invalidateQueries('folder');
+      queryClient.invalidateQueries(['folders']);
+      queryClient.invalidateQueries(['folder']);
     },
     onError: () => {
       ErrorToast({
@@ -81,7 +81,7 @@ export const NewFolder = ({ title, children, quickAccess = false }) => {
               !hasFFPermission(
                 curentFolder.permission,
                 PERMISSION_WRITE,
-                isAuthor(user.id, curentFolder.author),
+                isAuthor(user.id, curentFolder?.author?._id),
               ) &&
               curentFolder._id !== null
             ) {

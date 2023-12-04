@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import { BiRightArrow } from 'react-icons/bi';
 import { ImSpinner } from 'react-icons/im';
+import { useSelector } from 'react-redux';
 import { moveFile } from 'services/fileController';
 import {
   getFolderDetail,
@@ -15,6 +16,8 @@ import {
 } from 'services/folderController';
 
 export const Move = ({ handleClose, data, open }) => {
+  const curentFolder = useSelector((state) => state.curentFolder);
+
   const queryClient = useQueryClient();
 
   // selected folder
@@ -94,8 +97,8 @@ export const Move = ({ handleClose, data, open }) => {
   const handleMove = useMutation({
     mutationFn: () =>
       moveMutation({
-        data,
-        folderId: selectedFolder ? selectedFolder._id : null,
+        data: { ...data, parent_folder: curentFolder },
+        desData: selectedFolder ? selectedFolder : null,
       }),
     onSuccess: () => {
       handleClose();

@@ -99,7 +99,7 @@ export const UploadFile = ({ handleClose, open }) => {
                 !hasFFPermission(
                   permission,
                   PERMISSION_WRITE,
-                  isAuthor(user.id, author),
+                  isAuthor(user.id, author?._id),
                 ) &&
                 _id !== null
               ) {
@@ -167,7 +167,7 @@ export const UploadFile = ({ handleClose, open }) => {
               !hasFFPermission(
                 permission,
                 PERMISSION_WRITE,
-                isAuthor(user.id, author),
+                isAuthor(user.id, author?._id),
               ) &&
               _id !== null
             ) {
