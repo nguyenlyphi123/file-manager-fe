@@ -37,11 +37,13 @@ export const loadUser = createAsyncThunk(
 
 export const logOut = createAsyncThunk(
   'user/logOut',
-  async (_, { dispatch }) => {
+  async (_, { dispatch, getState }) => {
+    const { user } = getState();
+
     localStorage.removeItem('fm-token');
 
     try {
-      await axiosPrivate.post('/authentication/logout');
+      await axiosPrivate.post('/authentication/logout', { id: user.id });
       dispatch(Logout());
     } catch (error) {
       throw error;
