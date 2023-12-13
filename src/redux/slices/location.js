@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSelector, createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   tab: '',
@@ -36,6 +36,10 @@ const location = createSlice({
 
 // Selector
 export const locationSelector = (state) => state.location;
+export const getTab = createSelector(
+  (state) => state.location,
+  (location) => location.tab,
+);
 
 // Export action
 export const { pushLocation, removeLocation, pushTab } = location.actions;

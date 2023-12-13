@@ -99,7 +99,7 @@ export default function Home() {
   return (
     <>
       <Header />
-      <div className='flex h-[calc(100vh-80px)]'>
+      <div className='flex'>
         <SideMenu />
         <div className='sm:w-[100%] lg:w-10/12 relative'>
           <UploadFile

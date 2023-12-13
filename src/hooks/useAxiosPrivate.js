@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
+import { Logout } from 'redux/slices/user';
 import { axiosPrivate } from 'utils/axios';
 import refreshToken from 'utils/refreshToken';
-import { Logout } from 'redux/slices/user';
 
 function useAxiosPrivate() {
   const dispatch = useDispatch();
@@ -35,7 +35,7 @@ function useAxiosPrivate() {
     return () => {
       axiosPrivate.interceptors.response.eject(responseIntercept);
     };
-  }, [refresh]);
+  }, [dispatch, refresh]);
 
   return axiosPrivate;
 }

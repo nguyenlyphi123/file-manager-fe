@@ -126,6 +126,10 @@ export const renderFileTypes = () => {
 };
 
 export const renderPermission = {
+  ADMIN: {
+    color: 'info',
+    label: 'Admin',
+  },
   MANAGER: {
     color: 'error',
     label: 'Quản lý',

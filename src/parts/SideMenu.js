@@ -1,30 +1,24 @@
-import { useDispatch } from 'react-redux';
-
-import { resetCurrentFolder } from 'redux/slices/curentFolder';
-import { removeLocation } from 'redux/slices/location';
-
 import { AiOutlineHome, AiOutlineShareAlt } from 'react-icons/ai';
-import { FiFile, FiFolder, FiSettings, FiStar, FiTrash } from 'react-icons/fi';
+import {
+  FiFile,
+  FiFolder,
+  FiSettings,
+  FiStar,
+  FiTrash,
+  FiUsers,
+} from 'react-icons/fi';
 
 import SideMenuItem from 'parts/SideMenuItem';
 import { FaTasks } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
+import { ADMIN, MANAGER } from 'constants/constants';
 
 export default function SideMenu() {
-  // dispatch action redux
-  const dispatch = useDispatch();
-
-  const handleClick = () => {
-    dispatch(removeLocation());
-    dispatch(resetCurrentFolder());
-  };
+  const user = useSelector((state) => state.user);
 
   return (
     <div className='p-3 sm:w-[80px] lg:w-2/12 bg-white border-r border-gray-300 border-solid sticky top-16'>
-      <SideMenuItem
-        onClick={handleClick}
-        to=''
-        className='cursor-pointer flex items-center p-2 pl-4 my-2 rounded-md hover:bg-[#EFF1FF] duration-200'
-      >
+      <SideMenuItem to=''>
         <div className='text-[#8094AE] text-xl font-bold mr-4'>
           <AiOutlineHome />
         </div>
@@ -34,11 +28,7 @@ export default function SideMenu() {
         </div>
       </SideMenuItem>
 
-      <SideMenuItem
-        onClick={handleClick}
-        to='files'
-        className='cursor-pointer flex items-center p-2 pl-4 my-2 rounded-md hover:bg-[#EFF1FF] duration-200'
-      >
+      <SideMenuItem to='files'>
         <div className='text-[#8094AE] text-xl font-bold mr-4'>
           <FiFile />
         </div>
@@ -48,11 +38,7 @@ export default function SideMenu() {
         </div>
       </SideMenuItem>
 
-      <SideMenuItem
-        onClick={handleClick}
-        to='folders'
-        className='cursor-pointer flex items-center p-2 pl-4 my-2 rounded-md hover:bg-[#EFF1FF] duration-200'
-      >
+      <SideMenuItem to='folders'>
         <div className='text-[#8094AE] text-xl font-bold mr-4'>
           <FiFolder />
         </div>
@@ -62,11 +48,7 @@ export default function SideMenu() {
         </div>
       </SideMenuItem>
 
-      <SideMenuItem
-        onClick={handleClick}
-        to='starred'
-        className='cursor-pointer flex items-center p-2 pl-4 my-2 rounded-md hover:bg-[#EFF1FF] duration-200'
-      >
+      <SideMenuItem to='starred'>
         <div className='text-[#8094AE] text-xl font-bold mr-4'>
           <FiStar />
         </div>
@@ -76,11 +58,7 @@ export default function SideMenu() {
         </div>
       </SideMenuItem>
 
-      <SideMenuItem
-        onClick={handleClick}
-        to='shared'
-        className='cursor-pointer flex items-center p-2 pl-4 my-2 rounded-md hover:bg-[#EFF1FF] duration-200'
-      >
+      <SideMenuItem to='shared'>
         <div className='text-[#8094AE] text-xl font-bold mr-4'>
           <AiOutlineShareAlt />
         </div>
@@ -90,11 +68,7 @@ export default function SideMenu() {
         </div>
       </SideMenuItem>
 
-      <SideMenuItem
-        onClick={handleClick}
-        to='recovery'
-        className='cursor-pointer flex items-center p-2 pl-4 my-2 rounded-md hover:bg-[#EFF1FF] duration-200'
-      >
+      <SideMenuItem to='recovery'>
         <div className='text-[#8094AE] text-xl font-bold mr-4'>
           <FiTrash />
         </div>
@@ -104,11 +78,7 @@ export default function SideMenu() {
         </div>
       </SideMenuItem>
 
-      <SideMenuItem
-        onClick={handleClick}
-        to='require'
-        className='cursor-pointer flex items-center p-2 pl-4 my-2 rounded-md hover:bg-[#EFF1FF] duration-200'
-      >
+      <SideMenuItem to='require'>
         <div className='text-[#8094AE] text-xl font-bold mr-4'>
           <FaTasks />
         </div>
@@ -119,10 +89,19 @@ export default function SideMenu() {
       </SideMenuItem>
 
       <SideMenuItem
-        onClick={handleClick}
-        to='settings'
-        className='cursor-pointer flex items-center p-2 pl-4 my-2 rounded-md hover:bg-[#EFF1FF] duration-200'
+        to='members'
+        show={user.permission === ADMIN || user.permission === MANAGER}
       >
+        <div className='text-[#8094AE] text-xl font-bold mr-4'>
+          <FiUsers />
+        </div>
+
+        <div className='text-[#526484] text-md font-medium hidden lg:block'>
+          Members
+        </div>
+      </SideMenuItem>
+
+      <SideMenuItem to='settings'>
         <div className='text-[#8094AE] text-xl font-bold mr-4'>
           <FiSettings />
         </div>

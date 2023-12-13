@@ -1,19 +1,22 @@
 import React, { Suspense, useEffect } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { loadUser } from 'redux/slices/user';
 
 import ErrorBoundary from './pages/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
-import RestrictedRoute from './utils/RestrictedRoute';
-
 import TokenExpired from 'pages/tokenExpired';
-import { useDispatch } from 'react-redux';
-import { loadUser } from 'redux/slices/user';
-import PrivateRoute from 'utils/PrivateRoute';
+import RestrictedRoute from './utils/RestrictedRoute';
 import HomePage from './pages';
 import BlankPage from './pages/BlankPage';
 import PageLoading from './parts/PageLoading';
 import StartPage from 'pages/StartPage';
 import SearchPage from 'pages/SearchPage';
+
+import PrivateRoute from 'utils/PrivateRoute';
+
+import { ADMIN, MANAGER } from 'constants/constants';
 
 const Files = React.lazy(() => import('./pages/files'));
 const Folders = React.lazy(() => import('./pages/folders'));
@@ -23,6 +26,7 @@ const Settings = React.lazy(() => import('./pages/settings'));
 const Starred = React.lazy(() => import('./pages/starred'));
 const Shared = React.lazy(() => import('./pages/shared'));
 const Require = React.lazy(() => import('./pages/require'));
+const Members = React.lazy(() => import('./pages/members'));
 
 const MyFolder = React.lazy(() => import('./pages/folders/my-folder'));
 const DetailFolder = React.lazy(() => import('./pages/folders/detail-folder'));
@@ -30,6 +34,8 @@ const DetailFolder = React.lazy(() => import('./pages/folders/detail-folder'));
 function App() {
   const dispatch = useDispatch();
   const location = useLocation();
+
+  const user = useSelector((state) => state.user);
 
   const [appLoading, setAppLoading] = React.useState(true);
 
@@ -145,6 +151,24 @@ function App() {
             </Route>
             <Route element={<RestrictedRoute />}>
               <Route path='search' element={<SearchPage />} />
+            </Route>
+            <Route
+              element={
+                <RestrictedRoute
+                  show={
+                    user.permission === ADMIN || user.permission === MANAGER
+                  }
+                />
+              }
+            >
+              <Route
+                path='members'
+                element={
+                  <Suspense fallback={<PageLoading />}>
+                    <Members />
+                  </Suspense>
+                }
+              />
             </Route>
           </Route>
         </Route>

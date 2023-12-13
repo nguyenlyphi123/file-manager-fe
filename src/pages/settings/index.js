@@ -10,11 +10,11 @@ export default function Settings() {
         value: 'account',
         component: <AccountSetting />,
       },
-      {
-        label: 'Change Password',
-        value: 'password',
-        component: <AccountSetting />,
-      },
+      // {
+      //   label: 'Change Password',
+      //   value: 'password',
+      //   component: <AccountSetting />,
+      // },
     ],
     [],
   );
