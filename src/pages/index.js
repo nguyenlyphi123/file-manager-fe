@@ -74,18 +74,17 @@ export default function Home() {
 
   // connect to socket
   useEffect(() => {
-    socket.on('connect', () => {
+    socket.emit('setup', user);
+
+    socket.on('connected', () => {
       console.log('Socket Connected With ID: ', socket.id);
     });
-
-    socket.emit('setup', user);
 
     socket.on('receive-message', () => {
       dispatch(getUnseenMessages());
     });
 
     socket.on('receive-require', (data) => {
-      console.log(data);
       dispatch(getNewRequire());
     });
 
