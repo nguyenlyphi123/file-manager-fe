@@ -53,6 +53,7 @@ const ChatList = memo(({ handleOpenNewGroupChat }) => {
       return createSingleChat({ member: data });
     },
     onSuccess: (res) => {
+      console.log(res);
       queryClient.invalidateQueries(['chats']);
       setSearch('');
       setSearchInput('');

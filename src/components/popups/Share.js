@@ -555,7 +555,7 @@ export const Share = ({ handleClose, data, open }) => {
         <div className='border-b'>
           <div className='flex justify-between items-center py-4 px-8'>
             <div className='flex items-center'>
-              <FileIconHelper className='mr-4 text-3xl' />
+              <FileIconHelper className='mr-4 text-3xl' type={data.type} />
               <p className='text-[0.9em] text-gray-700 font-medium'>
                 {data.name}
               </p>
@@ -665,7 +665,7 @@ export const Share = ({ handleClose, data, open }) => {
             memberData={memberSelected}
           />
 
-          {isAuthor(user.id, data.author) && memberSelected?.length > 0 && (
+          {isAuthor(user.id, data.author._id) && memberSelected?.length > 0 && (
             <div className='mt-5'>
               <p className='text-sm text-gray-600 font-semibold'>Permission</p>
               <FormGroup

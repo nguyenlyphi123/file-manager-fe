@@ -27,7 +27,7 @@ export default function Files() {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: ['folders', { sortKey }],
+    queryKey: ['files', { sortKey }],
     queryFn: async ({ pageParam, queryKey }) => {
       return await getFileList({
         page: pageParam,

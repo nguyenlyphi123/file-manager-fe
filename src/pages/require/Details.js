@@ -340,6 +340,7 @@ function Details({ open, handleClose, data }) {
                                 height={25}
                                 width={25}
                                 text={mem?.info?.name}
+                                image={mem?.info?.image}
                               />
                             }
                             label={mem.info.name}
@@ -415,6 +416,7 @@ function Details({ open, handleClose, data }) {
                                   height={25}
                                   width={25}
                                   text={mem?.info?.name}
+                                  image={mem?.info?.image}
                                 />
                                 <Typography
                                   variant='p'

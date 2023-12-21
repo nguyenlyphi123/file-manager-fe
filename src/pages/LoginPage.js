@@ -108,7 +108,7 @@ export default function LoginPage() {
               Login
             </div>
 
-            <div className='px-6 mt-10'>
+            <div className='lg:px-6 md:px-3 mt-10'>
               {isAlert ? (
                 isSuccess ? (
                   ''
@@ -159,6 +159,8 @@ export default function LoginPage() {
                 onClick={() => handleLoginSubmit(loginData)}
                 loading={isLoading}
                 loadingIndicator={<ImSpinner className='animate-spin' />}
+                sx={{ width: '300px' }}
+                // className='lg:w-[40%] md:w-[50%] sm:w-[60%]'
               >
                 Login
               </LoadingButton>
