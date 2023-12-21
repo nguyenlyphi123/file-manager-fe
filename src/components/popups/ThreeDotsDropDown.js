@@ -15,6 +15,7 @@ import {
   MOVE,
   RENAME,
   SHARE,
+  UNSHARE,
 } from 'constants/option';
 import { useState } from 'react';
 import {
@@ -30,6 +31,7 @@ import {
   BsTrash,
   BsPinAngleFill,
 } from 'react-icons/bs';
+import { TbShareOff } from 'react-icons/tb';
 import { useSelector } from 'react-redux';
 import { pinFolder } from 'services/folderController';
 import { hasFFPermission, isAuthor, isOwner } from 'utils/helpers/Helper';
@@ -78,8 +80,6 @@ export const ThreeDotsDropdown = ({
   // handle pin
   const handlePin = useMutation({
     mutationFn: ({ folderId, quickAccess }) => {
-      console.log(data.quickAccess);
-      console.log(folderId, quickAccess);
       return pinFolder({ folderId, quickAccess });
     },
     onSuccess: () => {
@@ -195,6 +195,24 @@ export const ThreeDotsDropdown = ({
             <AiOutlineShareAlt className='mr-4 text-xl text-blue-300 group-hover/drop-items:text-blue-400' />
             <p className='text-gray-500 text-[0.9em] font-medium group-hover/drop-items:text-gray-600'>
               Share
+            </p>
+          </ThreeDotsDropdownItem>
+
+          <ThreeDotsDropdownItem
+            option={UNSHARE}
+            onClick={handleSelectOption}
+            show={
+              hasFFPermission(
+                data.permission,
+                PERMISSION_EDIT,
+                isAuthor(user.id, data.author?._id),
+                isOwner(user.id, data.owner?._id),
+              ) && data.sharedTo?.length > 0
+            }
+          >
+            <TbShareOff className='mr-4 text-xl text-blue-300 group-hover/drop-items:text-blue-400' />
+            <p className='text-gray-500 text-[0.9em] font-medium group-hover/drop-items:text-gray-600'>
+              Unshare
             </p>
           </ThreeDotsDropdownItem>
 

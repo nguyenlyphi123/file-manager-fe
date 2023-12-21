@@ -17,7 +17,9 @@ import {
   MOVE,
   RENAME,
   SHARE,
+  UNSHARE,
 } from 'constants/option';
+import UnShareConfirm from 'components/popups/UnShareConfirm';
 
 export default function OptionHelper({
   type,
@@ -33,6 +35,11 @@ export default function OptionHelper({
 
     case SHARE:
       return <Share handleClose={handleClose} data={data} open={open} />;
+
+    case UNSHARE:
+      return (
+        <UnShareConfirm handleClose={handleClose} data={data} open={open} />
+      );
 
     case COPY:
       return <Copy handleClose={handleClose} data={data} open={open} />;

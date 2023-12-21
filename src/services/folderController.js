@@ -235,9 +235,29 @@ export const shareFolder = async ({ emails, folderId, permissions }) => {
   }
 };
 
+export const unShareFolder = async ({ id }) => {
+  try {
+    const res = await axiosPrivate.put(`/folder/unshare/${id}`);
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getSharedFolder = async () => {
   try {
     const res = await axiosPrivate.get(`/folder/shared`);
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getSharedFolderByMe = async () => {
+  try {
+    const res = await axiosPrivate.get(`/folder/sharedByMe`);
 
     return res.data;
   } catch (error) {

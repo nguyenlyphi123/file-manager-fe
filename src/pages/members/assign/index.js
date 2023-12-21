@@ -6,7 +6,7 @@ import {
   Paper,
   Typography,
 } from '@mui/material';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import CustomAvatar from 'components/CustomAvatar';
 import OverlayLoading from 'components/OverlayLoading';
 import ErrorToast from 'components/toasts/ErrorToast';
@@ -21,6 +21,8 @@ import { getMajors } from 'services/majorController';
 import { getSpecializationByMajor } from 'services/specializationController';
 
 function AssignMember({ member, handleClose }) {
+  const queryClient = useQueryClient();
+
   const [selected, setSelected] = useState({
     major: undefined,
     specialization: undefined,
@@ -109,6 +111,7 @@ function AssignMember({ member, handleClose }) {
     },
     onSuccess: () => {
       handleClose();
+      queryClient.invalidateQueries(['members']);
       SuccessToast('Member assigned successfully');
     },
     onError: (error) => {

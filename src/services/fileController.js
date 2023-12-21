@@ -204,7 +204,7 @@ export const downloadFile = async ({ data }) => {
 
 export const getStarredFile = async () => {
   try {
-    const res = await axiosPrivate.get(`/file/star`);
+    const res = await axiosPrivate.get(`/file/starred`);
 
     return res.data;
   } catch (error) {
@@ -225,9 +225,29 @@ export const shareFile = async ({ emails, fileId }) => {
   }
 };
 
+export const unShareFile = async ({ id }) => {
+  try {
+    const res = await axiosPrivate.put(`/file/unshare/${id}`);
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getSharedFile = async () => {
   try {
     const res = await axiosPrivate.get(`/file/shared`);
+
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getSharedFileByMe = async () => {
+  try {
+    const res = await axiosPrivate.get(`/file/sharedByMe`);
 
     return res.data;
   } catch (error) {
