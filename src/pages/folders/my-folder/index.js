@@ -1,18 +1,16 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useInView } from 'react-intersection-observer';
+import { useDispatch } from 'react-redux';
 
 import { setCurrentFolder } from 'redux/slices/curentFolder';
 import { pushLocation, removeLocation } from 'redux/slices/location';
-import { getFolderList } from 'services/folderController';
 
+import { useFoldersInfiniteQuery } from 'apis/folder.api';
 import EmptyData from 'components/EmptyData';
 import Sort from 'components/Sort';
 import LargeCard from 'components/cards/LargeCard';
-import Loading from 'parts/Loading';
-import { useMemo } from 'react';
 import { FOLDER_LIMIT_PER_PAGE } from 'constants/constants';
+import Loading from 'parts/Loading';
 
 export default function MyFolder() {
   // dispatch action redux
@@ -48,36 +46,15 @@ export default function MyFolder() {
     isFetching: folderFetching,
     hasNextPage,
     fetchNextPage,
-  } = useInfiniteQuery({
-    queryKey: ['folders', { sortKey }],
-    queryFn: async ({ pageParam, queryKey }) => {
-      return await getFolderList({
-        page: pageParam,
-        sortKey: queryKey[1].sortKey,
-      });
-    },
-    getNextPageParam: (lastPage, pages) => {
-      const nextPage = pages?.length + 1;
-      return lastPage.data?.length !== 0 ? nextPage : undefined;
-    },
-    retry: 3,
-    refetchOnWindowFocus: false,
-  });
-
-  const folderList = useMemo(() => {
-    if (folders?.pages) {
-      return folders.pages.map((page) => page.data).flat();
-    }
-    return [];
-  }, [folders]);
+  } = useFoldersInfiniteQuery({ sortKey });
 
   useEffect(() => {
-    if (inView && hasNextPage && folderList?.length >= FOLDER_LIMIT_PER_PAGE) {
+    if (inView && hasNextPage && folders?.length >= FOLDER_LIMIT_PER_PAGE) {
       fetchNextPage();
     }
-  }, [inView, hasNextPage, fetchNextPage, folderList]);
+  }, [inView, hasNextPage, fetchNextPage, folders]);
 
-  if (folderList.length === 0 && !folderFetching)
+  if (folders.length === 0 && !folderFetching)
     return <EmptyData message='There are no folders yet' />;
 
   if (folderLoading) return <Loading />;
@@ -88,8 +65,8 @@ export default function MyFolder() {
         <Sort onSort={handleSort} />
       </div>
       <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4'>
-        {folderList &&
-          folderList?.map((folder) => {
+        {folders.length > 0 &&
+          folders?.map((folder) => {
             return (
               <LargeCard
                 onClick={handleCardSelect}

@@ -62,10 +62,7 @@ function MemberDetails({ data }) {
               <div className='text-black text-opacity-80 m-2 flex justify-center'>
                 <Chip
                   label={information?.data?.major?.name}
-                  color={
-                    renderPermission[information?.data?.account_id?.permission]
-                      ?.color
-                  }
+                  color={renderPermission[information?.data?.permission]?.color}
                 />
               </div>
             </>

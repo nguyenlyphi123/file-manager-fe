@@ -1,13 +1,21 @@
 import { useSelector } from 'react-redux';
 import { Outlet } from 'react-router-dom';
 
-import { locationSelector } from 'redux/slices/location';
+import { locationSelector, pushTab } from 'redux/slices/location';
 
 import { CustomedBreadcrumbs } from 'components/Breadcrumbs';
+import { useDispatch } from 'react-redux';
+import { useEffect } from 'react';
 
 export default function Folders() {
   // redux
+  const dispatch = useDispatch();
+
   const folderLocation = useSelector(locationSelector);
+
+  useEffect(() => {
+    dispatch(pushTab('folders'));
+  }, [dispatch]);
 
   return (
     <>

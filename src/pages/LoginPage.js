@@ -99,7 +99,7 @@ export default function LoginPage() {
   return (
     <div>
       <div className='w-screen h-screen flex items-center justify-center'>
-        <div className='border rounded-md bg-white flex justify-between flex-col lg:w-[40%] md:w-[50%] sm:w-[60%] py-12 px-8'>
+        <div className='border rounded-md bg-white flex justify-between flex-col lg:w-[40%] md:w-[50%] sm:w-[60%] py-12 px-3'>
           <div>
             <div className='text-3xl text-center tracking-wider'>
               Welcome to BanaFile
@@ -153,13 +153,14 @@ export default function LoginPage() {
           </div>
 
           <div className='flex flex-col justify-center w-full mt-[100px]'>
-            <div className='flex justify-center'>
+            <div className='flex justify-center lg:px-6 md:px-3'>
               <LoadingButton
                 variant='contained'
                 onClick={() => handleLoginSubmit(loginData)}
                 loading={isLoading}
                 loadingIndicator={<ImSpinner className='animate-spin' />}
-                sx={{ width: '300px' }}
+                sx={{ width: '100%' }}
+                size='large'
                 // className='lg:w-[40%] md:w-[50%] sm:w-[60%]'
               >
                 Login
@@ -168,9 +169,9 @@ export default function LoginPage() {
 
             <Divider sx={{ m: 3, color: 'GrayText' }}>Or</Divider>
 
-            <div className='flex justify-center'>
+            <div className='flex justify-center lg:px-6 md:px-3'>
               <button
-                className='px-4 py-2 min-w-[300px] flex justify-center items-center border gap-2 border-slate-200 rounded-lg text-slate-700 hover:border-slate-400 hover:text-slate-900 hover:shadow transition duration-150'
+                className='px-4 py-2 w-full flex justify-center items-center border gap-2 border-slate-200 rounded-lg text-slate-700 hover:border-slate-400 hover:text-slate-900 hover:shadow transition duration-150'
                 onClick={handleGoogleLogin}
               >
                 <FcGoogle className='text-2xl' />

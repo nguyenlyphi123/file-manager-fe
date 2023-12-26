@@ -6,6 +6,7 @@ import {
   DialogTitle,
 } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { RQK_FOLDER, RQK_FOLDERS } from 'apis/folder.api';
 import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
 import { memo } from 'react';
@@ -52,8 +53,8 @@ const DeleteConfirm = ({ open, handleClose, data }) => {
 
         return;
       }
-      queryClient.invalidateQueries(['folders']);
-      queryClient.invalidateQueries(['folder']);
+      queryClient.invalidateQueries([RQK_FOLDERS]);
+      queryClient.invalidateQueries([RQK_FOLDER]);
       queryClient.invalidateQueries(['folder-shared']);
     },
     onError: (err) => {

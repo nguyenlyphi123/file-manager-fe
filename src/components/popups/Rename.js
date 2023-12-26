@@ -1,5 +1,6 @@
 import { Box, Modal } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { RQK_FOLDER, RQK_FOLDERS } from 'apis/folder.api';
 import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
 import { useState } from 'react';
@@ -14,6 +15,7 @@ export const Rename = ({ handleClose, data, open }) => {
   const [destName, setDestName] = useState();
 
   // dispatch
+
   const renameMutation = data.type ? renameFile : renameFolder;
   const handleSubmit = useMutation({
     mutationFn: () => {
@@ -37,8 +39,8 @@ export const Rename = ({ handleClose, data, open }) => {
         queryClient.invalidateQueries(['file']);
         queryClient.invalidateQueries(['file-shared']);
       }
-      queryClient.invalidateQueries(['folders']);
-      queryClient.invalidateQueries(['folder']);
+      queryClient.invalidateQueries([RQK_FOLDERS]);
+      queryClient.invalidateQueries([RQK_FOLDER]);
       queryClient.invalidateQueries(['folder-shared']);
     },
     onError: (err) => {

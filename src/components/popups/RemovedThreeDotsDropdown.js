@@ -1,5 +1,7 @@
 import { IconButton, Menu, MenuItem } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { RQK_REMOVED_FILES } from 'apis/file.api';
+import { RQK_REMOVED_FOLDERS } from 'apis/folder.api';
 import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
 import { useState } from 'react';
@@ -32,8 +34,8 @@ export const RemovedThreeDotsDropdown = ({ className, data }) => {
           data.type ? 'File' : 'Folder'
         } has been restored successfully`,
       });
-      queryClient.invalidateQueries(['folder-recovery']);
-      queryClient.invalidateQueries(['file-recovery']);
+      queryClient.invalidateQueries([RQK_REMOVED_FOLDERS]);
+      queryClient.invalidateQueries([RQK_REMOVED_FILES]);
     },
     onError: () => {
       handleClose();
@@ -55,8 +57,8 @@ export const RemovedThreeDotsDropdown = ({ className, data }) => {
           data.type ? 'File' : 'Folder'
         } has been deleted successfully`,
       });
-      queryClient.invalidateQueries(['folder-recovery']);
-      queryClient.invalidateQueries(['file-recovery']);
+      queryClient.invalidateQueries([RQK_REMOVED_FOLDERS]);
+      queryClient.invalidateQueries([RQK_REMOVED_FILES]);
     },
     onError: () => {
       handleClose();

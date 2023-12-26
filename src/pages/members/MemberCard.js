@@ -1,17 +1,34 @@
+import { Paper, Typography, Button } from '@mui/material';
+
+import { GrUserAdmin } from 'react-icons/gr';
+
 import ModalButton from 'components/ModalButton';
 import AssignMember from './assign';
 import MemberDetails from './details';
 import MemberRole from './role';
+import { LECTURERS, PUPIL } from 'constants/constants';
 
-const { Paper, Typography, Button } = require('@mui/material');
-const { default: CustomAvatar } = require('components/CustomAvatar');
+import CustomAvatar from 'components/CustomAvatar';
+import MoveMember from './move';
 
-const MemberCard = ({ data, assign = false, role = false }) => {
+const MemberCard = ({
+  data,
+  assign = false,
+  assignRole = false,
+  move = false,
+  role = PUPIL,
+}) => {
   return (
     <Paper
       variant='outlined'
-      className='w-full p-2 px-6 flex flex-col justify-center items-center'
+      className='w-full p-2 px-6 flex flex-col justify-center items-center relative'
     >
+      {role === LECTURERS && (
+        <div className='absolute top-3 right-3'>
+          <GrUserAdmin className='text-xl text-red-500' />
+        </div>
+      )}
+
       <CustomAvatar
         width={50}
         height={50}
@@ -74,7 +91,7 @@ const MemberCard = ({ data, assign = false, role = false }) => {
         </ModalButton>
       )}
 
-      {role && (
+      {assignRole && (
         <ModalButton
           trigger={
             <Button
@@ -89,6 +106,25 @@ const MemberCard = ({ data, assign = false, role = false }) => {
         >
           {(handleClose) => (
             <MemberRole member={data} handleClose={handleClose} />
+          )}
+        </ModalButton>
+      )}
+
+      {move && (
+        <ModalButton
+          trigger={
+            <Button
+              variant='outlined'
+              size='small'
+              sx={{ textTransform: 'none', width: '100%', mt: 1 }}
+              color='error'
+            >
+              Move
+            </Button>
+          }
+        >
+          {(handleClose) => (
+            <MoveMember member={data} handleClose={handleClose} />
           )}
         </ModalButton>
       )}

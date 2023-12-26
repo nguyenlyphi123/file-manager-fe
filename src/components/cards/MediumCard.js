@@ -20,6 +20,8 @@ import ErrorToast from 'components/toasts/ErrorToast';
 import { ThreeDotsDropdown } from 'components/popups/ModelPopups';
 
 import { Tooltip } from '@mui/material';
+import { RQK_FOLDER, RQK_FOLDERS } from 'apis/folder.api';
+import { RQK_FILES } from 'apis/file.api';
 
 export default function MediumCard({ data, onClick, isFolder = true }) {
   const queryClient = useQueryClient();
@@ -64,13 +66,14 @@ export default function MediumCard({ data, onClick, isFolder = true }) {
           isFolder ? 'Folder' : 'File'
         } has been starred successfully`,
       });
+
       if (isFolder) {
-        queryClient.invalidateQueries(['folders']);
-        queryClient.invalidateQueries(['folder']);
-        return;
+        queryClient.invalidateQueries([RQK_FOLDER]);
+        // queryClient.invalidateQueries([RQK_FOLDER]);
+      } else {
+        queryClient.invalidateQueries([RQK_FILES]);
+        // queryClient.invalidateQueries(['file']);
       }
-      queryClient.invalidateQueries(['files']);
-      queryClient.invalidateQueries(['file']);
     },
     onError: () => {
       ErrorToast({
@@ -88,12 +91,12 @@ export default function MediumCard({ data, onClick, isFolder = true }) {
         } has been unstarred successfully`,
       });
       if (isFolder) {
-        queryClient.invalidateQueries(['folders']);
-        queryClient.invalidateQueries(['folder']);
+        queryClient.invalidateQueries([RQK_FOLDERS]);
+        // queryClient.invalidateQueries([RQK_FOLDER]);
         return;
       }
-      queryClient.invalidateQueries(['files']);
-      queryClient.invalidateQueries(['file']);
+      queryClient.invalidateQueries([RQK_FILES]);
+      // queryClient.invalidateQueries('file');
     },
     onError: () => {
       ErrorToast({

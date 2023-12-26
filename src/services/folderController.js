@@ -27,12 +27,12 @@ export const createQuickAccessFolder = async ({ name, parent_folder }) => {
   }
 };
 
-export const getFolderList = async ({ limit, page, sortKey }) => {
+export const getFolderList = async ({ limit = 50, page = 1, sortKey }) => {
   try {
     const res = await axiosPrivate.get(
-      `/folder?limit=${limit || FOLDER_LIMIT_PER_PAGE}&page=${
-        page || 1
-      }&sortKey=${sortKey || 'lastOpened'}`,
+      `/folder?limit=${limit || FOLDER_LIMIT_PER_PAGE}&page=${page}&sortKey=${
+        sortKey || 'lastOpened'
+      }`,
     );
 
     return res.data;
@@ -41,10 +41,10 @@ export const getFolderList = async ({ limit, page, sortKey }) => {
   }
 };
 
-export const getQuickAccessFolder = async ({ page }) => {
+export const getQuickAccessFolder = async ({ page = 1 }) => {
   try {
     const res = await axiosPrivate.get(
-      `/folder/quick-access?limit=${FOLDER_LIMIT_PER_PAGE}&page=${page || 1}`,
+      `/folder/quick-access?limit=${FOLDER_LIMIT_PER_PAGE}&page=${page}`,
     );
 
     return res.data;

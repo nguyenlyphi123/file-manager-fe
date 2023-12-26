@@ -1,17 +1,14 @@
 import { Checkbox } from '@mui/material';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useMemo, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import { BsTrash } from 'react-icons/bs';
 import { ImSpinner } from 'react-icons/im';
 import { Link } from 'react-router-dom';
 
 import Loading from 'parts/Loading';
 
-import {
-  getStarredFolder,
-  unstarListOfFolder,
-} from 'services/folderController';
-import { getStarredFile, unstarMultipleFile } from 'services/fileController';
+import { unstarMultipleFile } from 'services/fileController';
+import { unstarListOfFolder } from 'services/folderController';
 
 import FileIconHelper from 'utils/helpers/FileIconHelper';
 import {
@@ -19,6 +16,8 @@ import {
   convertBytesToReadableSize,
 } from 'utils/helpers/TypographyHelper';
 
+import { RQK_STARRED_FILES, useStarredFileQuery } from 'apis/file.api';
+import { RQK_STARRED_FOLDERS, useStarredFolderQuery } from 'apis/folder.api';
 import EmptyData from 'components/EmptyData';
 import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
@@ -26,19 +25,9 @@ import SuccessToast from 'components/toasts/SuccessToast';
 export default function Starred() {
   const queryClient = useQueryClient();
   // fetch data
-  const { data: folders, isLoading: folderLoading } = useQuery({
-    queryKey: ['folder-starred'],
-    queryFn: async () => await getStarredFolder(),
-    retry: 3,
-    refetchOnWindowFocus: false,
-  });
+  const { data: folders, isLoading: folderLoading } = useStarredFolderQuery();
 
-  const { data: files, isLoading: fileLoading } = useQuery({
-    queryKey: ['file-starred'],
-    queryFn: async () => await getStarredFile(),
-    retry: 3,
-    refetchOnWindowFocus: false,
-  });
+  const { data: files, isLoading: fileLoading } = useStarredFileQuery();
 
   const handleUnStar = useMutation({
     mutationFn: () => {
@@ -63,8 +52,8 @@ export default function Starred() {
     },
     onSuccess: () => {
       SuccessToast({ message: 'Items have been deleted successfully' });
-      queryClient.invalidateQueries('folder-starred');
-      queryClient.invalidateQueries('file-starred');
+      queryClient.invalidateQueries(RQK_STARRED_FOLDERS);
+      queryClient.invalidateQueries(RQK_STARRED_FILES);
       setCheckedListItem([]);
     },
     onError: () => {

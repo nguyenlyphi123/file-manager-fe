@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { RQK_FOLDERS, useFoldersInfiniteQuery } from 'apis/folder.api';
 import OverlayLoading from 'components/OverlayLoading';
 import SmallFolderCard from 'components/cards/SmallFolderCard';
 import ErrorToast from 'components/toasts/ErrorToast';
@@ -38,7 +39,7 @@ import { AiOutlineClose } from 'react-icons/ai';
 import { BiUpArrow } from 'react-icons/bi';
 import { ImSpinner } from 'react-icons/im';
 import { useSelector } from 'react-redux';
-import { getFolderDetail, getFolderList } from 'services/folderController';
+import { getFolderDetail } from 'services/folderController';
 import { createRequire, updateRequire } from 'services/requireController';
 import { searchUser } from 'services/userController';
 import ShareRenderHelper from 'utils/helpers/ShareRenderHelper';
@@ -282,17 +283,8 @@ const DesAndMem = memo(
 
     const [selectedFolder, setSelectedFolder] = useState([]);
 
-    const { data: folders, isLoading: folderLoading } = useQuery({
-      queryKey: ['folders'],
-      queryFn: async () =>
-        await getFolderList({
-          limit: 50,
-          page: 1,
-        }),
-      retry: 3,
-      retryDelay: 3000,
-      refetchOnWindowFocus: false,
-    });
+    const { data: folders, isLoading: folderLoading } =
+      useFoldersInfiniteQuery();
 
     const { data: folderDetail, isLoading: folderDetailLoading } = useQuery({
       queryKey: [
@@ -339,7 +331,7 @@ const DesAndMem = memo(
         return newSelectedFolder;
       });
       if (selectedFolder.length === 1) {
-        queryClient.invalidateQueries(['folders']);
+        queryClient.invalidateQueries([RQK_FOLDERS]);
       }
     };
 
@@ -495,7 +487,7 @@ const DesAndMem = memo(
                 ) : (
                   <Grid container spacing={1} flexWrap='wrap'>
                     {selectedFolder.length === 0 &&
-                      folders?.data?.map((folder) => (
+                      folders?.map((folder) => (
                         <Grid item xs={12} sm={6} md={4} key={folder._id}>
                           <SmallFolderCard
                             key={folder._id}

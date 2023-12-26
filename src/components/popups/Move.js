@@ -1,5 +1,6 @@
 import { Box, Modal } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { RQK_FOLDER, RQK_FOLDERS } from 'apis/folder.api';
 import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
 import Loading from 'parts/Loading';
@@ -107,8 +108,8 @@ export const Move = ({ handleClose, data, open }) => {
         queryClient.invalidateQueries(['file']);
         queryClient.invalidateQueries(['files']);
       }
-      queryClient.invalidateQueries(['folder']);
-      queryClient.invalidateQueries(['folders']);
+      queryClient.invalidateQueries([RQK_FOLDER]);
+      queryClient.invalidateQueries([RQK_FOLDERS]);
     },
     onError: () =>
       ErrorToast({

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { AiOutlinePlusCircle } from 'react-icons/ai';
 import { useDispatch } from 'react-redux';
 
@@ -9,12 +9,13 @@ import { setCurrentFolder } from 'redux/slices/curentFolder';
 import { pushLocation } from 'redux/slices/location';
 
 import { getFileList } from 'services/fileController';
-import { getFolderList, getQuickAccessFolder } from 'services/folderController';
+import { getQuickAccessFolder } from 'services/folderController';
 
+import { useFoldersInfiniteQuery } from 'apis/folder.api';
+import Sort from 'components/Sort';
 import LargeCard from 'components/cards/LargeCard';
 import MediumCard from 'components/cards/MediumCard';
 import { NewFolder, UploadFile } from 'components/popups/ModelPopups';
-import Sort from 'components/Sort';
 import { Link } from 'react-router-dom';
 
 export default function Home() {
@@ -37,12 +38,9 @@ export default function Home() {
   });
 
   // fetch folder data
-  const { data: folders, isLoading: folderLoading } = useQuery({
-    queryKey: ['folders', { sortKey }],
-    queryFn: async ({ queryKey }) => {
-      return await getFolderList({ page: 1, sortKey: queryKey[1].sortKey });
-    },
-    refetchOnWindowFocus: false,
+  const { data: folders, isLoading: folderLoading } = useFoldersInfiniteQuery({
+    sortKey,
+    limit: 20,
   });
 
   // fetch file data
@@ -128,7 +126,7 @@ export default function Home() {
                     Folder
                   </Link>
                   <div className='grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 gap-4 mt-3'>
-                    {folders?.data?.map((folder) => {
+                    {folders?.map((folder) => {
                       return (
                         <MediumCard
                           onClick={handleCardSelect}

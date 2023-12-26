@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Checkbox, DatePicker } from 'rsuite';
 import FileIconHelper from '../../utils/helpers/FileIconHelper';
 
 import { Tooltip } from '@mui/material';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BsTrash } from 'react-icons/bs';
 import { TfiReload } from 'react-icons/tfi';
 import 'rsuite/dist/rsuite-no-reset.min.css';
@@ -13,12 +13,10 @@ import Loading from 'parts/Loading';
 
 import {
   deleteMultipleFile,
-  getRemovedFile,
   restoreMultipleFile,
 } from 'services/fileController';
 import {
   deleteMultipleFolder,
-  getRemovedFolder,
   restoreMultipleFolder,
 } from 'services/folderController';
 
@@ -28,6 +26,8 @@ import {
   convertBytesToReadableSize,
 } from 'utils/helpers/TypographyHelper';
 
+import { RQK_REMOVED_FILES, useRemovedFileQuery } from 'apis/file.api';
+import { RQK_REMOVED_FOLDERS, useRemovedFolderQuery } from 'apis/folder.api';
 import EmptyData from 'components/EmptyData';
 import { RemovedThreeDotsDropdown } from 'components/popups/ModelPopups';
 import ErrorToast from 'components/toasts/ErrorToast';
@@ -36,19 +36,9 @@ import SuccessToast from 'components/toasts/SuccessToast';
 export default function Recovery() {
   const queryClient = useQueryClient();
 
-  const { data: folders, isLoading: folderLoading } = useQuery({
-    queryKey: ['folder-recovery'],
-    queryFn: () => getRemovedFolder(),
-    retry: 3,
-    refetchOnWindowFocus: false,
-  });
+  const { data: folders, isLoading: folderLoading } = useRemovedFolderQuery();
 
-  const { data: files, isLoading: fileLoading } = useQuery({
-    queryKey: ['file-recovery'],
-    queryFn: () => getRemovedFile(),
-    retry: 3,
-    refetchOnWindowFocus: false,
-  });
+  const { data: files, isLoading: fileLoading } = useRemovedFileQuery();
 
   const isItems = useMemo(() => {
     return folders?.data?.length > 0 || files?.data?.length > 0
@@ -117,8 +107,8 @@ export default function Recovery() {
     },
     onSuccess: () => {
       SuccessToast({ message: 'Items have been recovered successfully' });
-      queryClient.invalidateQueries('folder-recovery');
-      queryClient.invalidateQueries('file-recovery');
+      queryClient.invalidateQueries(RQK_REMOVED_FOLDERS);
+      queryClient.invalidateQueries(RQK_REMOVED_FILES);
       setCheckedListItem([]);
     },
     onError: () => {
@@ -140,8 +130,8 @@ export default function Recovery() {
     },
     onSuccess: () => {
       SuccessToast({ message: 'Items have been deleted successfully' });
-      queryClient.invalidateQueries('folder-recovery');
-      queryClient.invalidateQueries('file-recovery');
+      queryClient.invalidateQueries(RQK_REMOVED_FOLDERS);
+      queryClient.invalidateQueries(RQK_REMOVED_FILES);
       setCheckedListItem([]);
     },
     onError: () => {

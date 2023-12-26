@@ -1,7 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 
 import Loading from 'parts/Loading';
 
@@ -10,15 +9,13 @@ import MediumCard from 'components/cards/MediumCard';
 import { setCurrentFolder } from 'redux/slices/curentFolder';
 import { pushLocation } from 'redux/slices/location';
 
+import { useFileQuery } from 'apis/file.api';
+import { useFolderQuery } from 'apis/folder.api';
 import EmptyData from 'components/EmptyData';
 import Sort from 'components/Sort';
-import { getFileByFolder } from 'services/fileController';
-import { getFolderDetail } from 'services/folderController';
 
 export default function DetailFolder() {
   // fetch folder and file data
-  const location = useLocation();
-  const folder = location.state?.folder;
   const { folderId } = useParams();
 
   const [sortKey, setSortKey] = useState('lastOpened');
@@ -31,45 +28,13 @@ export default function DetailFolder() {
     data: folders,
     isLoading: folderLoading,
     isLoadingError: folderErr,
-  } = useQuery({
-    queryKey: ['folder', { id: folderId }],
-    queryFn: async (params) => {
-      const { id } = params.queryKey[1];
-
-      const { data, location } = await getFolderDetail({ id });
-
-      const uniqueLoc = [];
-
-      location.map((loc) => {
-        const found = uniqueLoc.find((item) => item._id === loc._id);
-        if (!found) uniqueLoc.push(loc);
-        return null;
-      });
-
-      if (uniqueLoc.length > 0) {
-        uniqueLoc.map((loc) =>
-          dispatch(pushLocation({ ...loc, href: `/folders/${loc._id}` })),
-        );
-      }
-
-      return {
-        data,
-      };
-    },
-    refetchOnWindowFocus: false,
-    retry: 0,
-  });
+  } = useFolderQuery(folderId);
 
   const {
     data: files,
     isLoading: fileLoading,
     isLoadingError: fileErr,
-  } = useQuery({
-    queryKey: ['file', { id: folderId }],
-    queryFn: () => getFileByFolder({ id: folderId }),
-    refetchOnWindowFocus: false,
-    retry: 0,
-  });
+  } = useFileQuery(folderId);
 
   // dispatch action redux
   const dispatch = useDispatch();
@@ -85,18 +50,24 @@ export default function DetailFolder() {
   };
 
   useEffect(() => {
-    !folder &&
-      folders?.location &&
-      folders.location.map((item) =>
-        dispatch(pushLocation({ ...item, href: `/folders/${item._id}` })),
-      );
+    if (folders) {
+      const uniqueLoc = [];
 
-    dispatch(
-      setCurrentFolder(
-        folder ? folder : folders?.location[folders?.location.length - 1],
-      ),
-    );
-  }, [dispatch, folder, folders]);
+      folders.location?.map((loc) => {
+        const found = uniqueLoc.find((item) => item._id === loc._id);
+        if (!found) uniqueLoc.push(loc);
+        return null;
+      });
+
+      if (uniqueLoc.length > 0) {
+        uniqueLoc.map((loc) =>
+          dispatch(pushLocation({ ...loc, href: `/folders/${loc._id}` })),
+        );
+      }
+
+      dispatch(setCurrentFolder(folders.location[folders.location.length - 1]));
+    }
+  }, [dispatch, folders]);
 
   if (folderErr || fileErr) return <Navigate to='/folders' replace />;
 

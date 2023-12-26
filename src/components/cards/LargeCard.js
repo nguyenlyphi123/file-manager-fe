@@ -20,6 +20,8 @@ import ErrorToast from 'components/toasts/ErrorToast';
 import SuccessToast from 'components/toasts/SuccessToast';
 
 import { Tooltip } from '@mui/material';
+import { RQK_FOLDER, RQK_FOLDERS } from 'apis/folder.api';
+import { RQK_FILE, RQK_FILES } from 'apis/file.api';
 
 const LargeCard = ({ data, onClick, isFolder = true }) => {
   const queryClient = useQueryClient();
@@ -59,11 +61,11 @@ const LargeCard = ({ data, onClick, isFolder = true }) => {
         } has been starred successfully`,
       });
       if (isFolder) {
-        queryClient.invalidateQueries(['folders']);
-        queryClient.invalidateQueries(['folder']);
+        queryClient.invalidateQueries([RQK_FOLDERS]);
+        queryClient.invalidateQueries([RQK_FOLDER]);
         return;
       }
-      queryClient.invalidateQueries(['file']);
+      queryClient.invalidateQueries([RQK_FILES]);
       queryClient.invalidateQueries(['files']);
     },
     onError: () => {
@@ -82,12 +84,12 @@ const LargeCard = ({ data, onClick, isFolder = true }) => {
         } has been unstarred successfully`,
       });
       if (isFolder) {
-        queryClient.invalidateQueries(['folders']);
-        queryClient.invalidateQueries(['folder']);
+        queryClient.invalidateQueries([RQK_FOLDERS]);
+        queryClient.invalidateQueries([RQK_FOLDER]);
         return;
       }
-      queryClient.invalidateQueries(['files']);
-      queryClient.invalidateQueries(['file']);
+      queryClient.invalidateQueries([RQK_FILES]);
+      queryClient.invalidateQueries([RQK_FILE]);
     },
     onError: () => {
       ErrorToast({

@@ -26,7 +26,7 @@ export const CustomedBreadcrumbs = ({ location }) => {
           className='text-[20px] font-bold hover:cursor-pointer hover:underline'
           onClick={handleToFolders}
         >
-          {`${location.tab[0].toUpperCase()}${location.tab.slice(1)}`}
+          {`${location.tab?.[0]?.toUpperCase()}${location.tab.slice(1)}`}
         </p>
         {location.items.map((item) => {
           return (
