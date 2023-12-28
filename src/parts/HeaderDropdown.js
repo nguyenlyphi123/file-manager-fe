@@ -5,6 +5,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
+import { useQueryClient } from '@tanstack/react-query';
 import CustomAvatar from 'components/CustomAvatar';
 import * as React from 'react';
 import { MdLogout, MdSettings } from 'react-icons/md';
@@ -14,6 +15,8 @@ import { logOut } from 'redux/slices/user';
 
 export default function HeaderDropdown() {
   const dispatch = useDispatch();
+
+  const queryClient = useQueryClient();
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -31,6 +34,7 @@ export default function HeaderDropdown() {
 
   const handleLogout = () => {
     dispatch(logOut());
+    queryClient.clear();
     navigate('/login', {
       state: { from: { pathname: location }, action: 'LOGOUT' },
       replace: true,
