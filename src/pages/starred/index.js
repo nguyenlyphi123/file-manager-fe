@@ -127,7 +127,7 @@ export default function Starred() {
                       onClick={() => handleUnStar.mutate(checkedListItem)}
                       className={`text-center flex justify-center items-center text-white h-[30px] px-2 bg-red-400  rounded-md cursor-pointer ${'hover:bg-red-500'}`}
                     >
-                      {handleUnStar.isLoading ? (
+                      {handleUnStar.isPending ? (
                         <ImSpinner className='animate-spin' />
                       ) : (
                         <BsTrash />
@@ -206,7 +206,7 @@ export default function Starred() {
                           onClick={() => handleUnStar.mutate(checkedListItem)}
                           className={`text-center flex justify-center items-center text-white h-[30px] px-2 bg-red-400  rounded-md cursor-pointer ${'hover:bg-red-500'}`}
                         >
-                          {handleUnStar.isLoading ? (
+                          {handleUnStar.isPending ? (
                             <ImSpinner className='animate-spin' />
                           ) : (
                             <BsTrash />
@@ -281,7 +281,7 @@ export default function Starred() {
                           onClick={() => handleUnStar.mutate(checkedListItem)}
                           className={`text-center flex justify-center items-center text-white h-[30px] px-2 bg-red-400  rounded-md cursor-pointer ${'hover:bg-red-500'}`}
                         >
-                          {handleUnStar.isLoading ? (
+                          {handleUnStar.isPending ? (
                             <ImSpinner className='animate-spin' />
                           ) : (
                             <BsTrash />

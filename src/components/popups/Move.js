@@ -208,7 +208,7 @@ export const Move = ({ handleClose, data, open }) => {
             onClick={() => handleMove.mutate()}
             className='bg-blue-700/60 min-w-[80px] h-[37px] flex justify-center items-center py-2 px-5 rounded-md text-white text-[0.9em] font-medium cursor-pointer hover:bg-blue-700/80 duration-200'
           >
-            {handleMove.isLoading ? (
+            {handleMove.isPending ? (
               <ImSpinner className='animate-spin' />
             ) : (
               'Move'

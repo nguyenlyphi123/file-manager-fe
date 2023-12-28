@@ -94,7 +94,7 @@ const DeleteConfirm = ({ open, handleClose, data }) => {
           onClick={() => handleDelete.mutate(data)}
           className='bg-blue-600/80 text-white font-medium rounded-md cursor-pointer flex justify-center items-center w-[100px] h-[35px] py-2 ml-2 hover:bg-blue-600 duration-200'
         >
-          {handleDelete.isLoading ? (
+          {handleDelete.isPending ? (
             <ImSpinner className='animate-spin' />
           ) : (
             'Delete'

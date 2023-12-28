@@ -820,7 +820,7 @@ const RequireModal = ({ open, handleClose, data, type = 'create' }) => {
               variant='contained'
               onClick={() => handleSubmit.mutate()}
             >
-              {handleSubmit.isLoading ? (
+              {handleSubmit.isPending ? (
                 <ImSpinner className='animate-spin' />
               ) : (
                 `${data ? 'Update' : 'Create'}`

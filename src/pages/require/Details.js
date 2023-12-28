@@ -586,7 +586,7 @@ function Details({ open, handleClose, data }) {
                       color='error'
                       size='small'
                       sx={{ textTransform: 'none' }}
-                      disabled={deleteRequireMutation.isLoading}
+                      disabled={deleteRequireMutation.isPending}
                       onClick={() => deleteRequireMutation.mutate()}
                     >
                       Delete
