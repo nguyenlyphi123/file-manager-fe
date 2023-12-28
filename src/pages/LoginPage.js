@@ -9,6 +9,7 @@ import { Divider } from '@mui/material';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { DangerAlert } from 'parts/AlertPopup';
 import { loadUser, logIn } from 'redux/slices/user';
+import { pushTab } from 'redux/slices/location';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -56,6 +57,7 @@ export default function LoginPage() {
         if (from) {
           navigate(from, { replace: true });
         }
+        dispatch(pushTab('home'));
         navigate('/');
       } catch (error) {
         setIsLoading(false);
